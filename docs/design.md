@@ -80,6 +80,7 @@ Display in TUI
 - Interfaces with `classy-sync` to pull latest course, section, and instructor data.  
 - Supports choosing school and academic term.  
 - Maintains data integrity and schema updates.
+- Runs a along side the main thread.
 
 ---
 
@@ -99,7 +100,9 @@ Display in TUI
 
 ---
 
-## 6. Example Queries and Translations
+## 6. Example Queries
+User queries should be rich enough to filter record attributes as well as a record's related objects.
+Related objects could 1:1 or 1:many which means some of these filters will be over aggregates.
 
 | User Input            | SQL Translation Example                                                                                      |
 |-----------------------|-------------------------------------------------------------------------------------------------------------|
@@ -108,6 +111,28 @@ Display in TUI
 | `after 2pm meetings`  | WHERE meeting_time > '14:00'                                                                                  |
 
 ---
+
+### 6.1 Section related objects
+- Professors (all attributes)
+- Meeting times aggregates
+    - has ANY day
+    - does not have day
+    - has ANY (time before or after TIME) 
+    - does not have time
+    - has ALL non-null values for day / time
+
+
+### 6.2 Professor Requirements
+- Arguments filtered against professor attributes.
+- Section/Course aggregates
+    - teaches ANY (section/course predicate)
+
+### 6.3 Course Requirements
+- Arguments filtered against course attributes.
+- Course/ Meeting times aggregates
+    - has ANY (section/meeting times predicate)
+- Professor aggregates
+    - has ANY (professor aggregate)
 
 ## 7. Error Handling & Edge Cases
 
