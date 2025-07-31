@@ -31,7 +31,7 @@ impl Display for AppError {
 }
 
 pub enum SyntaxError {
-    NOIMPL
+    NOIMPL,
 }
 
 impl Display for SyntaxError {
@@ -41,4 +41,3 @@ impl Display for SyntaxError {
         }
     }
 }
-

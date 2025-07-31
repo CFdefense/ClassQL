@@ -12,12 +12,12 @@
     6. Look Aesthetic
 */
 
+use crate::tui::errors::{AppError, TUIError};
 use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use ratatui::DefaultTerminal;
 use ratatui::Frame;
 use ratatui::widgets::{Block, Borders, Paragraph};
-use crate::tui::errors::{TUIError, AppError};
 
 pub struct Tui {
     terminal: DefaultTerminal,
@@ -64,7 +64,7 @@ impl Tui {
 struct AppState {
     input: String,
     error: AppError,
-    // other fields... like query results, search text, syntax highlighting, etc.
+    user_query: String, // other fields... like query results, search text, syntax highlighting, etc.
 }
 
 impl AppState {
@@ -72,6 +72,7 @@ impl AppState {
         return AppState {
             input: String::new(),
             error: AppError::NONE,
+            user_query: String::new(),
         };
     }
 

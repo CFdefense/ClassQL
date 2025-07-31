@@ -1,3 +1,3 @@
-pub mod tui;
-pub mod query;
 pub mod compiler;
+pub mod query;
+pub mod tui;

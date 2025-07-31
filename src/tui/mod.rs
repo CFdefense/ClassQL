@@ -5,5 +5,5 @@
     Some errors are displayed to the user in the tui.
 */
 
-pub mod tui;
 pub mod errors;
+pub mod tui;
