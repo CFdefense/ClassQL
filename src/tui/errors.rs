@@ -31,15 +31,13 @@ impl Display for AppError {
 }
 
 pub enum SyntaxError {
-    NONE,
-    InvalidSyntax(String),
+    NOIMPL
 }
 
 impl Display for SyntaxError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            SyntaxError::NONE => write!(f, "No error"),
-            SyntaxError::InvalidSyntax(msg) => write!(f, "Invalid syntax: {}", msg),
+            SyntaxError::NOIMPL => write!(f, "Not implemented"),
         }
     }
 }
