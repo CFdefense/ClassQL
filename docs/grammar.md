@@ -131,8 +131,8 @@ locations
 <room_query> ::= ("room" | "room number" | "rm") <condition> <string>
 <accessibility_query> ::= "accessibility" <condition> <string>
 
-<condition> ::= "=" | "!=" | "contains" | "starts_with" | "ends_with"
-<binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" 
+<condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "starts_with" | "ends with" | "ends_with" | "is" | "equals" | "not equals" | "does not equal"
+<binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "equals" | "not equals" | "not" | "does not equal" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at least" | "at most" | "more than" | "fewer than"
 
 <string> ::= '"' [^"]* '"' | [a-zA-Z0-9_]+
 <integer> ::= [0-9]+
