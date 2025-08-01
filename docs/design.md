@@ -66,8 +66,8 @@ Display in TUI
 - **Tokenizer:** Categorizes tokens (`course_code`, `instructor`, `day`, `time`, `keywords`).  
 - **Parser:** Builds structured queries supporting boolean logic.  
 - **Semantic Analyzer:** Normalizes synonyms (e.g., `thur` → `thursday`), interprets time ranges, validates tokens.  
-- **Query Builder:** Converts the structured query into parameterized SQL to prevent injection.
-
+- **Query Builder:** Build query using structured fields to refine search parameters
+- **Semantic Search** Non structured fields are then additionally filtered with semantic search
 ### 4.3 Database Layer (sqlx)
 
 - Manages SQLite connections asynchronously.  
