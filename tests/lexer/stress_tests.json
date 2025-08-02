@@ -32,9 +32,7 @@
         "description": "Test mixed valid and invalid symbols",
         "code": "prof@email.com<>campus",
         "result": [
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IDENTIFIER", "content": "email"},
-            {"type": "T_IDENTIFIER", "content": "com"},
+            {"type": "T_IDENTIFIER", "content": "prof@email.com"},
             {"type": "T_LESS_THAN", "content": "<"},
             {"type": "T_GREATER_THAN", "content": ">"},
             {"type": "T_CAMPUS", "content": "campus"}
@@ -45,10 +43,7 @@
         "description": "Test day abbreviations without spaces",
         "code": "monfrisuedwethusatsun",
         "result": [
-            {"type": "T_MONDAY", "content": "mon"},
-            {"type": "T_FRIDAY", "content": "fri"},
-            {"type": "T_SUNDAY", "content": "su"},
-            {"type": "T_IDENTIFIER", "content": "edwethusatsun"}
+            {"type": "T_IDENTIFIER", "content": "monfrisuedwethusatsun"}
         ]
     },
     {

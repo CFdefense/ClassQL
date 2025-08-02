@@ -12,23 +12,27 @@ use regex::Regex;
 
 pub struct Lexer {
     input: String,
+    chars: Vec<char>,
     position: usize,
     current_char: char,
-    unrecognized_chars: Vec<char>
+    unrecognized_chars: Vec<char>,
 }
 
 impl Lexer {
     pub fn new() -> Self {
         Lexer {
             input: String::new(),
+            chars: Vec::new(),
             position: 0,
             current_char: ' ',
             unrecognized_chars: Vec::new(),
         }
     }
 
+    #[allow(dead_code)]
     pub fn clear(&mut self) {
         self.input = String::new();
+        self.chars.clear();
         self.position = 0;
         self.current_char = ' ';
         self.unrecognized_chars.clear();
@@ -37,8 +41,9 @@ impl Lexer {
     pub fn lexical_analysis(&mut self, input: String) -> Vec<Token> {
         // Store input and initialize position
         self.input = input;
+        self.chars = self.input.chars().collect();
         self.position = 0;
-        self.current_char = if self.input.is_empty() { '\0' } else { self.input.chars().next().unwrap() };
+        self.current_char = if self.chars.is_empty() { '\0' } else { self.chars[0] };
         
         // Get all patterns in lexing order (longest/most specific first)
         let patterns = TokenType::all_patterns();
@@ -53,8 +58,8 @@ impl Lexer {
         
         let mut tokens = Vec::new();
         
-        while self.position < self.input.len() {
-            let remaining = &self.input[self.position..];
+        while self.position < self.chars.len() {
+            let remaining: String = self.chars[self.position..].iter().collect();
             
             // Skip whitespace
             if self.current_char.is_whitespace() {
@@ -64,7 +69,7 @@ impl Lexer {
             
             let mut matched = false;
             for (token_type, regex) in &compiled_patterns {
-                if let Some(mat) = regex.find(remaining) {
+                if let Some(mat) = regex.find(remaining.as_str()) {
                     if mat.start() == 0 { // Must match at beginning
                         let lexeme = mat.as_str().to_string();
                         let start_pos = self.position as i32;
@@ -83,7 +88,7 @@ impl Lexer {
             }
             
             if !matched {
-                // Handle unrecognized character - display error to user
+                // Handle unrecognized character - collect it for error reporting
                 self.unrecognized_chars.push(self.current_char);
                 self.advance();
             }
@@ -110,8 +115,8 @@ impl Lexer {
     // Helper method to advance position and update current_char
     fn advance(&mut self) {
         self.position += 1;
-        if self.position < self.input.len() {
-            self.current_char = self.input.chars().nth(self.position).unwrap();
+        if self.position < self.chars.len() {
+            self.current_char = self.chars[self.position];
         } else {
             self.current_char = '\0'; // End of input
         }

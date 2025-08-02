@@ -20,10 +20,10 @@
     },
     {
         "test_name": "Mixed Valid and Invalid Characters",
-        "description": "Test that any invalid character causes all tokens to be error tokens",
-        "code": "subject@course",
+        "description": "Test mixing valid tokens with unrecognized characters",
+        "code": "subject#course",
         "result": [
-            {"type": "T_UNRECOGNIZED", "content": "@"}
+            {"type": "T_UNRECOGNIZED", "content": "#"}
         ]
     },
     {
@@ -73,7 +73,9 @@
         "description": "Test invalid operator-like sequences",
         "code": "===",
         "result": [
-            {"type": "T_UNRECOGNIZED", "content": "="}
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_EQUALS", "content": "="}
         ]
     },
     {

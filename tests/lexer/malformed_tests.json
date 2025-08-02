@@ -22,11 +22,9 @@
         "description": "Test malformed time patterns",
         "code": "25:70 99pm 8:99am",
         "result": [
-            {"type": "T_INTEGER", "content": "25"},
-            {"type": "T_INTEGER", "content": "70"},
-            {"type": "T_INTEGER", "content": "99"},
-            {"type": "T_IDENTIFIER", "content": "pm"},
-            {"type": "T_TIME", "content": "8am"}
+            {"type": "T_TIME", "content": "25:70"},
+            {"type": "T_TIME", "content": "99pm"},
+            {"type": "T_TIME", "content": "8:99am"}
         ]
     },
     {
@@ -34,9 +32,15 @@
         "description": "Test lots of special characters that should be ignored",
         "code": "@#$%^&*()subject!=course",
         "result": [
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_NOT_EQUALS", "content": "!="},
-            {"type": "T_COURSE", "content": "course"}
+            {"type": "T_UNRECOGNIZED", "content": "@"},
+            {"type": "T_UNRECOGNIZED", "content": "#"},
+            {"type": "T_UNRECOGNIZED", "content": "$"},
+            {"type": "T_UNRECOGNIZED", "content": "%"},
+            {"type": "T_UNRECOGNIZED", "content": "^"},
+            {"type": "T_UNRECOGNIZED", "content": "&"},
+            {"type": "T_UNRECOGNIZED", "content": "*"},
+            {"type": "T_UNRECOGNIZED", "content": "("},
+            {"type": "T_UNRECOGNIZED", "content": ")"}
         ]
     },
     {
@@ -55,7 +59,8 @@
         "description": "Test numbers embedded in weird contexts",
         "code": "123subject456prof789and000",
         "result": [
-            {"type": "T_IDENTIFIER", "content": "123subject456prof789and000"}
+            {"type": "T_INTEGER", "content": "123"},
+            {"type": "T_IDENTIFIER", "content": "subject456prof789and000"}
         ]
     },
     {

@@ -60,6 +60,48 @@ meeting_times
     is_sunday               N           "sun" | "sunday" | "su" {|condition|} <str>
     other (JSON)            V
 
+## Lexical Patterns
+
+The following regex patterns define how the lexer tokenizes ClassQL input:
+
+### Special Identifiers
+- **Email-like identifiers**: `[a-zA-Z_][a-zA-Z0-9_]*@[a-zA-Z0-9_]*\.[a-zA-Z0-9_.]*`
+  - Example: `prof@email.com` → Single `T_IDENTIFIER` token
+
+### Keywords
+- **Subject**: `\b(subject|sub)\b` → `T_SUBJECT`
+- **Course**: `\bcourse\b` → `T_COURSE` 
+- **Professor**: `\bprof\b` → `T_PROF`
+- **Days**: Progressive abbreviations with word boundaries
+  - Monday: `\b(monday|monda|mond|mon|mo|m)\b` → `T_MONDAY`
+  - Tuesday: `\b(tuesday|tuesda|tuesd|tues|tue|tu)\b` → `T_TUESDAY`
+  - Wednesday: `\b(wednesday|wednesda|wednesd|wednes|wedne|wedn|wed|we|w)\b` → `T_WEDNESDAY`
+  - Thursday: `\b(thursday|thursda|thurs|thur|thu|th)\b` → `T_THURSDAY`
+  - Friday: `\b(friday|frida|frid|fri|fr|f)\b` → `T_FRIDAY`
+  - Saturday: `\b(saturday|saturda|saturd|satur|satu|sat|sa)\b` → `T_SATURDAY`
+  - Sunday: `\b(sunday|sunda|sund|sun|su)\b` → `T_SUNDAY`
+
+### Operators
+- **Comparison**: `!=`, `<=`, `>=`, `=`, `<`, `>`, `!`
+- **Logical**: `\band\b`, `\bor\b`, `\bnot\b`
+
+### Literals
+- **Strings**: `"[^"]*"?` (supports unclosed strings)
+- **Times**: `[0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)`
+- **Integers**: `[0-9]+`
+- **General Identifiers**: `[a-zA-Z_][a-zA-Z0-9_]*`
+
+### Tokenization Order
+1. Email-like identifiers (highest priority)
+2. Multi-word operators
+3. Keywords
+4. Day abbreviations
+5. Single operators
+6. Logical operators
+7. Conditions
+8. Literals (strings, times, integers)
+9. General identifiers (lowest priority)
+
 ## Formal BNF Grammar
 
 ```bnf
@@ -106,11 +148,13 @@ meeting_times
 <saturday_query> ::= ("sat" | "saturday" | "sa") <condition> <string>
 <sunday_query> ::= ("sun" | "sunday" | "su") <condition> <string>
 
-<time> ::= "(([0-2]|0)?[1-9])(:([0-5][0-9]))?( ?(am|pm))?"
+<time> ::= [0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)
 <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal"
 <binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "equals" | "is" | "not equals" | "not" | "does not equal" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at least" | "at most" | "more than" | "fewer than"
 
-<string> ::= '"' [^"]* '"' | [a-zA-Z0-9_]+
+<string> ::= "[^"]*"?
 <integer> ::= [0-9]+
+<identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*
+<email_identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*@[a-zA-Z0-9_]*\.[a-zA-Z0-9_.]*
 <string_list> ::= <string> | <string_list> "," <string>
 ```

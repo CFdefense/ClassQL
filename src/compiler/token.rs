@@ -67,6 +67,7 @@ pub enum TokenType {
     Unrecognized,
 }
 
+#[allow(dead_code)]
 pub struct Token {
     token_type: TokenType,
     pub lexeme: String,
@@ -144,20 +145,15 @@ impl Token {
     pub fn get_lexeme(&self) -> &str {
         &self.lexeme
     }
-
-    pub fn start_position(&self) -> i32 {
-        self.start
-    }
-
-    pub fn end_position(&self) -> i32 {
-        self.end
-    }
 } 
 
 impl TokenType {
     // Get all token patterns in lexing order (longest/most specific first)
     pub fn all_patterns() -> Vec<(TokenType, &'static str)> {
         vec![
+            // Email-like identifiers
+            (TokenType::Identifier, r"[a-zA-Z_][a-zA-Z0-9_]*@[a-zA-Z0-9_]*\.[a-zA-Z0-9_.]*"),
+            
             // Multi-word operators
             (TokenType::EqualsWord, r"\bequals\b"),
             (TokenType::Starts, r"\bstarts\b"),
@@ -188,14 +184,14 @@ impl TokenType {
             (TokenType::Term, r"\bterm\b"),
             (TokenType::Prof, r"\bprof\b"),
             
-            // Days
-            (TokenType::Wednesday, r"(wednesday|wednesda|wednesd|wednes|wedne|wedn|wed|we|w)"),
-            (TokenType::Thursday, r"(thursday|thursda|thurs|thur|thu|th)"),
-            (TokenType::Saturday, r"(saturday|saturda|saturd|satur|satu|sat|sa)"),
-            (TokenType::Tuesday, r"(tuesday|tuesda|tuesd|tues|tue|tu)"),
-            (TokenType::Monday, r"(monday|monda|mond|mon|mo|m)"),
-            (TokenType::Friday, r"(friday|frida|frid|fri|fr|f)"),
-            (TokenType::Sunday, r"(sunday|sunda|sund|sun|su)"),
+            // Days 
+            (TokenType::Wednesday, r"\b(wednesday|wednesda|wednesd|wednes|wedne|wedn|wed|we|w)\b"),
+            (TokenType::Thursday, r"\b(thursday|thursda|thurs|thur|thu|th)\b"),
+            (TokenType::Saturday, r"\b(saturday|saturda|saturd|satur|satu|sat|sa)\b"),
+            (TokenType::Tuesday, r"\b(tuesday|tuesda|tuesd|tues|tue|tu)\b"),
+            (TokenType::Monday, r"\b(monday|monda|mond|mon|mo|m)\b"),
+            (TokenType::Friday, r"\b(friday|frida|frid|fri|fr|f)\b"),
+            (TokenType::Sunday, r"\b(sunday|sunda|sund|sun|su)\b"),
             
             // Operators
             (TokenType::NotEquals, r"!="),
@@ -216,8 +212,8 @@ impl TokenType {
             (TokenType::Is, r"\bis\b"),
             
             // Literals
-            (TokenType::String, r#""[^"]*""#),
-            (TokenType::Time, r"[0-2]?[0-9]:[0-5][0-9]\s?(am|pm)|[0-2]?[0-9]\s?(am|pm)|[0-2]?[0-9]:[0-5][0-9]"),
+            (TokenType::String, r#""[^"]*"?"#),
+            (TokenType::Time, r"[0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)"),
             (TokenType::Integer, r"[0-9]+"),
             (TokenType::Identifier, r"[a-zA-Z_][a-zA-Z0-9_]*"),
         ]
