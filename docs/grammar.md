@@ -60,24 +60,12 @@ meeting_times
     is_sunday               N           "sun" | "sunday" | "su" {|condition|} <str>
     other (JSON)            V
 
-buildings
-    name                    V           "building" {|condition|} <str>
-    abbreviation            V           "building" {|condition|} <str>
-    address                 V           "building" | "address" {|condition|} <str>
-    other (JSON)            V
-
-locations
-    room_number             V           "room" | "room number" | "rm" {|condition|} <str>
-    capacity                N            No?
-    accessibility_features  V           "accessibility" {|condition|} <str>
-    other (JSON)            V
-
 ## Formal BNF Grammar
 
 ```bnf
 <query> ::= <entity_query> | <query> "or" <query>
 
-<entity_query> ::= <term_query> | <professor_query> | <course_query> | <section_query> | <meeting_time_query> | <building_query> | <location_query>
+<entity_query> ::= <term_query> | <professor_query> | <course_query> | <section_query> | <meeting_time_query>
 
 <term_query> ::= "term" <condition> <season_value>
 <season_value> ::= "Spring" | "Fall" | "Winter" | "Summer"
@@ -103,16 +91,15 @@ locations
 <enrollment_cap_query> ::= "cap" <binop> <integer>
 <instruction_method_query> ::= "method" <condition> <string>
 <campus_query> ::= "campus" <condition> <string>
-<enrollment_query> ::= "pop" <binop> <integer>
+<enrollment_query> ::= "size" <binop> <integer>
 <full_query> ::= <condition> "full"
 
-<meeting_time_query> ::= <meeting_subject_query> | <meeting_course_query> | <start_date_query> | <end_date_query> | <meeting_type_query> | <time_query> | <day_query>
+<meeting_time_query> ::= <meeting_subject_query> | <meeting_course_query> | <meeting_type_query> | <time_query> | <day_query>
 <meeting_subject_query> ::= ("subject" | "sub") <condition> <string>
 <meeting_course_query> ::= "course" <condition> <string>
-<start_date_query> ::= ("start" | "starts" | "begin" | "begins" | "date") <binop> <string>
-<end_date_query> ::= ("end" | "ends" | "date") <binop> <string>
 <meeting_type_query> ::= ("meeting type" | "type") <condition> <string>
-<time_query> ::= "time" <binop> <string>
+<time_query> ::= ("start" | "end") ((<binop> <time>) | (("from" | "in") | ("not in") <timerange>))
+<timerange> ::= <time> to <time>
 <day_query> ::= <monday_query> | <tuesday_query> | <wednesday_query> | <thursday_query> | <friday_query> | <saturday_query> | <sunday_query>
 <monday_query> ::= ("mon" | "monday" | "m") <condition> <string>
 <tuesday_query> ::= ("tues" | "tuesday" | "tu") <condition> <string>
@@ -122,17 +109,9 @@ locations
 <saturday_query> ::= ("sat" | "saturday" | "sa") <condition> <string>
 <sunday_query> ::= ("sun" | "sunday" | "su") <condition> <string>
 
-<building_query> ::= <building_name_query> | <building_abbrev_query> | <building_address_query>
-<building_name_query> ::= "building" <condition> <string>
-<building_abbrev_query> ::= "building" <condition> <string>
-<building_address_query> ::= ("building" | "address") <condition> <string>
-
-<location_query> ::= <room_query> | <accessibility_query>
-<room_query> ::= ("room" | "room number" | "rm") <condition> <string>
-<accessibility_query> ::= "accessibility" <condition> <string>
-
-<condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "starts_with" | "ends with" | "ends_with" | "is" | "equals" | "not equals" | "does not equal"
-<binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "equals" | "not equals" | "not" | "does not equal" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at least" | "at most" | "more than" | "fewer than"
+<time> ::= "(([0-2]|0)?[1-9])(:([0-5][0-9]))?( ?(am|pm))?"
+<condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal"
+<binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "equals" | "is" | "not equals" | "not" | "does not equal" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at least" | "at most" | "more than" | "fewer than"
 
 <string> ::= '"' [^"]* '"' | [a-zA-Z0-9_]+
 <integer> ::= [0-9]+

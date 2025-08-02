@@ -95,9 +95,6 @@ Display in TUI
 | **courses**      | school_id (TEXT, PK, FK), subject_code (TEXT, PK), number (TEXT, PK), subject_description (TEXT), title (TEXT), description (TEXT), credit_hours (REAL), prerequisites (TEXT), corequisites (TEXT), other (JSON TEXT) |
 | **sections**     | sequence (TEXT, PK), term_collection_id (TEXT, PK, FK), subject_code (TEXT, PK, FK), course_number (TEXT, PK, FK), school_id (TEXT, PK, FK), max_enrollment (INTEGER), instruction_method (TEXT), campus (TEXT), enrollment (INTEGER), primary_professor_id (TEXT, FK), other (JSON TEXT), location_id (TEXT, optional) |
 | **meeting_times**| sequence (INTEGER, PK), section_sequence (TEXT, PK, FK), term_collection_id (TEXT, PK, FK), subject_code (TEXT, PK, FK), course_number (TEXT, PK, FK), school_id (TEXT, PK, FK), start_date (TEXT), end_date (TEXT), meeting_type (TEXT), start_minutes (TEXT), end_minutes (TEXT), is_monday (BOOL), is_tuesday (BOOL), is_wednesday (BOOL), is_thursday (BOOL), is_friday (BOOL), is_saturday (BOOL), is_sunday (BOOL), other (JSON TEXT) |
-| **buildings**    | id (TEXT, PK), school_id (TEXT, FK), name (TEXT), abbreviation (TEXT), address (TEXT), other (JSON TEXT)          |
-| **locations**    | id (TEXT, PK), building_id (TEXT, FK), room_number (TEXT), capacity (INTEGER), accessibility_features (TEXT), other (JSON TEXT) |
-
 ---
 
 ## 6. Example Queries
