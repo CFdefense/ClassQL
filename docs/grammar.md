@@ -65,10 +65,7 @@ meeting_times
 ```bnf
 <query> ::= <entity_query> | <query> "or" <query>
 
-<entity_query> ::= <term_query> | <professor_query> | <course_query> | <section_query> | <meeting_time_query>
-
-<term_query> ::= "term" <condition> <season_value>
-<season_value> ::= "Spring" | "Fall" | "Winter" | "Summer"
+<entity_query> ::= <professor_query> | <course_query> | <section_query> | <meeting_time_query>
 
 <professor_query> ::= <prof_name_query> | <prof_email_query> | <prof_first_name_query> | <prof_last_name_query>
 <prof_name_query> ::= "prof" <condition> <string>

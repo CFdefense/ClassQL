@@ -1,0 +1,80 @@
+[
+    {
+        "test_name": "Subject and Course Query",
+        "description": "Test subject and course number combination",
+        "code": "subject = \"CS\" and course = \"101\"",
+        "result": [
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"CS\""},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"101\""}
+        ]
+    },
+    {
+        "test_name": "Professor Query",
+        "description": "Test professor name search",
+        "code": "prof contains \"Smith\"",
+        "result": [
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_STRING", "content": "\"Smith\""}
+        ]
+    },
+    {
+        "test_name": "Credit Hours Range",
+        "description": "Test credit hours range query",
+        "code": "credit hours >= 3 and credit hours <= 6",
+        "result": [
+            {"type": "T_CREDIT", "content": "credit"},
+            {"type": "T_HOURS", "content": "hours"},
+            {"type": "T_GREATER_EQUAL", "content": ">="},
+            {"type": "T_INTEGER", "content": "3"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_CREDIT", "content": "credit"},
+            {"type": "T_HOURS", "content": "hours"},
+            {"type": "T_LESS_EQUAL", "content": "<="},
+            {"type": "T_INTEGER", "content": "6"}
+        ]
+    },
+    {
+        "test_name": "Course Title Contains",
+        "description": "Test course title search",
+        "code": "title contains \"Introduction\"",
+        "result": [
+            {"type": "T_TITLE", "content": "title"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_STRING", "content": "\"Introduction\""}
+        ]
+    },
+    {
+        "test_name": "Day Schedule Query",
+        "description": "Test day-based schedule filtering",
+        "code": "monday = true and friday = false",
+        "result": [
+            {"type": "T_MONDAY", "content": "monday"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_IDENTIFIER", "content": "true"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_FRIDAY", "content": "friday"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_IDENTIFIER", "content": "false"}
+        ]
+    },
+    {
+        "test_name": "Campus and Method Query",
+        "description": "Test campus and instruction method filtering",
+        "code": "campus = \"Main\" and method contains \"Online\"",
+        "result": [
+            {"type": "T_CAMPUS", "content": "campus"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"Main\""},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_METHOD", "content": "method"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_STRING", "content": "\"Online\""}
+        ]
+    }
+] 

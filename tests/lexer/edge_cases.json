@@ -1,0 +1,76 @@
+[
+    {
+        "test_name": "Empty String",
+        "description": "Test handling of empty input",
+        "code": "",
+        "result": []
+    },
+    {
+        "test_name": "Only Whitespace",
+        "description": "Test input with only whitespace characters",
+        "code": "   \t\n  ",
+        "result": []
+    },
+    {
+        "test_name": "Single Character Tokens",
+        "description": "Test single character operators",
+        "code": "= < > !",
+        "result": [
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_LESS_THAN", "content": "<"},
+            {"type": "T_GREATER_THAN", "content": ">"},
+            {"type": "T_EXCLAMATION", "content": "!"}
+        ]
+    },
+    {
+        "test_name": "Numbers at Boundaries",
+        "description": "Test edge case numbers",
+        "code": "0 999999 1",
+        "result": [
+            {"type": "T_INTEGER", "content": "0"},
+            {"type": "T_INTEGER", "content": "999999"},
+            {"type": "T_INTEGER", "content": "1"}
+        ]
+    },
+    {
+        "test_name": "Empty Quoted String",
+        "description": "Test empty quoted strings",
+        "code": "title = \"\"",
+        "result": [
+            {"type": "T_TITLE", "content": "title"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"\""}
+        ]
+    },
+    {
+        "test_name": "String with Spaces",
+        "description": "Test quoted strings containing spaces",
+        "code": "\"Computer Science 101\" \"Data Structures and Algorithms\"",
+        "result": [
+            {"type": "T_STRING", "content": "\"Computer Science 101\""},
+            {"type": "T_STRING", "content": "\"Data Structures and Algorithms\""}
+        ]
+    },
+    {
+        "test_name": "Case Sensitivity",
+        "description": "Test case sensitivity of keywords",
+        "code": "Term PROF Course subject SUB",
+        "result": [
+            {"type": "T_IDENTIFIER", "content": "Term"},
+            {"type": "T_IDENTIFIER", "content": "PROF"},
+            {"type": "T_IDENTIFIER", "content": "Course"},
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_IDENTIFIER", "content": "SUB"}
+        ]
+    },
+    {
+        "test_name": "Adjacent Operators",
+        "description": "Test adjacent operators without spaces",
+        "code": ">=<=!=",
+        "result": [
+            {"type": "T_GREATER_EQUAL", "content": ">="},
+            {"type": "T_LESS_EQUAL", "content": "<="},
+            {"type": "T_NOT_EQUALS", "content": "!="}
+        ]
+    }
+] 

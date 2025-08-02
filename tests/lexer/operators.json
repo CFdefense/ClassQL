@@ -1,0 +1,71 @@
+[
+    {
+        "test_name": "Basic Comparison Operators",
+        "description": "Test basic comparison operators",
+        "code": "= != < > <= >=",
+        "result": [
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_NOT_EQUALS", "content": "!="},
+            {"type": "T_LESS_THAN", "content": "<"},
+            {"type": "T_GREATER_THAN", "content": ">"},
+            {"type": "T_LESS_EQUAL", "content": "<="},
+            {"type": "T_GREATER_EQUAL", "content": ">="}
+        ]
+    },
+    {
+        "test_name": "Condition Operators",
+        "description": "Test condition operators from grammar",
+        "code": "contains has is equals",
+        "result": [
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_HAS", "content": "has"},
+            {"type": "T_IS", "content": "is"},
+            {"type": "T_EQUALS_WORD", "content": "equals"}
+        ]
+    },
+    {
+        "test_name": "Complex Condition Operators",
+        "description": "Test multi-word condition operators",
+        "code": "starts with ends with not equals does not equal",
+        "result": [
+            {"type": "T_STARTS", "content": "starts"},
+            {"type": "T_WITH", "content": "with"},
+            {"type": "T_ENDS", "content": "ends"},
+            {"type": "T_WITH", "content": "with"},
+            {"type": "T_NOT", "content": "not"},
+            {"type": "T_EQUALS_WORD", "content": "equals"},
+            {"type": "T_DOES", "content": "does"},
+            {"type": "T_NOT", "content": "not"},
+            {"type": "T_EQUAL", "content": "equal"}
+        ]
+    },
+    {
+        "test_name": "Binary Operators",
+        "description": "Test binary operators for numerical comparisons",
+        "code": "less than greater than at least at most more than fewer than",
+        "result": [
+            {"type": "T_LESS", "content": "less"},
+            {"type": "T_THAN", "content": "than"},
+            {"type": "T_GREATER", "content": "greater"},
+            {"type": "T_THAN", "content": "than"},
+            {"type": "T_AT", "content": "at"},
+            {"type": "T_LEAST", "content": "least"},
+            {"type": "T_AT", "content": "at"},
+            {"type": "T_MOST", "content": "most"},
+            {"type": "T_MORE", "content": "more"},
+            {"type": "T_THAN", "content": "than"},
+            {"type": "T_FEWER", "content": "fewer"},
+            {"type": "T_THAN", "content": "than"}
+        ]
+    },
+    {
+        "test_name": "Logical Operators",
+        "description": "Test logical operators",
+        "code": "or and not",
+        "result": [
+            {"type": "T_OR", "content": "or"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_NOT", "content": "not"}
+        ]
+    }
+] 

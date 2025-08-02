@@ -1,0 +1,61 @@
+[
+    {
+        "test_name": "Quoted Strings",
+        "description": "Test quoted string literals",
+        "code": "\"Computer Science\" \"MATH 101\" \"Dr. Smith\"",
+        "result": [
+            {"type": "T_STRING", "content": "\"Computer Science\""},
+            {"type": "T_STRING", "content": "\"MATH 101\""},
+            {"type": "T_STRING", "content": "\"Dr. Smith\""}
+        ]
+    },
+    {
+        "test_name": "Unquoted Identifiers",
+        "description": "Test unquoted alphanumeric identifiers",
+        "code": "CS101 MATH_200 course123 prof_smith",
+        "result": [
+            {"type": "T_IDENTIFIER", "content": "CS101"},
+            {"type": "T_IDENTIFIER", "content": "MATH_200"},
+            {"type": "T_IDENTIFIER", "content": "course123"},
+            {"type": "T_IDENTIFIER", "content": "prof_smith"}
+        ]
+    },
+    {
+        "test_name": "Integer Numbers",
+        "description": "Test integer literals",
+        "code": "0 3 15 101 2024",
+        "result": [
+            {"type": "T_INTEGER", "content": "0"},
+            {"type": "T_INTEGER", "content": "3"},
+            {"type": "T_INTEGER", "content": "15"},
+            {"type": "T_INTEGER", "content": "101"},
+            {"type": "T_INTEGER", "content": "2024"}
+        ]
+    },
+    {
+        "test_name": "Time Formats",
+        "description": "Test time format patterns from grammar",
+        "code": "9:00am 2:30pm 14:00 8am 11pm",
+        "result": [
+            {"type": "T_TIME", "content": "9:00am"},
+            {"type": "T_TIME", "content": "2:30pm"},
+            {"type": "T_TIME", "content": "14:00"},
+            {"type": "T_TIME", "content": "8am"},
+            {"type": "T_TIME", "content": "11pm"}
+        ]
+    },
+    {
+        "test_name": "Mixed Literals",
+        "description": "Test mixed literal types in one expression",
+        "code": "course = \"CS101\" credit hours > 3",
+        "result": [
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"CS101\""},
+            {"type": "T_CREDIT", "content": "credit"},
+            {"type": "T_HOURS", "content": "hours"},
+            {"type": "T_GREATER_THAN", "content": ">"},
+            {"type": "T_INTEGER", "content": "3"}
+        ]
+    }
+] 

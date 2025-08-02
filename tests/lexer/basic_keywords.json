@@ -1,0 +1,29 @@
+[
+    {
+        "test_name": "Basic Entity Keywords",
+        "description": "Test basic entity keywords from ClassQL grammar",
+        "code": "term prof course subject sub",
+        "result": [
+            {"type": "T_TERM", "content": "term"},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_SUBJECT", "content": "sub"}
+        ]
+    },
+    {
+        "test_name": "Query Type Keywords",
+        "description": "Test query-related keywords",
+        "code": "contains title method campus credit hours prereqs corereqs",
+        "result": [
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_TITLE", "content": "title"},
+            {"type": "T_METHOD", "content": "method"},
+            {"type": "T_CAMPUS", "content": "campus"},
+            {"type": "T_CREDIT", "content": "credit"},
+            {"type": "T_HOURS", "content": "hours"},
+            {"type": "T_PREREQS", "content": "prereqs"},
+            {"type": "T_COREREQS", "content": "corereqs"}
+        ]
+    }
+] 

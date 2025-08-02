@@ -1,0 +1,108 @@
+[
+    {
+        "test_name": "Monday Abbreviations",
+        "description": "Test all progressive abbreviations for Monday",
+        "code": "m mo mon mond monda monday",
+        "result": [
+            {"type": "T_MONDAY", "content": "m"},
+            {"type": "T_MONDAY", "content": "mo"},
+            {"type": "T_MONDAY", "content": "mon"},
+            {"type": "T_MONDAY", "content": "mond"},
+            {"type": "T_MONDAY", "content": "monda"},
+            {"type": "T_MONDAY", "content": "monday"}
+        ]
+    },
+    {
+        "test_name": "Tuesday Abbreviations",
+        "description": "Test all progressive abbreviations for Tuesday",
+        "code": "tu tue tues tuesd tuesda tuesday",
+        "result": [
+            {"type": "T_TUESDAY", "content": "tu"},
+            {"type": "T_TUESDAY", "content": "tue"},
+            {"type": "T_TUESDAY", "content": "tues"},
+            {"type": "T_TUESDAY", "content": "tuesd"},
+            {"type": "T_TUESDAY", "content": "tuesda"},
+            {"type": "T_TUESDAY", "content": "tuesday"}
+        ]
+    },
+    {
+        "test_name": "Wednesday Abbreviations",
+        "description": "Test all progressive abbreviations for Wednesday",
+        "code": "w we wed wedn wedne wednes wednesd wednesda wednesday",
+        "result": [
+            {"type": "T_WEDNESDAY", "content": "w"},
+            {"type": "T_WEDNESDAY", "content": "we"},
+            {"type": "T_WEDNESDAY", "content": "wed"},
+            {"type": "T_WEDNESDAY", "content": "wedn"},
+            {"type": "T_WEDNESDAY", "content": "wedne"},
+            {"type": "T_WEDNESDAY", "content": "wednes"},
+            {"type": "T_WEDNESDAY", "content": "wednesd"},
+            {"type": "T_WEDNESDAY", "content": "wednesda"},
+            {"type": "T_WEDNESDAY", "content": "wednesday"}
+        ]
+    },
+    {
+        "test_name": "Thursday Abbreviations", 
+        "description": "Test all progressive abbreviations for Thursday",
+        "code": "th thu thur thurs thursda thursday",
+        "result": [
+            {"type": "T_THURSDAY", "content": "th"},
+            {"type": "T_THURSDAY", "content": "thu"},
+            {"type": "T_THURSDAY", "content": "thur"},
+            {"type": "T_THURSDAY", "content": "thurs"},
+            {"type": "T_THURSDAY", "content": "thursda"},
+            {"type": "T_THURSDAY", "content": "thursday"}
+        ]
+    },
+    {
+        "test_name": "Friday Abbreviations",
+        "description": "Test all progressive abbreviations for Friday",
+        "code": "f fr fri frid frida friday",
+        "result": [
+            {"type": "T_FRIDAY", "content": "f"},
+            {"type": "T_FRIDAY", "content": "fr"},
+            {"type": "T_FRIDAY", "content": "fri"},
+            {"type": "T_FRIDAY", "content": "frid"},
+            {"type": "T_FRIDAY", "content": "frida"},
+            {"type": "T_FRIDAY", "content": "friday"}
+        ]
+    },
+    {
+        "test_name": "Saturday Abbreviations",
+        "description": "Test all progressive abbreviations for Saturday",
+        "code": "sa sat satu satur saturd saturda saturday",
+        "result": [
+            {"type": "T_SATURDAY", "content": "sa"},
+            {"type": "T_SATURDAY", "content": "sat"},
+            {"type": "T_SATURDAY", "content": "satu"},
+            {"type": "T_SATURDAY", "content": "satur"},
+            {"type": "T_SATURDAY", "content": "saturd"},
+            {"type": "T_SATURDAY", "content": "saturda"},
+            {"type": "T_SATURDAY", "content": "saturday"}
+        ]
+    },
+    {
+        "test_name": "Sunday Abbreviations",
+        "description": "Test all progressive abbreviations for Sunday",
+        "code": "su sun sund sunda sunday",
+        "result": [
+            {"type": "T_SUNDAY", "content": "su"},
+            {"type": "T_SUNDAY", "content": "sun"},
+            {"type": "T_SUNDAY", "content": "sund"},
+            {"type": "T_SUNDAY", "content": "sunda"},
+            {"type": "T_SUNDAY", "content": "sunday"}
+        ]
+    },
+    {
+        "test_name": "Mixed Day Abbreviations",
+        "description": "Test mixed day abbreviations in one query",
+        "code": "mon and fri or sat",
+        "result": [
+            {"type": "T_MONDAY", "content": "mon"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_FRIDAY", "content": "fri"},
+            {"type": "T_OR", "content": "or"},
+            {"type": "T_SATURDAY", "content": "sat"}
+        ]
+    }
+] 
