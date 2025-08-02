@@ -11,6 +11,10 @@ This directory contains comprehensive test cases for the ClassQL lexer, organize
 - **`complex_queries.json`** - Tests for real-world ClassQL query patterns
 - **`whitespace.json`** - Tests for proper whitespace handling (spaces, tabs, newlines)
 - **`edge_cases.json`** - Tests for edge cases and boundary conditions
+- **`stress_tests.json`** - Tests for challenging inputs (no whitespace, smashed tokens)
+- **`malformed_tests.json`** - Tests for invalid/malformed inputs and error recovery
+- **`boundary_tests.json`** - Tests for extreme cases and boundary conditions
+- **`unrecognized_tests.json`** - Tests for unrecognized character error handling
 
 ## Test Format
 
@@ -62,14 +66,19 @@ The test suite expects the following token types based on the ClassQL grammar:
 
 The test suite covers:
 
-✅ All ClassQL keywords from the grammar specification  
-✅ All operator types (comparison, logical, condition)  
-✅ String and numeric literals  
-✅ Time format patterns  
-✅ Progressive day abbreviations (m, mo, mon, mond, monda, monday)  
-✅ Whitespace handling  
-✅ Complex real-world query patterns  
-✅ Edge cases and boundary conditions  
-✅ Case sensitivity  
-✅ Adjacent operators  
-✅ Empty inputs
+- All ClassQL keywords from the grammar specification  
+-  All operator types (comparison, logical, condition)  
+-  String and numeric literals  
+-  Time format patterns  
+-  Progressive day abbreviations (m, mo, mon, mond, monda, monday)  
+-  Whitespace handling  
+-  Complex real-world query patterns  
+-  Edge cases and boundary conditions  
+-  **No-whitespace stress tests**  
+-  **Invalid character handling**  
+-  **Malformed input recovery**  
+-  **Extreme boundary conditions**  
+-  **Unrecognized character error reporting**  
+-  Case sensitivity  
+-  Adjacent operators  
+-  Empty inputs

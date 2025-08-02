@@ -29,10 +29,6 @@ impl TestHelper {
         }
     }
 
-    fn clear(&mut self) {
-        self.lexer.clear();
-    }
-
     fn parse_json_tests(&self, json_content: &str) -> Vec<TestCase> {
         serde_json::from_str(json_content).expect("Failed to parse JSON test file")
     }
@@ -43,7 +39,7 @@ impl TestHelper {
         println!("Input: '{}'", test_case.code);
         
         // Clear lexer state before each test
-        self.clear();
+        self.lexer.clear();
         
         // Tokenize the input
         let tokens = self.lexer.lexical_analysis(test_case.code.clone());
@@ -171,4 +167,24 @@ fn test_whitespace() {
 #[test]
 fn test_edge_cases() {
     run_test_file("edge_cases.json");
+}
+
+#[test]
+fn test_stress_tests() {
+    run_test_file("stress_tests.json");
+}
+
+#[test]
+fn test_malformed_tests() {
+    run_test_file("malformed_tests.json");
+}
+
+#[test]
+fn test_boundary_tests() {
+    run_test_file("boundary_tests.json");
+}
+
+#[test]
+fn test_unrecognized_tests() {
+    run_test_file("unrecognized_tests.json");
 } 

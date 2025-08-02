@@ -1,0 +1,126 @@
+[
+    {
+        "test_name": "Single Character Tokens",
+        "description": "Test shortest possible valid tokens",
+        "code": "m f w = < > !",
+        "result": [
+            {"type": "T_MONDAY", "content": "m"},
+            {"type": "T_FRIDAY", "content": "f"},
+            {"type": "T_WEDNESDAY", "content": "w"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_LESS_THAN", "content": "<"},
+            {"type": "T_GREATER_THAN", "content": ">"},
+            {"type": "T_EXCLAMATION", "content": "!"}
+        ]
+    },
+    {
+        "test_name": "Extreme Numbers",
+        "description": "Test very large numbers",
+        "code": "0 1234567890 999999999999999999",
+        "result": [
+            {"type": "T_INTEGER", "content": "0"},
+            {"type": "T_INTEGER", "content": "1234567890"},
+            {"type": "T_INTEGER", "content": "999999999999999999"}
+        ]
+    },
+    {
+        "test_name": "All Operators In Sequence",
+        "description": "Test all comparison operators together",
+        "code": "= != < > <= >= and or not",
+        "result": [
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_NOT_EQUALS", "content": "!="},
+            {"type": "T_LESS_THAN", "content": "<"},
+            {"type": "T_GREATER_THAN", "content": ">"},
+            {"type": "T_LESS_EQUAL", "content": "<="},
+            {"type": "T_GREATER_EQUAL", "content": ">="},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_OR", "content": "or"},
+            {"type": "T_NOT", "content": "not"}
+        ]
+    },
+    {
+        "test_name": "Day Abbreviation Conflicts",
+        "description": "Test potential day abbreviation conflicts",
+        "code": "m mo mon monday tu tue tuesday",
+        "result": [
+            {"type": "T_MONDAY", "content": "m"},
+            {"type": "T_MONDAY", "content": "mo"},
+            {"type": "T_MONDAY", "content": "mon"},
+            {"type": "T_MONDAY", "content": "monday"},
+            {"type": "T_TUESDAY", "content": "tu"},
+            {"type": "T_TUESDAY", "content": "tue"},
+            {"type": "T_TUESDAY", "content": "tuesday"}
+        ]
+    },
+    {
+        "test_name": "Minimal Valid Query",
+        "description": "Test shortest possible valid query",
+        "code": "subject=\"CS\"",
+        "result": [
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"CS\""}
+        ]
+    },
+    {
+        "test_name": "Maximum Complexity Query",
+        "description": "Test very complex nested query",
+        "code": "subject=\"CS\"andcourse=\"101\"andcredit hours>=3andmon=trueor prof contains\"Smith\"",
+        "result": [
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"CS\""},
+            {"type": "T_IDENTIFIER", "content": "andcourse"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"101\""},
+            {"type": "T_IDENTIFIER", "content": "andcredit"},
+            {"type": "T_HOURS", "content": "hours"},
+            {"type": "T_GREATER_EQUAL", "content": ">="},
+            {"type": "T_INTEGER", "content": "3"},
+            {"type": "T_IDENTIFIER", "content": "andmon"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_IDENTIFIER", "content": "trueor"},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_STRING", "content": "\"Smith\""}
+        ]
+    },
+    {
+        "test_name": "Unicode and Extended Characters",
+        "description": "Test non-ASCII characters",
+        "code": "subject=\"Résumé\"",
+        "result": [
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"Résumé\""}
+        ]
+    },
+    {
+        "test_name": "Properly Spaced Complex Query",
+        "description": "Test same complex query with proper spacing", 
+        "code": "subject = \"CS\" and course = \"101\" and credit hours >= 3 and mon = true or prof contains \"Smith\"",
+        "result": [
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"CS\""},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"101\""},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_CREDIT", "content": "credit"},
+            {"type": "T_HOURS", "content": "hours"},
+            {"type": "T_GREATER_EQUAL", "content": ">="},
+            {"type": "T_INTEGER", "content": "3"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_MONDAY", "content": "mon"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_IDENTIFIER", "content": "true"},
+            {"type": "T_OR", "content": "or"},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_STRING", "content": "\"Smith\""}
+        ]
+    }
+] 

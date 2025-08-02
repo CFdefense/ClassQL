@@ -14,6 +14,7 @@ pub struct Lexer {
     input: String,
     position: usize,
     current_char: char,
+    unrecognized_chars: Vec<char>
 }
 
 impl Lexer {
@@ -22,6 +23,7 @@ impl Lexer {
             input: String::new(),
             position: 0,
             current_char: ' ',
+            unrecognized_chars: Vec::new(),
         }
     }
 
@@ -29,10 +31,14 @@ impl Lexer {
         self.input = String::new();
         self.position = 0;
         self.current_char = ' ';
+        self.unrecognized_chars.clear();
     }
 
     pub fn lexical_analysis(&mut self, input: String) -> Vec<Token> {
-        // Example of how to use the regex patterns:
+        // Store input and initialize position
+        self.input = input;
+        self.position = 0;
+        self.current_char = if self.input.is_empty() { '\0' } else { self.input.chars().next().unwrap() };
         
         // Get all patterns in lexing order (longest/most specific first)
         let patterns = TokenType::all_patterns();
@@ -46,14 +52,13 @@ impl Lexer {
             .collect();
         
         let mut tokens = Vec::new();
-        let mut position = 0;
         
-        while position < input.len() {
-            let remaining = &input[position..];
+        while self.position < self.input.len() {
+            let remaining = &self.input[self.position..];
             
             // Skip whitespace
-            if remaining.chars().next().unwrap().is_whitespace() {
-                position += 1;
+            if self.current_char.is_whitespace() {
+                self.advance();
                 continue;
             }
             
@@ -62,9 +67,15 @@ impl Lexer {
                 if let Some(mat) = regex.find(remaining) {
                     if mat.start() == 0 { // Must match at beginning
                         let lexeme = mat.as_str().to_string();
-                        let token = Token::new(token_type.clone(), lexeme, position as i32, (position + mat.len()) as i32);
+                        let start_pos = self.position as i32;
+                        let end_pos = (self.position + mat.len()) as i32;
+                        let token = Token::new(token_type.clone(), lexeme, start_pos, end_pos);
                         tokens.push(token);
-                        position += mat.len();
+                        
+                        // Advance position by match length
+                        for _ in 0..mat.len() {
+                            self.advance();
+                        }
                         matched = true;
                         break;
                     }
@@ -72,16 +83,37 @@ impl Lexer {
             }
             
             if !matched {
-                // Handle unrecognized character
-                position += 1;
+                // Handle unrecognized character - display error to user
+                self.unrecognized_chars.push(self.current_char);
+                self.advance();
             }
+        }
+        
+        // If we found unrecognized characters, return them as error tokens instead
+        if !self.unrecognized_chars.is_empty() {
+            let mut error_tokens = Vec::new();
+            for (i, &ch) in self.unrecognized_chars.iter().enumerate() {
+                let token = Token::new(
+                    TokenType::Unrecognized, 
+                    ch.to_string(), 
+                    i as i32, 
+                    (i + 1) as i32
+                );
+                error_tokens.push(token);
+            }
+            return error_tokens;
         }
         
         tokens
     }
 
-    // Helper method to get individual pattern
-    pub fn get_pattern_for_token(token_type: &TokenType) -> &'static str {
-        token_type.regex_pattern()
+    // Helper method to advance position and update current_char
+    fn advance(&mut self) {
+        self.position += 1;
+        if self.position < self.input.len() {
+            self.current_char = self.input.chars().nth(self.position).unwrap();
+        } else {
+            self.current_char = '\0'; // End of input
+        }
     }
 }

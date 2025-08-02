@@ -1,0 +1,82 @@
+[
+    {
+        "test_name": "Unclosed String",
+        "description": "Test string that never closes",
+        "code": "title = \"Computer Science",
+        "result": [
+            {"type": "T_TITLE", "content": "title"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"Computer Science"}
+        ]
+    },
+    {
+        "test_name": "Empty String Only",
+        "description": "Test just empty quotes",
+        "code": "\"\"",
+        "result": [
+            {"type": "T_STRING", "content": "\"\""}
+        ]
+    },
+    {
+        "test_name": "Invalid Time Formats",
+        "description": "Test malformed time patterns",
+        "code": "25:70 99pm 8:99am",
+        "result": [
+            {"type": "T_INTEGER", "content": "25"},
+            {"type": "T_INTEGER", "content": "70"},
+            {"type": "T_INTEGER", "content": "99"},
+            {"type": "T_IDENTIFIER", "content": "pm"},
+            {"type": "T_TIME", "content": "8am"}
+        ]
+    },
+    {
+        "test_name": "Special Characters Galore", 
+        "description": "Test lots of special characters that should be ignored",
+        "code": "@#$%^&*()subject!=course",
+        "result": [
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_NOT_EQUALS", "content": "!="},
+            {"type": "T_COURSE", "content": "course"}
+        ]
+    },
+    {
+        "test_name": "Mixed Quotes and Text",
+        "description": "Test mixing quoted and unquoted content",
+        "code": "title\"Computer Science\"and course",
+        "result": [
+            {"type": "T_TITLE", "content": "title"},
+            {"type": "T_STRING", "content": "\"Computer Science\""},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_COURSE", "content": "course"}
+        ]
+    },
+    {
+        "test_name": "Numbers in Strange Places",
+        "description": "Test numbers embedded in weird contexts",
+        "code": "123subject456prof789and000",
+        "result": [
+            {"type": "T_IDENTIFIER", "content": "123subject456prof789and000"}
+        ]
+    },
+    {
+        "test_name": "Case Insensitive Keywords",
+        "description": "Test mixed case versions of keywords",
+        "code": "SUBJECT Prof CouRSe AnD Or NoT",
+        "result": [
+            {"type": "T_IDENTIFIER", "content": "SUBJECT"},
+            {"type": "T_IDENTIFIER", "content": "Prof"},
+            {"type": "T_IDENTIFIER", "content": "CouRSe"},
+            {"type": "T_IDENTIFIER", "content": "AnD"},
+            {"type": "T_IDENTIFIER", "content": "Or"},
+            {"type": "T_IDENTIFIER", "content": "NoT"}
+        ]
+    },
+    {
+        "test_name": "Ultra Long Identifier",
+        "description": "Test very long identifier",
+        "code": "thisissomeridiculouslylongidentifierthatgoesforeverandeverandever123",
+        "result": [
+            {"type": "T_IDENTIFIER", "content": "thisissomeridiculouslylongidentifierthatgoesforeverandeverandever123"}
+        ]
+    }
+] 

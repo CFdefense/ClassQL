@@ -1,0 +1,87 @@
+[
+    {
+        "test_name": "Single Unrecognized Character",
+        "description": "Test single invalid character returns error token",
+        "code": "@",
+        "result": [
+            {"type": "T_UNRECOGNIZED", "content": "@"}
+        ]
+    },
+    {
+        "test_name": "Multiple Unrecognized Characters",
+        "description": "Test multiple invalid characters return error tokens",
+        "code": "@#$%",
+        "result": [
+            {"type": "T_UNRECOGNIZED", "content": "@"},
+            {"type": "T_UNRECOGNIZED", "content": "#"},
+            {"type": "T_UNRECOGNIZED", "content": "$"},
+            {"type": "T_UNRECOGNIZED", "content": "%"}
+        ]
+    },
+    {
+        "test_name": "Mixed Valid and Invalid Characters",
+        "description": "Test that any invalid character causes all tokens to be error tokens",
+        "code": "subject@course",
+        "result": [
+            {"type": "T_UNRECOGNIZED", "content": "@"}
+        ]
+    },
+    {
+        "test_name": "Invalid Characters with Spaces",
+        "description": "Test invalid characters separated by spaces",
+        "code": "@ # $ %",
+        "result": [
+            {"type": "T_UNRECOGNIZED", "content": "@"},
+            {"type": "T_UNRECOGNIZED", "content": "#"},
+            {"type": "T_UNRECOGNIZED", "content": "$"},
+            {"type": "T_UNRECOGNIZED", "content": "%"}
+        ]
+    },
+    {
+        "test_name": "Unicode Invalid Characters",
+        "description": "Test unicode characters that are not supported",
+        "code": "★☆♠♣",
+        "result": [
+            {"type": "T_UNRECOGNIZED", "content": "★"},
+            {"type": "T_UNRECOGNIZED", "content": "☆"},
+            {"type": "T_UNRECOGNIZED", "content": "♠"},
+            {"type": "T_UNRECOGNIZED", "content": "♣"}
+        ]
+    },
+    {
+        "test_name": "Punctuation Overload", 
+        "description": "Test excessive punctuation marks",
+        "code": "~`^&*()[]{}|\\",
+        "result": [
+            {"type": "T_UNRECOGNIZED", "content": "~"},
+            {"type": "T_UNRECOGNIZED", "content": "`"},
+            {"type": "T_UNRECOGNIZED", "content": "^"},
+            {"type": "T_UNRECOGNIZED", "content": "&"},
+            {"type": "T_UNRECOGNIZED", "content": "*"},
+            {"type": "T_UNRECOGNIZED", "content": "("},
+            {"type": "T_UNRECOGNIZED", "content": ")"},
+            {"type": "T_UNRECOGNIZED", "content": "["},
+            {"type": "T_UNRECOGNIZED", "content": "]"},
+            {"type": "T_UNRECOGNIZED", "content": "{"},
+            {"type": "T_UNRECOGNIZED", "content": "}"},
+            {"type": "T_UNRECOGNIZED", "content": "|"},
+            {"type": "T_UNRECOGNIZED", "content": "\\"}
+        ]
+    },
+    {
+        "test_name": "Invalid Operator Combination",
+        "description": "Test invalid operator-like sequences",
+        "code": "===",
+        "result": [
+            {"type": "T_UNRECOGNIZED", "content": "="}
+        ]
+    },
+    {
+        "test_name": "Single Invalid in Valid Context",
+        "description": "Test single invalid character among valid tokens",
+        "code": "subject = @ course = \"CS\"",
+        "result": [
+            {"type": "T_UNRECOGNIZED", "content": "@"}
+        ]
+    }
+] 

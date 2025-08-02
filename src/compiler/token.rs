@@ -64,11 +64,12 @@ pub enum TokenType {
     
     // Special
     Exclamation,
+    Unrecognized,
 }
 
 pub struct Token {
     token_type: TokenType,
-    lexeme: String,
+    pub lexeme: String,
     start: i32,
     end: i32,
 }
@@ -83,6 +84,7 @@ impl Token {
         }
     }
 
+    #[allow(dead_code)]
     pub fn token_type_as_string(&self) -> String {
         match self.token_type {
             TokenType::Term => "T_TERM".to_string(),
@@ -134,82 +136,25 @@ impl Token {
             TokenType::Time => "T_TIME".to_string(),
             TokenType::Identifier => "T_IDENTIFIER".to_string(),
             TokenType::Exclamation => "T_EXCLAMATION".to_string(),
+            TokenType::Unrecognized => "T_UNRECOGNIZED".to_string(),
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_lexeme(&self) -> &str {
-        return &self.lexeme
+        &self.lexeme
+    }
+
+    pub fn start_position(&self) -> i32 {
+        self.start
+    }
+
+    pub fn end_position(&self) -> i32 {
+        self.end
     }
 } 
 
 impl TokenType {
-    pub fn regex_pattern(&self) -> &'static str {
-        match self {
-            // Multi-word patterns first (longer matches)
-            TokenType::EqualsWord => r"\bequals\b",
-            TokenType::Starts => r"\bstarts\b",
-            TokenType::With => r"\bwith\b", 
-            TokenType::Ends => r"\bends\b",
-            TokenType::Does => r"\bdoes\b",
-            TokenType::Equal => r"\bequal\b",
-            TokenType::Less => r"\bless\b",
-            TokenType::Than => r"\bthan\b",
-            TokenType::Greater => r"\bgreater\b",
-            TokenType::At => r"\bat\b",
-            TokenType::Least => r"\bleast\b",
-            TokenType::Most => r"\bmost\b",
-            TokenType::More => r"\bmore\b",
-            TokenType::Fewer => r"\bfewer\b",
-            
-            // Operators (longer first)
-            TokenType::NotEquals => r"!=",
-            TokenType::LessEqual => r"<=",
-            TokenType::GreaterEqual => r">=",
-            TokenType::Equals => r"=",
-            TokenType::LessThan => r"<",
-            TokenType::GreaterThan => r">",
-            TokenType::Exclamation => r"!",
-            
-            // Keywords
-            TokenType::Term => r"\bterm\b",
-            TokenType::Prof => r"\bprof\b",
-            TokenType::Course => r"\bcourse\b",
-            TokenType::Subject => r"\b(subject|sub)\b",
-            TokenType::Contains => r"\bcontains\b",
-            TokenType::Title => r"\btitle\b",
-            TokenType::Method => r"\bmethod\b",
-            TokenType::Campus => r"\bcampus\b",
-            TokenType::Credit => r"\bcredit\b",
-            TokenType::Hours => r"\bhours\b",
-            TokenType::Prereqs => r"\bprereqs\b",
-            TokenType::Corereqs => r"\bcorereqs\b",
-            
-            // Days (longest abbreviations first)
-            TokenType::Monday => r"\b(monday|monda|mond|mon|mo|m)\b",
-            TokenType::Tuesday => r"\b(tuesday|tuesda|tuesd|tues|tue|tu)\b",
-            TokenType::Wednesday => r"\b(wednesday|wednesda|wednesd|wednes|wedne|wedn|wed|we|w)\b",
-            TokenType::Thursday => r"\b(thursday|thursda|thurs|thur|thu|th)\b",
-            TokenType::Friday => r"\b(friday|frida|frid|fri|fr|f)\b",
-            TokenType::Saturday => r"\b(saturday|saturda|saturd|satur|satu|sat|sa)\b",
-            TokenType::Sunday => r"\b(sunday|sunda|sund|sun|su)\b",
-            
-            // Logical
-            TokenType::And => r"\band\b",
-            TokenType::Or => r"\bor\b", 
-            TokenType::Not => r"\bnot\b",
-            
-            // Conditions
-            TokenType::Has => r"\bhas\b",
-            TokenType::Is => r"\bis\b",
-            
-            // Literals
-            TokenType::String => r#""[^"]*""#,
-            TokenType::Time => r"[0-2]?[0-9]:[0-5][0-9]\s?(am|pm)|[0-2]?[0-9]\s?(am|pm)|[0-2]?[0-9]:[0-5][0-9]",
-            TokenType::Integer => r"\b[0-9]+\b",
-            TokenType::Identifier => r"[a-zA-Z_][a-zA-Z0-9_]*",
-        }
-    }
-    
     // Get all token patterns in lexing order (longest/most specific first)
     pub fn all_patterns() -> Vec<(TokenType, &'static str)> {
         vec![
@@ -244,13 +189,13 @@ impl TokenType {
             (TokenType::Prof, r"\bprof\b"),
             
             // Days
-            (TokenType::Wednesday, r"\b(wednesday|wednesda|wednesd|wednes|wedne|wedn|wed|we|w)\b"),
-            (TokenType::Thursday, r"\b(thursday|thursda|thurs|thur|thu|th)\b"),
-            (TokenType::Saturday, r"\b(saturday|saturda|saturd|satur|satu|sat|sa)\b"),
-            (TokenType::Tuesday, r"\b(tuesday|tuesda|tuesd|tues|tue|tu)\b"),
-            (TokenType::Monday, r"\b(monday|monda|mond|mon|mo|m)\b"),
-            (TokenType::Friday, r"\b(friday|frida|frid|fri|fr|f)\b"),
-            (TokenType::Sunday, r"\b(sunday|sunda|sund|sun|su)\b"),
+            (TokenType::Wednesday, r"(wednesday|wednesda|wednesd|wednes|wedne|wedn|wed|we|w)"),
+            (TokenType::Thursday, r"(thursday|thursda|thurs|thur|thu|th)"),
+            (TokenType::Saturday, r"(saturday|saturda|saturd|satur|satu|sat|sa)"),
+            (TokenType::Tuesday, r"(tuesday|tuesda|tuesd|tues|tue|tu)"),
+            (TokenType::Monday, r"(monday|monda|mond|mon|mo|m)"),
+            (TokenType::Friday, r"(friday|frida|frid|fri|fr|f)"),
+            (TokenType::Sunday, r"(sunday|sunda|sund|sun|su)"),
             
             // Operators
             (TokenType::NotEquals, r"!="),
@@ -273,7 +218,7 @@ impl TokenType {
             // Literals
             (TokenType::String, r#""[^"]*""#),
             (TokenType::Time, r"[0-2]?[0-9]:[0-5][0-9]\s?(am|pm)|[0-2]?[0-9]\s?(am|pm)|[0-2]?[0-9]:[0-5][0-9]"),
-            (TokenType::Integer, r"\b[0-9]+\b"),
+            (TokenType::Integer, r"[0-9]+"),
             (TokenType::Identifier, r"[a-zA-Z_][a-zA-Z0-9_]*"),
         ]
     }

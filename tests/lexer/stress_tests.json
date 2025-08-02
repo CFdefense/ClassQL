@@ -1,1 +1,62 @@
- 
+[
+    {
+        "test_name": "No Whitespace Between Tokens",
+        "description": "Test tokens smashed together without spaces",
+        "code": "subject=\"CS\"andcourse=\"101\"",
+        "result": [
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"CS\""},
+            {"type": "T_IDENTIFIER", "content": "andcourse"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"101\""}
+        ]
+    },
+    {
+        "test_name": "Operators Without Spaces",
+        "description": "Test operators smashed together",
+        "code": "credit hours>=3<=6!=5",
+        "result": [
+            {"type": "T_CREDIT", "content": "credit"},
+            {"type": "T_HOURS", "content": "hours"},
+            {"type": "T_GREATER_EQUAL", "content": ">="},
+            {"type": "T_INTEGER", "content": "3"},
+            {"type": "T_LESS_EQUAL", "content": "<="},
+            {"type": "T_INTEGER", "content": "6"},
+            {"type": "T_NOT_EQUALS", "content": "!="},
+            {"type": "T_INTEGER", "content": "5"}
+        ]
+    },
+    {
+        "test_name": "Mixed Symbols and Keywords",
+        "description": "Test mixed valid and invalid symbols",
+        "code": "prof@email.com<>campus",
+        "result": [
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_IDENTIFIER", "content": "email"},
+            {"type": "T_IDENTIFIER", "content": "com"},
+            {"type": "T_LESS_THAN", "content": "<"},
+            {"type": "T_GREATER_THAN", "content": ">"},
+            {"type": "T_CAMPUS", "content": "campus"}
+        ]
+    },
+    {
+        "test_name": "All Day Abbreviations Smashed",
+        "description": "Test day abbreviations without spaces",
+        "code": "monfrisuedwethusatsun",
+        "result": [
+            {"type": "T_MONDAY", "content": "mon"},
+            {"type": "T_FRIDAY", "content": "fri"},
+            {"type": "T_SUNDAY", "content": "su"},
+            {"type": "T_IDENTIFIER", "content": "edwethusatsun"}
+        ]
+    },
+    {
+        "test_name": "Numbers and Letters Mixed",
+        "description": "Test numbers directly adjacent to letters",
+        "code": "course123hours456credit789",
+        "result": [
+            {"type": "T_IDENTIFIER", "content": "course123hours456credit789"}
+        ]
+    }
+] 
