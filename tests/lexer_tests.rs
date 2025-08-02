@@ -40,12 +40,29 @@ impl TestHelper {
     fn run_test(&mut self, test_case: &TestCase) {
         println!("Running test: {}", test_case.test_name);
         println!("Description: {}", test_case.description);
+        println!("Input: '{}'", test_case.code);
         
         // Clear lexer state before each test
         self.clear();
         
         // Tokenize the input
-        let tokens = self.lexer.begin_lexing(test_case.code.clone());
+        let tokens = self.lexer.lexical_analysis(test_case.code.clone());
+        
+        // Print actual tokens
+        println!("Expected {} tokens, got {} tokens", test_case.result.len(), tokens.len());
+        
+        if tokens.len() != test_case.result.len() {
+            println!("\n=== TOKEN COUNT MISMATCH ===");
+            println!("Expected tokens:");
+            for (i, expected) in test_case.result.iter().enumerate() {
+                println!("  [{}] {} = '{}'", i, expected.token_type, expected.content);
+            }
+            println!("Actual tokens:");
+            for (i, actual) in tokens.iter().enumerate() {
+                println!("  [{}] {} = '{}'", i, actual.token_type_as_string(), actual.get_lexeme());
+            }
+            println!("========================\n");
+        }
         
         // Compare results
         assert_eq!(
@@ -57,7 +74,25 @@ impl TestHelper {
             tokens.len()
         );
 
+        let mut has_diff = false;
         for (i, (actual, expected)) in tokens.iter().zip(test_case.result.iter()).enumerate() {
+            let type_match = actual.token_type_as_string() == expected.token_type;
+            let content_match = actual.get_lexeme() == expected.content;
+            
+            if !type_match || !content_match {
+                if !has_diff {
+                    println!("\n=== TOKEN DIFFERENCES ===");
+                    has_diff = true;
+                }
+                println!("Position [{}]:", i);
+                if !type_match {
+                    println!("  Type:    Expected '{}' but got '{}'", expected.token_type, actual.token_type_as_string());
+                }
+                if !content_match {
+                    println!("  Content: Expected '{}' but got '{}'", expected.content, actual.get_lexeme());
+                }
+            }
+            
             assert_eq!(
                 actual.token_type_as_string(),
                 expected.token_type,
@@ -77,6 +112,12 @@ impl TestHelper {
                 expected.content,
                 actual.get_lexeme()
             );
+        }
+        
+        if has_diff {
+            println!("========================\n");
+        } else {
+            println!("All tokens match!\n");
         }
     }
 }
