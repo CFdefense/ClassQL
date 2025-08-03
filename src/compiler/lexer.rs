@@ -3,11 +3,15 @@ Lexer for the query language.
 
 The lexer is responsible for converting the input string into a stream of tokens.
 
-The lexer is implemented as a state machine.
+Will return a vector of tokens.
 
+If there is an unrecognized character, it will return a vector of error tokens.
+
+These error tokens should be used to tell the user that there is some unrecognized character in the input.
 */
 
 use super::token::{Token, TokenType};
+use crate::tui::errors::AppError;
 use regex::Regex;
 
 pub struct Lexer {
@@ -57,6 +61,7 @@ impl Lexer {
             .collect();
         
         let mut tokens = Vec::new();
+        let mut unrecognized_positions = Vec::new(); // Track positions as we go
         
         while self.position < self.chars.len() {
             let remaining: String = self.chars[self.position..].iter().collect();
@@ -90,6 +95,7 @@ impl Lexer {
             if !matched {
                 // Handle unrecognized character - collect it for error reporting
                 self.unrecognized_chars.push(self.current_char);
+                unrecognized_positions.push(self.position); // Store the actual position
                 self.advance();
             }
         }
@@ -97,14 +103,19 @@ impl Lexer {
         // If we found unrecognized characters, return them as error tokens instead
         if !self.unrecognized_chars.is_empty() {
             let mut error_tokens = Vec::new();
+            
+            // Create tokens with the positions we tracked
             for (i, &ch) in self.unrecognized_chars.iter().enumerate() {
-                let token = Token::new(
-                    TokenType::Unrecognized, 
-                    ch.to_string(), 
-                    i as i32, 
-                    (i + 1) as i32
-                );
-                error_tokens.push(token);
+                if i < unrecognized_positions.len() {
+                    let start_pos = unrecognized_positions[i];
+                    let token = Token::new(
+                        TokenType::Unrecognized, 
+                        ch.to_string(), 
+                        start_pos as i32, 
+                        (start_pos + 1) as i32
+                    );
+                    error_tokens.push(token);
+                }
             }
             return error_tokens;
         }
@@ -120,5 +131,28 @@ impl Lexer {
         } else {
             self.current_char = '\0'; // End of input
         }
+    }
+
+    pub fn handle_unrecognized_tokens(tokens: &[Token]) -> Option<AppError> {
+        // Check if any token is unrecognized
+        let unrecognized_tokens: Vec<&Token> = tokens.iter()
+            .filter(|token| matches!(token.get_token_type(), TokenType::Unrecognized))
+            .collect();
+
+        if unrecognized_tokens.is_empty() {
+            return None;
+        }
+
+        // Create simple error message
+        let unrecognized_chars: Vec<String> = unrecognized_tokens.iter()
+            .map(|token| token.lexeme.clone())
+            .collect();
+        
+        let error_message = format!(
+            "Unrecognized tokens found: {}\n\nPlease remove or replace these characters with valid syntax.",
+            unrecognized_chars.join(", ")
+        );
+
+        Some(AppError::UnrecognizedTokens(error_message))
     }
 }
