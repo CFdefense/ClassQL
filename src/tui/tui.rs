@@ -21,7 +21,6 @@ use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Style};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::text::{Line, Span};
-use text_to_ascii_art::to_art;
 use crate::compiler::lexer::Lexer;
 use std::time::{Duration, Instant};
 use crate::compiler::token::TokenType;
