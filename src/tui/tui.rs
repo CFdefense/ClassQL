@@ -149,38 +149,34 @@ impl AppState {
     }
     
     fn render_logo(&self, frame: &mut Frame) {
-        // Generate ASCII art using the crate
-        let ascii_art = match to_art("CLASSQL".to_string(), "", 0, 2, 0) {
-            Ok(art) => art.lines().map(|s| s.to_string()).collect::<Vec<String>>(),
-            Err(_) => {
-                // Fallback if ASCII art generation fails
-                vec![
-                    "ClassQL".to_string(),
-                    "".to_string(),
-                    "Query Language".to_string(),
-                ]
-            }
-        };
-        
-        
+        // Generate ASCII art using the crate (thanks thomas)
+        let ascii_art = r#"            
+        ██████╗  ██╗         █████╗    ███████╗   ███████╗   ██████╗   ██╗     
+       ██╔════╝  ██║        ██╔══██╗   ██╔════╝   ██╔════╝  ██╔═══██╗  ██║     
+       ██║       ██║        ███████║   ███████╗   ███████╗  ██║   ██║  ██║     
+       ██║       ██║        ██╔══██║   ╚════██║   ╚════██║  ██║▄▄ ██║  ██║     
+       ╚██████╗  ███████╗   ██║  ██║   ███████║   ███████║  ╚██████╔╝  ███████╗
+        ╚═════╝  ╚══════╝   ╚═╝  ╚═╝   ╚══════╝   ╚══════╝   ╚══▀▀═╝   ╚══════╝
+        "#;
+
+        let lines: Vec<Line> = ascii_art
+            .lines()
+            .map(|line| {
+                Line::from(Span::styled(
+                    line,
+                    Style::default().fg(Color::Rgb(135, 206, 235)),
+                ))
+            })
+            .collect();
+
         let logo_area = Rect {
-            x: frame.area().width / 2 - 35,
+            x: frame.area().width.saturating_sub(85) /2,
             y: 1,
             width: 80,
             height: ascii_art.len() as u16,
         };
         
-        let styled_lines: Vec<Line> = ascii_art
-            .into_iter()
-            .map(|line| {
-                Line::from(Span::styled(
-                    line,
-                    Style::default().fg(Color::Rgb(135, 206, 235)), // Light blue color
-                ))
-            })
-            .collect();
-        
-        let logo_paragraph = Paragraph::new(styled_lines);
+        let logo_paragraph = Paragraph::new(lines);
         frame.render_widget(logo_paragraph, logo_area);
     }
 
