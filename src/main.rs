@@ -1,7 +1,7 @@
 use tui::tui::Tui;
 
 mod compiler;
-mod query;
+mod sql;
 mod tui;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -13,7 +13,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Err(Box::new(e));
         }
     };
-    
+
     // Run the TUI event loop
     if let Err(e) = tui.run() {
         eprintln!("TUI error: {}", e);
@@ -21,7 +21,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let _ = tui.terminate();
         return Err(e);
     }
-    
+
     // Clean up and terminate
     if let Err(e) = tui.terminate() {
         eprintln!("Failed to terminate TUI: {}", e);

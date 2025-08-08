@@ -5,3 +5,9 @@
 
     The AST can then be used by the semantic analyzer to check for semantic errors
 */
+
+pub struct AST {
+    head: TreeNode,
+}
+
+struct TreeNode {}

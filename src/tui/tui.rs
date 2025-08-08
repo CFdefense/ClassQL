@@ -12,18 +12,18 @@
     6. Look Aesthetic
 */
 
+use crate::compiler::lexer::Lexer;
+use crate::compiler::token::TokenType;
 use crate::tui::errors::{AppError, TUIError};
 use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
-use ratatui::DefaultTerminal;
-use ratatui::Frame;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Style};
-use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::text::{Line, Span};
-use crate::compiler::lexer::Lexer;
+use ratatui::widgets::{Block, Borders, Paragraph};
+use ratatui::DefaultTerminal;
+use ratatui::Frame;
 use std::time::{Duration, Instant};
-use crate::compiler::token::TokenType;
 
 pub struct Tui {
     terminal: DefaultTerminal,
@@ -51,28 +51,33 @@ impl Tui {
         loop {
             // Update toast timer
             self.appstate.update_toast();
-            
+
             self.terminal.draw(|f| {
                 self.appstate.render(f);
             })?;
-            
+
             if let Event::Key(key) = event::read()? {
                 match key.code {
                     KeyCode::Esc => break Ok(()),
                     KeyCode::Enter => {
                         // Process the query here
                         self.appstate.user_query = self.appstate.input.clone();
-                        
+
                         // Clear the lexer state before processing new input
                         self.appstate.lexer.clear();
-                        
+
                         // Lex the input and check for unrecognized tokens
-                        let tokens = self.appstate.lexer.lexical_analysis(self.appstate.input.clone());
-                        
+                        let tokens = self
+                            .appstate
+                            .lexer
+                            .lexical_analysis(self.appstate.input.clone());
+
                         // Clear previous problematic tokens
                         self.appstate.problematic_tokens.clear();
-                        
-                        if let Some(AppError::UnrecognizedTokens(error_msg)) = Lexer::handle_unrecognized_tokens(&tokens) {
+
+                        if let Some(AppError::UnrecognizedTokens(error_msg)) =
+                            Lexer::handle_unrecognized_tokens(&tokens)
+                        {
                             // Track problematic token positions for highlighting
                             for token in &tokens {
                                 if matches!(token.get_token_type(), TokenType::Unrecognized) {
@@ -83,18 +88,17 @@ impl Tui {
                             }
                             self.appstate.show_toast(error_msg);
                         }
-                    
-                    },
+                    }
                     KeyCode::Backspace => {
                         self.appstate.input.pop();
-                    },
+                    }
                     KeyCode::Char(c) => {
                         // Clear any previous toasts and problematic tokens when user starts typing
                         self.appstate.toast_message = None;
                         self.appstate.toast_start_time = None;
                         self.appstate.problematic_tokens.clear();
                         self.appstate.input.push(c);
-                    },
+                    }
                     _ => {}
                 }
             }
@@ -132,12 +136,12 @@ impl AppState {
             problematic_tokens: Vec::new(),
         };
     }
-    
+
     fn show_toast(&mut self, message: String) {
         self.toast_message = Some(message);
         self.toast_start_time = Some(Instant::now());
     }
-    
+
     fn update_toast(&mut self) {
         if let Some(start_time) = self.toast_start_time {
             if start_time.elapsed() > Duration::from_secs(3) {
@@ -146,7 +150,7 @@ impl AppState {
             }
         }
     }
-    
+
     fn render_logo(&self, frame: &mut Frame) {
         // Generate ASCII art using the crate (thanks thomas)
         let ascii_art = r#"            
@@ -169,17 +173,17 @@ impl AppState {
             .collect();
 
         let logo_area = Rect {
-            x: frame.area().width.saturating_sub(85) /2,
+            x: frame.area().width.saturating_sub(85) / 2,
             y: 1,
             width: 80,
             height: ascii_art.len() as u16,
         };
-        
+
         let logo_paragraph = Paragraph::new(lines);
         frame.render_widget(logo_paragraph, logo_area);
     }
 
-    // function to render the search bar 
+    // function to render the search bar
     fn render_search_bar(&self, frame: &mut Frame) {
         let search_width = 50;
         let search_area = Rect {
@@ -188,29 +192,29 @@ impl AppState {
             width: search_width,
             height: 3,
         };
-        
+
         // Create styled spans for the input with highlighted problematic tokens
         let mut styled_spans = Vec::new();
-        
+
         // Start with the "> " prefix
         styled_spans.push(Span::styled("> ", Style::default().fg(Color::White)));
-        
+
         // Process the input character by character, highlighting problematic tokens
         for (i, ch) in self.input.chars().enumerate() {
             let is_problematic = self.problematic_tokens.iter().any(|&(start, end)| {
                 // Token positions are relative to the input string, so we need to match them correctly
                 i >= start && i < end
             });
-            
+
             let style = if is_problematic {
                 Style::default().fg(Color::Red)
             } else {
                 Style::default().fg(Color::White)
             };
-            
+
             styled_spans.push(Span::styled(ch.to_string(), style));
         }
-        
+
         let styled_line = Line::from(styled_spans);
         let search_paragraph = Paragraph::new(styled_line)
             .style(Style::default().fg(Color::White))
@@ -219,9 +223,9 @@ impl AppState {
                     .borders(Borders::ALL)
                     .title("ClassQL Query")
                     .title_style(Style::default().fg(Color::Cyan))
-                    .border_style(Style::default().fg(Color::Gray))
+                    .border_style(Style::default().fg(Color::Gray)),
             );
-        
+
         frame.render_widget(search_paragraph, search_area);
     }
 
@@ -236,17 +240,17 @@ impl AppState {
             width: 50,
             height: 2,
         };
-        
+
         let help_text = if self.input.is_empty() {
             "Type a ClassQL query (e.g., 'prof is Alan')"
         } else {
             "Press Enter to Search, Esc to Exit"
         };
-        
+
         let help_paragraph = Paragraph::new(help_text)
             .style(Style::default().fg(Color::DarkGray))
             .block(Block::default());
-            
+
         frame.render_widget(help_paragraph, help_area);
     }
 
@@ -258,39 +262,33 @@ impl AppState {
         if let Some(message) = &self.toast_message {
             // Split message into lines
             let lines: Vec<String> = message.lines().map(|s| s.to_string()).collect();
-            
+
             // Calculate toast position (bottom middle)
             let toast_width = 60;
             let toast_height = lines.len() as u16 + 2; // +2 for border
-            
+
             let toast_area = Rect {
                 x: (frame.area().width.saturating_sub(toast_width)) / 2,
                 y: frame.area().height.saturating_sub(toast_height + 2),
                 width: toast_width,
                 height: toast_height,
             };
-            
+
             // Create styled lines for the toast
             let styled_lines: Vec<Line> = lines
                 .iter()
-                .map(|line| {
-                    Line::from(Span::styled(
-                        line,
-                        Style::default().fg(Color::White),
-                    ))
-                })
+                .map(|line| Line::from(Span::styled(line, Style::default().fg(Color::White))))
                 .collect();
-            
-            let toast_paragraph = Paragraph::new(styled_lines)
-                .block(
-                    Block::default()
-                        .borders(Borders::ALL)
-                        .title("Error")
-                        .title_style(Style::default().fg(Color::Yellow))
-                        .border_style(Style::default().fg(Color::Red))
-                        .style(Style::default().bg(Color::DarkGray))
-                );
-            
+
+            let toast_paragraph = Paragraph::new(styled_lines).block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title("Error")
+                    .title_style(Style::default().fg(Color::Yellow))
+                    .border_style(Style::default().fg(Color::Red))
+                    .style(Style::default().bg(Color::DarkGray)),
+            );
+
             frame.render_widget(toast_paragraph, toast_area);
         }
     }
