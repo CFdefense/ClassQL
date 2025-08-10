@@ -107,38 +107,29 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 ```bnf
 <query> ::= <entity_query> | <query> "or" <query>
 
-<entity_query> ::= <professor_query> | <course_query> | <section_query> | <meeting_time_query>
+<entity_query> ::= <professor_query> | <course_query> | <section_query> | <meeting_type_query> | <time_query> | <day_query>
 
-<professor_query> ::= <prof_name_query> | <prof_email_query> | <prof_first_name_query> | <prof_last_name_query>
-<prof_name_query> ::= "prof" <condition> <string>
-<prof_email_query> ::= "prof" <condition> <string>
-<prof_first_name_query> ::= "prof" <condition> <string>
-<prof_last_name_query> ::= "prof" <condition> <string>
+<professor_query> ::= "prof" <condition> <string>
 
-<course_query> ::= <subject_query> | <course_number_query> | <course_title_query> | <course_description_query> | <credit_hours_query> | <prereqs_query> | <coreqs_query>
+<course_query> ::= "course" <subject_query> | <number_query> | <title_query> | <description_query> | <credit_hours_query> | <prereqs_query> | <coreqs_query>
 <subject_query> ::= ("subject" | "sub") <condition> <string>
-<course_number_query> ::= "course" <condition> <string>
-<course_title_query> ::= ("contains" | "title") <string>
-<course_description_query> ::= ("contains" | "course description") <string>
+<number_query> ::= "number" <condition> <string>
+<title_query> ::= "title" <condition> <string>
+<description_query> ::= "description" <condition> <string>
 <credit_hours_query> ::= "credit hours" <binop> <integer>
 <prereqs_query> ::= "prereqs" <string> | "prereqs" <string_list>
 <coreqs_query> ::= "corereqs" <string> | "corereqs" <string_list>
 
-<section_query> ::= <section_subject_query> | <section_course_query> | <enrollment_cap_query> | <instruction_method_query> | <campus_query> | <enrollment_query> | <full_query>
-<section_subject_query> ::= ("subject" | "sub") <condition> <string>
-<section_course_query> ::= "course" <condition> <string>
+<section_query> ::= "section" <subject_query> | <course_query> | <enrollment_cap_query> | <instruction_method_query> | <campus_query> | <enrollment_query> | <full_query>
 <enrollment_cap_query> ::= "cap" <binop> <integer>
 <instruction_method_query> ::= "method" <condition> <string>
 <campus_query> ::= "campus" <condition> <string>
 <enrollment_query> ::= "size" <binop> <integer>
 <full_query> ::= <condition> "full"
 
-<meeting_time_query> ::= <meeting_subject_query> | <meeting_course_query> | <meeting_type_query> | <time_query> | <day_query>
-<meeting_subject_query> ::= ("subject" | "sub") <condition> <string>
-<meeting_course_query> ::= "course" <condition> <string>
 <meeting_type_query> ::= ("meeting type" | "type") <condition> <string>
-<time_query> ::= ("start" | "end") ((<binop> <time>) | (("from" | "in") | ("not in") <timerange>))
-<timerange> ::= <time> to <time>
+<time_query> ::= ("start" | "end") ((<binop> <time>) | (("from" | "in") | ("not in") <time_range>))
+<time_range> ::= <time> to <time>
 <day_query> ::= <monday_query> | <tuesday_query> | <wednesday_query> | <thursday_query> | <friday_query> | <saturday_query> | <sunday_query>
 <monday_query> ::= ("mon" | "monday" | "m") <condition> <string>
 <tuesday_query> ::= ("tues" | "tuesday" | "tu") <condition> <string>

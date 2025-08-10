@@ -1,15 +1,18 @@
 use super::lexer::Lexer;
 use super::token::Token;
+use super::parser::Parser;
 use crate::tui::errors::AppError;
 
 pub struct Compiler {
     lexer: Lexer,
+    parser: Option<Parser>,
 }
 
 impl Compiler {
     pub fn new() -> Self {
         Compiler {
             lexer: Lexer::new(),
+            parser: None,
         }
     }
 
@@ -39,7 +42,7 @@ impl Compiler {
         }
 
         // TODO: Parse tokens here
-        // let ast = self.parse(tokens);
+        // let parser = Parser::new(tokens);
         
         CompilerResult::Success { tokens }
     }

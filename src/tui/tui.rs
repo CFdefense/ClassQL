@@ -140,7 +140,7 @@ fn render_frame(frame: &mut Frame, input: &str, problematic_tokens: &[(usize, us
     render_logo(frame);
     render_search_bar_with_data(frame, input, problematic_tokens);
     render_query_results(frame);
-    render_search_helpers_with_data(frame, input);
+    render_search_helpers_with_data(frame, input, toast_message);
     render_syntax_highlighting(frame);
     render_toast_with_data(frame, toast_message);
 }
@@ -167,7 +167,7 @@ fn render_logo(frame: &mut Frame) {
         .collect();
 
     let logo_area = Rect {
-        x: frame.area().width.saturating_sub(85) / 2,
+        x: frame.area().width.saturating_sub(75) / 2,
         y: frame.area().height.saturating_sub(ascii_art.len() as u16 + 1),
         width: 80,
         height: ascii_art.len() as u16,
@@ -179,9 +179,14 @@ fn render_logo(frame: &mut Frame) {
 
 fn render_search_bar_with_data(frame: &mut Frame, input: &str, problematic_tokens: &[(usize, usize)]) {
     let search_width = 50;
+    
+    // Position search bar directly below the logo
+    let logo_height = 7; // Height of the ASCII art logo
+    let search_y = logo_height + 2; // 2 lines below the logo
+    
     let search_area = Rect {
-        x: frame.area().width / 2 - 25,
-        y: (frame.area().height / 2).saturating_sub(2),
+        x: frame.area().width.saturating_sub(search_width) / 2,
+        y: search_y,
         width: search_width,
         height: 3,
     };
@@ -222,18 +227,24 @@ fn render_search_bar_with_data(frame: &mut Frame, input: &str, problematic_token
     frame.render_widget(search_paragraph, search_area);
 }
 
-fn render_search_helpers_with_data(frame: &mut Frame, input: &str) {
-    let help_area = Rect {
-        x: frame.area().width / 2 - 22,
-        y: frame.area().height.saturating_sub(3),
-        width: 50,
-        height: 2,
-    };
+fn render_search_helpers_with_data(frame: &mut Frame, input: &str, toast_message: &Option<String>) {
+    // Don't show help text if there's an active toast
+    if toast_message.is_some() {
+        return;
+    }
 
     let help_text = if input.is_empty() {
         "Type a ClassQL query (e.g., 'prof is Alan')"
     } else {
         "Press Enter to Search, Esc to Exit"
+    };
+
+    let help_width = help_text.len() as u16;
+    let help_area = Rect {
+        x: frame.area().width.saturating_sub(help_width) / 2,
+        y: frame.area().height.saturating_sub(3),
+        width: help_width,
+        height: 2,
     };
 
     let help_paragraph = Paragraph::new(help_text)
