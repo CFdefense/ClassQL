@@ -1,0 +1,26 @@
+[
+  {
+    "test_name": "course_code_identifier",
+    "description": "Query with course code identifier",
+    "input": "course_code is CS101",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "subject_code_identifier",
+    "description": "Query with subject code identifier",
+    "input": "subject_code = MATH",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "professor_email_identifier",
+    "description": "Query with professor email identifier",
+    "input": "prof_email contains @university.edu",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  }
+] 

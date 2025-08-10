@@ -1,0 +1,26 @@
+[
+  {
+    "test_name": "nested_and_or_expression",
+    "description": "Complex nested expression with AND and OR operators",
+    "input": "(prof is Alan) and ((course contains CS) or (subject = MATH))",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "not_expression",
+    "description": "Expression with NOT operator",
+    "input": "not (prof is Alan)",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "multiple_and_conditions",
+    "description": "Multiple AND conditions chained together",
+    "input": "(credit hours >= 3) and (campus is main) and (method is in-person)",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  }
+] 

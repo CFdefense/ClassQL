@@ -1,0 +1,26 @@
+[
+  {
+    "test_name": "credit_hours_equals",
+    "description": "Query with exact credit hours match",
+    "input": "credit hours = 3",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "credit_hours_greater_than",
+    "description": "Query with credit hours greater than comparison",
+    "input": "credit hours > 2",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "credit_hours_less_equal",
+    "description": "Query with credit hours less than or equal comparison",
+    "input": "credit hours <= 4",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  }
+] 

@@ -1,0 +1,47 @@
+[
+  {
+    "test_name": "incomplete_query_with_positions",
+    "description": "Test that problematic tokens have correct positions for highlighting",
+    "input": "prof is Alan and course contains",
+    "should_succeed": false,
+    "expected_error_type": "MissingToken",
+    "expected_error_message": "value after 'contains'",
+    "expected_problematic_tokens": [
+      {
+        "lexeme": "and",
+        "start": 12,
+        "end": 15
+      },
+      {
+        "lexeme": "course",
+        "start": 16,
+        "end": 22
+      },
+      {
+        "lexeme": "contains",
+        "start": 23,
+        "end": 31
+      }
+    ]
+  },
+  {
+    "test_name": "malformed_expression_positions",
+    "description": "Test position tracking for malformed expressions",
+    "input": "prof is Alan and course",
+    "should_succeed": false,
+    "expected_error_type": "MissingToken",
+    "expected_error_message": "operator and value after 'course'",
+    "expected_problematic_tokens": [
+      {
+        "lexeme": "and",
+        "start": 12,
+        "end": 15
+      },
+      {
+        "lexeme": "course",
+        "start": 16,
+        "end": 22
+      }
+    ]
+  }
+] 

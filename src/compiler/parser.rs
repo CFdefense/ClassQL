@@ -7,7 +7,7 @@
 */
 
 use crate::compiler::token::{Token, TokenType as NodeType};
-use crate::tui::errors::AppError;
+use crate::tui::errors::SyntaxError;
 
 pub struct Parser {
     ast: AST,
@@ -37,41 +37,41 @@ impl Parser  {
         Parser { ast: AST::new(), token_pointer: 0 }
     }
 
-    pub fn parse(&mut self, tokens: &Vec<Token>) -> Result<(),AppError> {
+    pub fn parse(&mut self, tokens: &Vec<Token>) -> Result<(), (SyntaxError, Vec<Token>)> {
         // parse tokens into abstract syntax tree
         self.token_pointer = 0;
         self.ast = AST::new();
-        self.parse_query();
+        self.parse_query(tokens);
 
         Ok(())
     }
 
-    fn parse_query(&mut self) {}
-    fn parse_entity_query(&mut self) {}
-    fn parse_professor_query(&mut self) {}
-    fn parse_course_query(&mut self) {}
-    fn parse_subject_query(&mut self) {}
-    fn parse_number_query(&mut self) {}
-    fn parse_title_query(&mut self) {}
-    fn parse_description_query(&mut self) {}
-    fn parse_credit_hours_query(&mut self) {}
-    fn parse_prereqs_query(&mut self) {}
-    fn parse_coreqs_query(&mut self) {}
-    fn parse_enrollment_cap_query(&mut self) {}
-    fn parse_instruction_method_query(&mut self) {}
-    fn parse_campus_query(&mut self) {}
-    fn parse_enrollment_query(&mut self) {}
-    fn parse_full_query(&mut self) {}
-    fn parse_meeting_type_query(&mut self) {}
-    fn parse_time_query(&mut self) {}
-    fn parse_time_range(&mut self) {}
-    fn parse_day_query(&mut self) {}
-    fn parse_time(&mut self) {}
-    fn parse_condition(&mut self) {}
-    fn parse_binop(&mut self) {}
-    fn parse_string_list(&mut self) {}
-    fn parse_string(&mut self) {}
-    fn parse_integer(&mut self) {}
-    fn parse_identifier(&mut self) {}
-    fn parse_email_identifier(&mut self) {}
+    fn parse_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_entity_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_professor_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_course_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_subject_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_number_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_title_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_description_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_credit_hours_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_prereqs_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_coreqs_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_enrollment_cap_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_instruction_method_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_campus_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_enrollment_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_full_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_meeting_type_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_time_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_time_range(&mut self, tokens: &Vec<Token>) {}
+    fn parse_day_query(&mut self, tokens: &Vec<Token>) {}
+    fn parse_time(&mut self, tokens: &Vec<Token>) {}
+    fn parse_condition(&mut self, tokens: &Vec<Token>) {}
+    fn parse_binop(&mut self, tokens: &Vec<Token>) {}
+    fn parse_string_list(&mut self, tokens: &Vec<Token>) {}
+    fn parse_string(&mut self, tokens: &Vec<Token>) {}
+    fn parse_integer(&mut self, tokens: &Vec<Token>) {}
+    fn parse_identifier(&mut self, tokens: &Vec<Token>) {}
+    fn parse_email_identifier(&mut self, tokens: &Vec<Token>) {}
 }

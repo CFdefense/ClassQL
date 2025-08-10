@@ -1,0 +1,34 @@
+[
+  {
+    "test_name": "simple_professor_query",
+    "description": "Basic professor query with 'is' operator",
+    "input": "prof is Alan",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "simple_course_query",
+    "description": "Basic course query with 'contains' operator",
+    "input": "course contains CS",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "simple_subject_query",
+    "description": "Basic subject query with equals operator",
+    "input": "subject = MATH",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "simple_credit_hours_query",
+    "description": "Basic credit hours query with greater than operator",
+    "input": "credit hours > 3",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  }
+] 

@@ -1,0 +1,45 @@
+[
+  {
+    "test_name": "valid_operator_for_professor",
+    "description": "Using '=' instead of 'is' for professor query (should work)",
+    "input": "prof = Alan",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_error_message": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "invalid_operator_for_string",
+    "description": "Using '>' operator with string value (should fail)",
+    "input": "course > CS",
+    "should_succeed": false,
+    "expected_error_type": "InvalidOperator",
+    "expected_error_message": ">",
+    "expected_problematic_tokens": [
+      {
+        "lexeme": "course",
+        "start": 0,
+        "end": 6
+      },
+      {
+        "lexeme": ">",
+        "start": 7,
+        "end": 8
+      },
+      {
+        "lexeme": "CS",
+        "start": 9,
+        "end": 11
+      }
+    ]
+  },
+  {
+    "test_name": "valid_operator_for_numeric",
+    "description": "Using 'is' for numeric comparison (should work)",
+    "input": "credit hours is 3",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_error_message": null,
+    "expected_problematic_tokens": null
+  }
+] 

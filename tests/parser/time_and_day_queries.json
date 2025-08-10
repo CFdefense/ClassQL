@@ -1,0 +1,34 @@
+[
+  {
+    "test_name": "meeting_time_comparison",
+    "description": "Query comparing meeting time with numeric value",
+    "input": "meeting time > 14:00",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "day_specification",
+    "description": "Query specifying a particular day",
+    "input": "day is Monday",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "time_range_query",
+    "description": "Query with time range specification",
+    "input": "time range 09:00 to 11:00",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "meeting_type_specification",
+    "description": "Query specifying meeting type",
+    "input": "meeting type is lecture",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  }
+] 

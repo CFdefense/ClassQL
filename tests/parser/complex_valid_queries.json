@@ -1,0 +1,34 @@
+[
+  {
+    "test_name": "simple_and_query",
+    "description": "Query with AND operator connecting two conditions",
+    "input": "prof is Alan and course contains CS",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "parenthesized_and_query",
+    "description": "Query with parentheses and AND operator",
+    "input": "(subject = MATH) and (credit hours >= 3)",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "title_starts_with_query",
+    "description": "Query with 'starts with' condition",
+    "input": "title starts with \"Introduction\"",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "campus_and_method_query",
+    "description": "Query with multiple AND conditions",
+    "input": "campus is main and method is online",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  }
+] 

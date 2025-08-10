@@ -1,0 +1,29 @@
+[
+  {
+    "test_name": "empty_string",
+    "description": "Empty string input",
+    "input": "",
+    "should_succeed": false,
+    "expected_error_type": "EmptyQuery",
+    "expected_error_message": null,
+    "expected_problematic_tokens": []
+  },
+  {
+    "test_name": "whitespace_only",
+    "description": "Input with only whitespace characters",
+    "input": "   ",
+    "should_succeed": false,
+    "expected_error_type": "EmptyQuery",
+    "expected_error_message": null,
+    "expected_problematic_tokens": []
+  },
+  {
+    "test_name": "newline_only",
+    "description": "Input with only newline characters",
+    "input": "\n\n",
+    "should_succeed": false,
+    "expected_error_type": "EmptyQuery",
+    "expected_error_message": null,
+    "expected_problematic_tokens": []
+  }
+] 

@@ -1,0 +1,26 @@
+[
+  {
+    "test_name": "simple_ast_validation",
+    "description": "Test that valid query produces proper AST structure",
+    "input": "prof is Alan and course contains CS",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "complex_ast_validation",
+    "description": "Test that complex query produces proper AST structure",
+    "input": "(subject = MATH) and (credit hours >= 3) and (campus is main)",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "nested_ast_validation",
+    "description": "Test that deeply nested query produces proper AST structure",
+    "input": "not ((prof is Alan) or (course contains CS))",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  }
+] 

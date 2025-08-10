@@ -1,0 +1,26 @@
+[
+  {
+    "test_name": "enrollment_cap_comparison",
+    "description": "Query comparing enrollment cap with numeric value",
+    "input": "enrollment cap >= 25",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "enrollment_status",
+    "description": "Query checking enrollment status",
+    "input": "enrollment is open",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "full_status_check",
+    "description": "Query checking if course is full",
+    "input": "full = false",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  }
+] 

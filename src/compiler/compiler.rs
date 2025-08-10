@@ -36,12 +36,18 @@ impl Compiler {
             }
         };
 
-        match self.parser.parse(&tokens) {
+        // Parse the tokens
+        let _ = match self.parser.parse(&tokens) {
             Ok(()) => (),
-            Err(e) => {
+            Err(error_tuple) => {
+                let (e, problematic_tokens) = error_tuple;
+                let problematic_positions: Vec<(usize, usize)> = problematic_tokens
+                    .iter()
+                    .map(|token| (token.get_start() as usize, token.get_end() as usize))
+                    .collect();
                 return CompilerResult::ParserError {
                     message: e.to_string(),
-                    problematic_tokens: Vec::new(),
+                    problematic_tokens: problematic_positions,
                 };
             }
         };

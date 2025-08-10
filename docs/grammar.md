@@ -84,6 +84,7 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 ### Operators
 - **Comparison**: `!=`, `<=`, `>=`, `=`, `<`, `>`, `!`
 - **Logical**: `\band\b`, `\bor\b`, `\bnot\b`
+- **Grouping**: `\(`, `\)`
 
 ### Literals
 - **Strings**: `"[^"]*"?` (supports unclosed strings)
@@ -105,7 +106,13 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 ## Formal BNF Grammar
 
 ```bnf
-<query> ::= <entity_query> | <query> "or" <query>
+<query> ::= <logical_expression>
+
+<logical_expression> ::= <logical_term> ("or" <logical_term>)*
+
+<logical_term> ::= <logical_factor> ("and" <logical_factor>)*
+
+<logical_factor> ::= <entity_query> | "(" <logical_expression> ")"
 
 <entity_query> ::= <professor_query> | <course_query> | <section_query> | <meeting_type_query> | <time_query> | <day_query>
 
