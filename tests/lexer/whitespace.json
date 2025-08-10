@@ -66,5 +66,41 @@
             {"type": "T_CONTAINS", "content": "contains"},
             {"type": "T_STRING", "content": "\"Math\""}
         ]
+    },
+    {
+        "test_name": "Parentheses with Various Spacing",
+        "description": "Test parentheses with different whitespace patterns",
+        "code": "( prof is Alan ) and ( course contains CS )",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_IS", "content": "is"},
+            {"type": "T_IDENTIFIER", "content": "Alan"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_IDENTIFIER", "content": "CS"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
+    },
+    {
+        "test_name": "Tight Parentheses Spacing",
+        "description": "Test parentheses with minimal spacing",
+        "code": "(prof=Alan)and(course=CS)",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_IDENTIFIER", "content": "Alan"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_IDENTIFIER", "content": "CS"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
     }
 ] 

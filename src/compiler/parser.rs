@@ -10,4 +10,11 @@ pub struct AST {
     head: TreeNode,
 }
 
-struct TreeNode {}
+enum NodeType {
+    
+}
+
+struct TreeNode {
+    children: Vec<TreeNode>,
+    node_type: NodeType,
+}

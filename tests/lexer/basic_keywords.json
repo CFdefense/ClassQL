@@ -25,5 +25,58 @@
             {"type": "T_PREREQS", "content": "prereqs"},
             {"type": "T_COREREQS", "content": "corereqs"}
         ]
+    },
+    {
+        "test_name": "Keywords with Parentheses Grouping",
+        "description": "Test keyword expressions with parentheses for logical grouping",
+        "code": "(term = \"Fall2024\") and (prof contains \"Smith\")",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_TERM", "content": "term"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"Fall2024\""},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_STRING", "content": "\"Smith\""},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
+    },
+    {
+        "test_name": "Complex Keyword Logic with Parentheses",
+        "description": "Test complex keyword logic with nested parentheses for precedence control",
+        "code": "((subject = \"CS\") and (course = \"101\")) or ((title contains \"Data\") and (credit hours >= 3))",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"CS\""},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"101\""},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_OR", "content": "or"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_TITLE", "content": "title"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_STRING", "content": "\"Data\""},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_CREDIT", "content": "credit"},
+            {"type": "T_HOURS", "content": "hours"},
+            {"type": "T_GREATER_EQUAL", "content": ">="},
+            {"type": "T_INTEGER", "content": "3"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
     }
 ] 

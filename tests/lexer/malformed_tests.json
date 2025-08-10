@@ -38,9 +38,7 @@
             {"type": "T_UNRECOGNIZED", "content": "%"},
             {"type": "T_UNRECOGNIZED", "content": "^"},
             {"type": "T_UNRECOGNIZED", "content": "&"},
-            {"type": "T_UNRECOGNIZED", "content": "*"},
-            {"type": "T_UNRECOGNIZED", "content": "("},
-            {"type": "T_UNRECOGNIZED", "content": ")"}
+            {"type": "T_UNRECOGNIZED", "content": "*"}
         ]
     },
     {
@@ -82,6 +80,37 @@
         "code": "thisissomeridiculouslylongidentifierthatgoesforeverandeverandever123",
         "result": [
             {"type": "T_IDENTIFIER", "content": "thisissomeridiculouslylongidentifierthatgoesforeverandeverandever123"}
+        ]
+    },
+    {
+        "test_name": "Malformed Parentheses Expressions",
+        "description": "Test malformed parentheses expressions",
+        "code": "(prof is Alan and course contains CS",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_IS", "content": "is"},
+            {"type": "T_IDENTIFIER", "content": "Alan"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_IDENTIFIER", "content": "CS"}
+        ]
+    },
+    {
+        "test_name": "Unmatched Right Parentheses",
+        "description": "Test expressions with unmatched right parentheses",
+        "code": "prof is Alan) and course contains CS)",
+        "result": [
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_IS", "content": "is"},
+            {"type": "T_IDENTIFIER", "content": "Alan"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_IDENTIFIER", "content": "CS"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
         ]
     }
 ] 

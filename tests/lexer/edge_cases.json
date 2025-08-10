@@ -72,5 +72,37 @@
             {"type": "T_LESS_EQUAL", "content": "<="},
             {"type": "T_NOT_EQUALS", "content": "!="}
         ]
+    },
+    {
+        "test_name": "Adjacent Parentheses",
+        "description": "Test adjacent parentheses without spaces",
+        "code": "()((())",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
+    },
+    {
+        "test_name": "Parentheses with Adjacent Operators",
+        "description": "Test parentheses adjacent to operators without spaces",
+        "code": "(prof=Alan)and(course=CS)",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_IDENTIFIER", "content": "Alan"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_IDENTIFIER", "content": "CS"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
     }
 ] 

@@ -57,5 +57,58 @@
             {"type": "T_GREATER_THAN", "content": ">"},
             {"type": "T_INTEGER", "content": "3"}
         ]
+    },
+    {
+        "test_name": "Parentheses with Literals",
+        "description": "Test parentheses grouping with various literal types",
+        "code": "(course = \"CS101\") and (credit hours > 3)",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"CS101\""},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_CREDIT", "content": "credit"},
+            {"type": "T_HOURS", "content": "hours"},
+            {"type": "T_GREATER_THAN", "content": ">"},
+            {"type": "T_INTEGER", "content": "3"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
+    },
+    {
+        "test_name": "Nested Literals with Parentheses",
+        "description": "Test deeply nested literals with parentheses grouping",
+        "code": "((prof = \"Dr. Smith\") and (course = \"CS101\")) or ((subject = \"MATH\") and (credit = 3))",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"Dr. Smith\""},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"CS101\""},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_OR", "content": "or"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"MATH\""},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_CREDIT", "content": "credit"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_INTEGER", "content": "3"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
     }
 ] 

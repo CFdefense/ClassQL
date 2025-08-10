@@ -76,5 +76,61 @@
             {"type": "T_CONTAINS", "content": "contains"},
             {"type": "T_STRING", "content": "\"Online\""}
         ]
+    },
+    {
+        "test_name": "Complex Boolean with Parentheses",
+        "description": "Test complex boolean expression with parentheses for precedence control",
+        "code": "(prof is Alan or prof is Bob) and (course contains CS)",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_IS", "content": "is"},
+            {"type": "T_IDENTIFIER", "content": "Alan"},
+            {"type": "T_OR", "content": "or"},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_IS", "content": "is"},
+            {"type": "T_IDENTIFIER", "content": "Bob"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_IDENTIFIER", "content": "CS"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
+    },
+    {
+        "test_name": "Nested Grouping for Complex Logic",
+        "description": "Test deeply nested parentheses for complex logical precedence",
+        "code": "((subject is Math) and (credit >= 3)) or ((subject is CS) and (credit >= 4))",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_IS", "content": "is"},
+            {"type": "T_IDENTIFIER", "content": "Math"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_CREDIT", "content": "credit"},
+            {"type": "T_GREATER_EQUAL", "content": ">="},
+            {"type": "T_INTEGER", "content": "3"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_OR", "content": "or"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_IS", "content": "is"},
+            {"type": "T_IDENTIFIER", "content": "CS"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_CREDIT", "content": "credit"},
+            {"type": "T_GREATER_EQUAL", "content": ">="},
+            {"type": "T_INTEGER", "content": "4"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
     }
 ] 

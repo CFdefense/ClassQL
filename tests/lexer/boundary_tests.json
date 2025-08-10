@@ -122,5 +122,76 @@
             {"type": "T_CONTAINS", "content": "contains"},
             {"type": "T_STRING", "content": "\"Smith\""}
         ]
+    },
+    {
+        "test_name": "Deeply Nested Parentheses",
+        "description": "Test very deeply nested parentheses for boundary conditions",
+        "code": "((((prof is Alan))))",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_IS", "content": "is"},
+            {"type": "T_IDENTIFIER", "content": "Alan"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
+    },
+    {
+        "test_name": "Parentheses at Expression Boundaries",
+        "description": "Test parentheses at the very beginning and end of expressions",
+        "code": "(prof is Alan) and (course contains CS)",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_IS", "content": "is"},
+            {"type": "T_IDENTIFIER", "content": "Alan"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_IDENTIFIER", "content": "CS"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
+    },
+    {
+        "test_name": "Complex Nested Boolean Logic",
+        "description": "Test complex nested boolean logic with parentheses for precedence control",
+        "code": "not ((prof is Alan) and (course contains CS)) or ((subject is Math) and (credit >= 3))",
+        "result": [
+            {"type": "T_NOT", "content": "not"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_PROF", "content": "prof"},
+            {"type": "T_IS", "content": "is"},
+            {"type": "T_IDENTIFIER", "content": "Alan"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_CONTAINS", "content": "contains"},
+            {"type": "T_IDENTIFIER", "content": "CS"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_OR", "content": "or"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_SUBJECT", "content": "subject"},
+            {"type": "T_IS", "content": "is"},
+            {"type": "T_IDENTIFIER", "content": "Math"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_CREDIT", "content": "credit"},
+            {"type": "T_GREATER_EQUAL", "content": ">="},
+            {"type": "T_INTEGER", "content": "3"},
+            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
     }
 ] 

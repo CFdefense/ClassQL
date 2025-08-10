@@ -58,8 +58,6 @@
             {"type": "T_UNRECOGNIZED", "content": "^"},
             {"type": "T_UNRECOGNIZED", "content": "&"},
             {"type": "T_UNRECOGNIZED", "content": "*"},
-            {"type": "T_UNRECOGNIZED", "content": "("},
-            {"type": "T_UNRECOGNIZED", "content": ")"},
             {"type": "T_UNRECOGNIZED", "content": "["},
             {"type": "T_UNRECOGNIZED", "content": "]"},
             {"type": "T_UNRECOGNIZED", "content": "{"},
@@ -82,6 +80,14 @@
         "test_name": "Single Invalid in Valid Context",
         "description": "Test single invalid character among valid tokens",
         "code": "subject = @ course = \"CS\"",
+        "result": [
+            {"type": "T_UNRECOGNIZED", "content": "@"}
+        ]
+    },
+    {
+        "test_name": "Valid Parentheses with Invalid Characters",
+        "description": "Test valid parentheses mixed with invalid characters",
+        "code": "(prof is Alan) @ (course contains CS)",
         "result": [
             {"type": "T_UNRECOGNIZED", "content": "@"}
         ]

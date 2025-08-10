@@ -187,4 +187,9 @@ fn test_boundary_tests() {
 #[test]
 fn test_unrecognized_tests() {
     run_test_file("unrecognized_tests.json");
+}
+
+#[test]
+fn test_parentheses_grouping() {
+    run_test_file("parentheses_grouping_tests.json");
 } 

@@ -56,6 +56,10 @@ pub enum TokenType {
     More,
     Fewer,
     
+    // Grouping
+    LeftParen,
+    RightParen,
+    
     // Literals
     String,
     Integer,
@@ -132,6 +136,8 @@ impl Token {
             TokenType::Most => "T_MOST".to_string(),
             TokenType::More => "T_MORE".to_string(),
             TokenType::Fewer => "T_FEWER".to_string(),
+            TokenType::LeftParen => "T_LEFT_PAREN".to_string(),
+            TokenType::RightParen => "T_RIGHT_PAREN".to_string(),
             TokenType::String => "T_STRING".to_string(),
             TokenType::Integer => "T_INTEGER".to_string(),
             TokenType::Time => "T_TIME".to_string(),
@@ -213,6 +219,8 @@ impl TokenType {
             (TokenType::LessThan, r"<"),
             (TokenType::GreaterThan, r">"),
             (TokenType::Exclamation, r"!"),
+            (TokenType::LeftParen, r"\("),
+            (TokenType::RightParen, r"\)"),
             
             // Logical
             (TokenType::And, r"\band\b"),

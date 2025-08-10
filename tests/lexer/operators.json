@@ -67,5 +67,14 @@
             {"type": "T_AND", "content": "and"},
             {"type": "T_NOT", "content": "not"}
         ]
+    },
+    {
+        "test_name": "Parentheses Operators",
+        "description": "Test parentheses operators for grouping",
+        "code": "( )",
+        "result": [
+            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_RIGHT_PAREN", "content": ")"}
+        ]
     }
 ] 
