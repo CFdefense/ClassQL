@@ -42,7 +42,7 @@ impl Lexer {
         self.unrecognized_chars.clear();
     }
 
-    pub fn lexical_analysis(&mut self, input: String) -> Vec<Token> {
+    pub fn lexical_analysis(&mut self, input: String) -> Result<Vec<Token>, AppError> {
         // Store input and initialize position
         self.input = input;
         self.chars = self.input.chars().collect();
@@ -100,27 +100,27 @@ impl Lexer {
             }
         }
         
-        // If we found unrecognized characters, return them as error tokens instead
+        // If we found unrecognized characters, return an error instead
         if !self.unrecognized_chars.is_empty() {
-            let mut error_tokens = Vec::new();
+            let error_msg = format!(
+                "Unrecognized tokens found: {}",
+                self.unrecognized_chars
+                    .iter()
+                    .map(|ch| format!("'{}'", ch))
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            );
             
-            // Create tokens with the positions we tracked
-            for (i, &ch) in self.unrecognized_chars.iter().enumerate() {
-                if i < unrecognized_positions.len() {
-                    let start_pos = unrecognized_positions[i];
-                    let token = Token::new(
-                        TokenType::Unrecognized, 
-                        ch.to_string(), 
-                        start_pos as i32, 
-                        (start_pos + 1) as i32
-                    );
-                    error_tokens.push(token);
-                }
+            // Collect problematic token positions for highlighting
+            let mut problematic_positions = Vec::new();
+            for &pos in &unrecognized_positions {
+                problematic_positions.push((pos, pos + 1));
             }
-            return error_tokens;
+            
+            return Err(AppError::UnrecognizedTokens(error_msg, problematic_positions));
         }
         
-        tokens
+        Ok(tokens)
     }
 
     // Helper method to advance position and update current_char
@@ -130,27 +130,6 @@ impl Lexer {
             self.current_char = self.chars[self.position];
         } else {
             self.current_char = '\0'; // End of input
-        }
-    }
-
-    pub fn handle_unrecognized_tokens(tokens: &[Token]) -> Option<AppError> {
-        let unrecognized_tokens: Vec<&Token> = tokens
-            .iter()
-            .filter(|token| matches!(token.get_token_type(), TokenType::Unrecognized))
-            .collect();
-
-        if !unrecognized_tokens.is_empty() {
-            let error_msg = format!(
-                "Unrecognized tokens found: {}",
-                unrecognized_tokens
-                    .iter()
-                    .map(|t| format!("'{}'", t.get_lexeme()))
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            );
-            Some(AppError::UnrecognizedTokens(error_msg))
-        } else {
-            None
         }
     }
 }

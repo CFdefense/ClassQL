@@ -20,7 +20,7 @@ impl Display for TUIError {
 pub enum AppError {
     NONE,
     SyntaxError(SyntaxError),
-    UnrecognizedTokens(String),
+    UnrecognizedTokens(String, Vec<(usize, usize)>),
 }
 
 impl Display for AppError {
@@ -28,7 +28,7 @@ impl Display for AppError {
         match self {
             AppError::NONE => write!(f, "No error"),
             AppError::SyntaxError(msg) => write!(f, "Syntax error: {}", msg),
-            AppError::UnrecognizedTokens(msg) => write!(f, "Unrecognized tokens: {}", msg),
+            AppError::UnrecognizedTokens(msg, _) => write!(f, "Unrecognized tokens: {}", msg),
         }
     }
 }

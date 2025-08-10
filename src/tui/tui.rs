@@ -13,11 +13,10 @@
 */
 
 use crate::compiler::compiler::{Compiler, CompilerResult};
-use crate::compiler::token::TokenType;
-use crate::tui::errors::{AppError, TUIError};
+use crate::tui::errors::TUIError;
 use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
@@ -83,14 +82,20 @@ impl<'a> Tui<'a> {
                         
                         // Run the compiler and handle the result
                         match self.compiler.run(&self.input) {
-                            CompilerResult::Success { tokens } => {
+                            CompilerResult::Success { message } => {
                                 // Clear any error state
                                 self.toast_message = None;
+                                self.show_toast(message);
                                 self.toast_start_time = None;
                                 self.problematic_tokens.clear();
                                 // TODO: Process successful tokens
                             }
-                            CompilerResult::Error { message, problematic_tokens } => {
+                            CompilerResult::LexerError { message, problematic_tokens } => {
+                                // Show error and highlight problematic tokens
+                                self.show_toast(message);
+                                self.problematic_tokens = problematic_tokens;
+                            }
+                            CompilerResult::ParserError { message, problematic_tokens } => {
                                 // Show error and highlight problematic tokens
                                 self.show_toast(message);
                                 self.problematic_tokens = problematic_tokens;

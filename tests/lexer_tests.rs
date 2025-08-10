@@ -42,7 +42,10 @@ impl TestHelper {
         self.lexer.clear();
         
         // Tokenize the input
-        let tokens = self.lexer.lexical_analysis(test_case.code.clone());
+        let tokens = match self.lexer.lexical_analysis(test_case.code.clone()) {
+            Ok(tokens) => tokens,
+            Err(e) => panic!("Lexer error in test '{}': {:?}", test_case.test_name, e),
+        };
         
         // Print actual tokens
         println!("Expected {} tokens, got {} tokens", test_case.result.len(), tokens.len());
