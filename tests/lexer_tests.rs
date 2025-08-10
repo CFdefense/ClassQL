@@ -58,7 +58,7 @@ impl TestHelper {
             }
             println!("Actual tokens:");
             for (i, actual) in tokens.iter().enumerate() {
-                println!("  [{}] {} = '{}'", i, actual.token_type_as_string(), actual.get_lexeme());
+                println!("  [{}] {} = '{}'", i, actual.token_type.to_string(), actual.get_lexeme());
             }
             println!("========================\n");
         }
@@ -75,7 +75,7 @@ impl TestHelper {
 
         let mut has_diff = false;
         for (i, (actual, expected)) in tokens.iter().zip(test_case.result.iter()).enumerate() {
-            let type_match = actual.token_type_as_string() == expected.token_type;
+            let type_match = actual.token_type.to_string() == expected.token_type;
             let content_match = actual.get_lexeme() == expected.content;
             
             if !type_match || !content_match {
@@ -85,7 +85,7 @@ impl TestHelper {
                 }
                 println!("Position [{}]:", i);
                 if !type_match {
-                    println!("  Type:    Expected '{}' but got '{}'", expected.token_type, actual.token_type_as_string());
+                    println!("  Type:    Expected '{}' but got '{}'", expected.token_type, actual.token_type.to_string());
                 }
                 if !content_match {
                     println!("  Content: Expected '{}' but got '{}'", expected.content, actual.get_lexeme());
@@ -93,13 +93,13 @@ impl TestHelper {
             }
             
             assert_eq!(
-                actual.token_type_as_string(),
+                actual.token_type.to_string(),
                 expected.token_type,
                 "Token type mismatch at position {} in test '{}'. Expected: {}, Got: {}",
                 i,
                 test_case.test_name,
                 expected.token_type,
-                actual.token_type_as_string()
+                actual.token_type.to_string()
             );
             
             assert_eq!(

@@ -1,4 +1,4 @@
-# ClassQL — Technical Design Document
+# ClassQL — Initial Technical Design Document
 
 ---
 
