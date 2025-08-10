@@ -49,7 +49,7 @@
         "result": [
             {"type": "T_CREDIT", "content": "credit"},
             {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_GREATER_EQUAL", "content": ">="},
+            {"type": "T_GREATEREQUAL", "content": ">="},
             {"type": "T_INTEGER", "content": "3"},
             {"type": "T_AND", "content": "and"},
             {"type": "T_CAMPUS", "content": "campus"},
@@ -72,17 +72,17 @@
         "description": "Test parentheses with different whitespace patterns",
         "code": "( prof is Alan ) and ( course contains CS )",
         "result": [
-            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
             {"type": "T_PROF", "content": "prof"},
             {"type": "T_IS", "content": "is"},
             {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHTPAREN", "content": ")"},
             {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
             {"type": "T_COURSE", "content": "course"},
             {"type": "T_CONTAINS", "content": "contains"},
             {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHT_PAREN", "content": ")"}
+            {"type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -90,17 +90,17 @@
         "description": "Test parentheses with minimal spacing",
         "code": "(prof=Alan)and(course=CS)",
         "result": [
-            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
             {"type": "T_PROF", "content": "prof"},
             {"type": "T_EQUALS", "content": "="},
             {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHTPAREN", "content": ")"},
             {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
             {"type": "T_COURSE", "content": "course"},
             {"type": "T_EQUALS", "content": "="},
             {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHT_PAREN", "content": ")"}
+            {"type": "T_RIGHTPAREN", "content": ")"}
         ]
     }
 ] 

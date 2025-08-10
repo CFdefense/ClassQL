@@ -1,0 +1,148 @@
+[
+  {
+    "test_name": "section_token",
+    "description": "Test basic section token recognition",
+    "code": "section",
+    "result": [
+      {"type": "T_SECTION", "content": "section"}
+    ]
+  },
+  {
+    "test_name": "title_token",
+    "description": "Test basic title token recognition",
+    "code": "title",
+    "result": [
+      {"type": "T_TITLE", "content": "title"}
+    ]
+  },
+  {
+    "test_name": "number_token",
+    "description": "Test basic number token recognition",
+    "code": "number",
+    "result": [
+      {"type": "T_NUMBER", "content": "number"}
+    ]
+  },
+  {
+    "test_name": "description_token",
+    "description": "Test basic description token recognition",
+    "code": "description",
+    "result": [
+      {"type": "T_DESCRIPTION", "content": "description"}
+    ]
+  },
+  {
+    "test_name": "enrollment_token",
+    "description": "Test basic enrollment token recognition",
+    "code": "enrollment",
+    "result": [
+      {"type": "T_ENROLLMENT", "content": "enrollment"}
+    ]
+  },
+  {
+    "test_name": "cap_token",
+    "description": "Test basic cap token recognition",
+    "code": "cap",
+    "result": [
+      {"type": "T_CAP", "content": "cap"}
+    ]
+  },
+  {
+    "test_name": "instruction_token",
+    "description": "Test basic instruction token recognition",
+    "code": "instruction",
+    "result": [
+      {"type": "T_INSTRUCTION", "content": "instruction"}
+    ]
+  },
+  {
+    "test_name": "meeting_token",
+    "description": "Test basic meeting token recognition",
+    "code": "meeting",
+    "result": [
+      {"type": "T_MEETING", "content": "meeting"}
+    ]
+  },
+  {
+    "test_name": "type_token",
+    "description": "Test basic type token recognition",
+    "code": "type",
+    "result": [
+      {"type": "T_TYPE", "content": "type"}
+    ]
+  },
+  {
+    "test_name": "full_token",
+    "description": "Test basic full token recognition",
+    "code": "full",
+    "result": [
+      {"type": "T_FULL", "content": "full"}
+    ]
+  },
+  {
+    "test_name": "multiple_core_tokens",
+    "description": "Test multiple core tokens in sequence",
+    "code": "section title number description",
+    "result": [
+      {"type": "T_SECTION", "content": "section"},
+      {"type": "T_TITLE", "content": "title"},
+      {"type": "T_NUMBER", "content": "number"},
+      {"type": "T_DESCRIPTION", "content": "description"}
+    ]
+  },
+  {
+    "test_name": "core_tokens_with_operators",
+    "description": "Test core tokens with comparison operators",
+    "code": "section = \"CS101\" and enrollment > 50",
+    "result": [
+      {"type": "T_SECTION", "content": "section"},
+      {"type": "T_EQUALS", "content": "="},
+      {"type": "T_STRING", "content": "\"CS101\""},
+      {"type": "T_AND", "content": "and"},
+      {"type": "T_ENROLLMENT", "content": "enrollment"},
+      {"type": "T_GREATERTHAN", "content": ">"},
+      {"type": "T_INTEGER", "content": "50"}
+    ]
+  },
+  {
+    "test_name": "core_tokens_with_contains",
+    "description": "Test core tokens with contains operator",
+    "code": "title contains \"Introduction\" or description contains \"Computer Science\"",
+    "result": [
+      {"type": "T_TITLE", "content": "title"},
+      {"type": "T_CONTAINS", "content": "contains"},
+      {"type": "T_STRING", "content": "\"Introduction\""},
+      {"type": "T_OR", "content": "or"},
+      {"type": "T_DESCRIPTION", "content": "description"},
+      {"type": "T_CONTAINS", "content": "contains"},
+      {"type": "T_STRING", "content": "\"Computer Science\""}
+    ]
+  },
+  {
+    "test_name": "core_tokens_complex_query",
+    "description": "Test complex query with multiple core tokens and operators",
+    "code": "(section = \"CS101\" and enrollment < 100) or (title contains \"Advanced\" and credit hours >= 3)",
+    "result": [
+      {"type": "T_LEFTPAREN", "content": "("},
+      {"type": "T_SECTION", "content": "section"},
+      {"type": "T_EQUALS", "content": "="},
+      {"type": "T_STRING", "content": "\"CS101\""},
+      {"type": "T_AND", "content": "and"},
+      {"type": "T_ENROLLMENT", "content": "enrollment"},
+      {"type": "T_LESSTHAN", "content": "<"},
+      {"type": "T_INTEGER", "content": "100"},
+      {"type": "T_RIGHTPAREN", "content": ")"},
+      {"type": "T_OR", "content": "or"},
+      {"type": "T_LEFTPAREN", "content": "("},
+      {"type": "T_TITLE", "content": "title"},
+      {"type": "T_CONTAINS", "content": "contains"},
+      {"type": "T_STRING", "content": "\"Advanced\""},
+      {"type": "T_AND", "content": "and"},
+      {"type": "T_CREDIT", "content": "credit"},
+      {"type": "T_HOURS", "content": "hours"},
+      {"type": "T_GREATEREQUAL", "content": ">="},
+      {"type": "T_INTEGER", "content": "3"},
+      {"type": "T_RIGHTPAREN", "content": ")"}
+    ]
+  }
+] 

@@ -19,6 +19,7 @@ pub enum NodeType {
     ProfessorQuery,
     CourseQuery,
     SubjectQuery,
+    SectionQuery,
     NumberQuery,
     TitleQuery,
     DescriptionQuery,
@@ -32,6 +33,16 @@ pub enum NodeType {
     FullQuery,
     MeetingTypeQuery,
     TimeQuery,
+    TimeRange,
+    DayQuery,
+    Time,
+    Condition,
+    Binop,
+    StringList,
+    String,
+    Integer,
+    Identifier,
+    EmailIdentifier,
 }
 
 impl NodeType {
@@ -164,37 +175,132 @@ impl Parser  {
 
         // match next keyword
         let next_query = match tokens[self.token_pointer].token_type {
-            
+            TokenType::Prof => self.parse_professor_query(tokens)?,
+            TokenType::Course => self.parse_course_query(tokens)?,
+            TokenType::Subject => self.parse_subject_query(tokens)?,
+            TokenType::Title => self.parse_title_query(tokens)?,
+            TokenType::Section => self.parse_section_query(tokens)?,
+            TokenType::Number => self.parse_number_query(tokens)?,
+            TokenType::Description => self.parse_description_query(tokens)?,
+            TokenType::Credit => self.parse_credit_hours_query(tokens)?,
+            TokenType::Prereqs => self.parse_prereqs_query(tokens)?,
+            TokenType::Corereqs => self.parse_coreqs_query(tokens)?,
+            TokenType::Enrollment => self.parse_enrollment_query(tokens)?,
+            TokenType::Method => self.parse_instruction_method_query(tokens)?,
+            TokenType::Campus => self.parse_campus_query(tokens)?,
+            TokenType::Meeting => self.parse_meeting_type_query(tokens)?,
             _ => return Err((SyntaxError::UnexpectedToken(tokens[self.token_pointer].token_type.to_string()), vec![tokens[self.token_pointer].clone()]))
         };
 
         entity_query.children.push(next_query);
         Ok(entity_query)
     }
-    fn parse_professor_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_course_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_subject_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_number_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_title_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_description_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_credit_hours_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_prereqs_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_coreqs_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_enrollment_cap_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_instruction_method_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_campus_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_enrollment_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_full_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_meeting_type_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_time_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_time_range(&mut self, tokens: &Vec<Token>) {}
-    fn parse_day_query(&mut self, tokens: &Vec<Token>) {}
-    fn parse_time(&mut self, tokens: &Vec<Token>) {}
-    fn parse_condition(&mut self, tokens: &Vec<Token>) {}
-    fn parse_binop(&mut self, tokens: &Vec<Token>) {}
-    fn parse_string_list(&mut self, tokens: &Vec<Token>) {}
-    fn parse_string(&mut self, tokens: &Vec<Token>) {}
-    fn parse_integer(&mut self, tokens: &Vec<Token>) {}
-    fn parse_identifier(&mut self, tokens: &Vec<Token>) {}
-    fn parse_email_identifier(&mut self, tokens: &Vec<Token>) {}
+    fn parse_professor_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::ProfessorQuery, NodeType::ProfessorQuery.to_string()))
+    }
+    fn parse_course_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::CourseQuery, NodeType::CourseQuery.to_string()))
+    }
+    fn parse_subject_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::SubjectQuery, NodeType::SubjectQuery.to_string()))
+    }
+    fn parse_section_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::SectionQuery, NodeType::SectionQuery.to_string()))
+    }
+    fn parse_number_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::NumberQuery, NodeType::NumberQuery.to_string()))
+    }
+    fn parse_title_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::TitleQuery, NodeType::TitleQuery.to_string()))
+    }
+    fn parse_description_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::DescriptionQuery, NodeType::DescriptionQuery.to_string()))
+    }
+    fn parse_credit_hours_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::CreditHoursQuery, NodeType::CreditHoursQuery.to_string()))
+    }
+    fn parse_prereqs_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::PrereqsQuery, NodeType::PrereqsQuery.to_string()))
+    }
+    fn parse_coreqs_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::CoreqsQuery, NodeType::CoreqsQuery.to_string()))
+    }
+    fn parse_enrollment_cap_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::EnrollmentCapQuery, NodeType::EnrollmentCapQuery.to_string()))
+    }
+    fn parse_instruction_method_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::InstructionMethodQuery, NodeType::InstructionMethodQuery.to_string()))
+    }
+    fn parse_campus_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::CampusQuery, NodeType::CampusQuery.to_string()))
+    }
+    fn parse_enrollment_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::EnrollmentQuery, NodeType::EnrollmentQuery.to_string()))
+    }
+    fn parse_full_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::FullQuery, NodeType::FullQuery.to_string()))
+    }
+    fn parse_meeting_type_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::MeetingTypeQuery, NodeType::MeetingTypeQuery.to_string()))
+    }
+    fn parse_time_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::TimeQuery, NodeType::TimeQuery.to_string()))
+    }
+    fn parse_time_range(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::TimeRange, NodeType::TimeRange.to_string()))
+    }
+    fn parse_day_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::DayQuery, NodeType::DayQuery.to_string()))
+    }
+    fn parse_time(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::Time, NodeType::Time.to_string()))
+    }
+    fn parse_condition(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::Condition, NodeType::Condition.to_string()))
+    }
+    fn parse_binop(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::Binop, NodeType::Binop.to_string()))
+    }
+    fn parse_string_list(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::StringList, NodeType::StringList.to_string()))
+    }
+    fn parse_string(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::String, NodeType::String.to_string()))
+    }
+    fn parse_integer(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::Integer, NodeType::Integer.to_string()))
+    }
+    fn parse_identifier(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::Identifier, NodeType::Identifier.to_string()))
+    }
+    fn parse_email_identifier(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        // TODO: Implement actual parsing logic
+        Ok(TreeNode::new(NodeType::EmailIdentifier, NodeType::EmailIdentifier.to_string()))
+    }
 }

@@ -13,6 +13,18 @@ pub enum TokenType {
     Hours,
     Prereqs,
     Corereqs,
+    Email,
+    
+    // New tokens for parser support
+    Section,
+    Number,
+    Description,
+    Enrollment,
+    Cap,
+    Instruction,
+    Meeting,
+    Type,
+    Full,
     
     // Days
     Monday,
@@ -73,7 +85,7 @@ pub enum TokenType {
 
 impl TokenType {
     pub fn to_string(&self) -> String {
-        format!("{:?}", self)
+        format!("T_{}", format!("{:?}", self).to_uppercase())
     }
 }
 
@@ -118,47 +130,63 @@ impl TokenType {
     // Get all token patterns in lexing order (longest/most specific first)
     pub fn all_patterns() -> Vec<(TokenType, &'static str)> {
         vec![
-            // Email-like identifiers
-            (TokenType::Identifier, r"[a-zA-Z_][a-zA-Z0-9_]*@[a-zA-Z0-9_]*\.[a-zA-Z0-9_.]*"),
-            
             // Multi-word operators
-            (TokenType::EqualsWord, r"\bequals\b"),
-            (TokenType::Starts, r"\bstarts\b"),
-            (TokenType::With, r"\bwith\b"),
-            (TokenType::Ends, r"\bends\b"),
-            (TokenType::Does, r"\bdoes\b"),
-            (TokenType::Equal, r"\bequal\b"),
-            (TokenType::Less, r"\bless\b"),
-            (TokenType::Than, r"\bthan\b"),
-            (TokenType::Greater, r"\bgreater\b"),
-            (TokenType::At, r"\bat\b"),
-            (TokenType::Least, r"\bleast\b"),
-            (TokenType::Most, r"\bmost\b"),
-            (TokenType::More, r"\bmore\b"),
-            (TokenType::Fewer, r"\bfewer\b"),
-            
-            // Keywords
-            (TokenType::Contains, r"\bcontains\b"),
-            (TokenType::Prereqs, r"\bprereqs\b"),
-            (TokenType::Corereqs, r"\bcorereqs\b"),
-            (TokenType::Subject, r"\b(subject|sub)\b"),
-            (TokenType::Course, r"\bcourse\b"),
-            (TokenType::Method, r"\bmethod\b"),
-            (TokenType::Campus, r"\bcampus\b"),
-            (TokenType::Credit, r"\bcredit\b"),
-            (TokenType::Hours, r"\bhours\b"),
-            (TokenType::Title, r"\btitle\b"),
-            (TokenType::Term, r"\bterm\b"),
-            (TokenType::Prof, r"\bprof\b"),
+            (TokenType::EqualsWord, r"(?i)\bequals\b"),
+            (TokenType::Starts, r"(?i)\bstarts\b"),
+            (TokenType::With, r"(?i)\bwith\b"),
+            (TokenType::Ends, r"(?i)\bends\b"),
+            (TokenType::Does, r"(?i)\bdoes\b"),
+            (TokenType::Equal, r"(?i)\bequal\b"),
+            (TokenType::Less, r"(?i)\bless\b"),
+            (TokenType::Than, r"(?i)\bthan\b"),
+            (TokenType::Greater, r"(?i)\bgreater\b"),
+            (TokenType::At, r"(?i)\bat\b"),
+            (TokenType::Least, r"(?i)\bleast\b"),
+            (TokenType::Most, r"(?i)\bmost\b"),
+            (TokenType::More, r"(?i)\bmore\b"),
+            (TokenType::Fewer, r"(?i)\bfewer\b"),
             
             // Days 
-            (TokenType::Wednesday, r"\b(wednesday|wednesda|wednesd|wednes|wedne|wedn|wed|we|w)\b"),
-            (TokenType::Thursday, r"\b(thursday|thursda|thurs|thur|thu|th)\b"),
-            (TokenType::Saturday, r"\b(saturday|saturda|saturd|satur|satu|sat|sa)\b"),
-            (TokenType::Tuesday, r"\b(tuesday|tuesda|tuesd|tues|tue|tu)\b"),
-            (TokenType::Monday, r"\b(monday|monda|mond|mon|mo|m)\b"),
-            (TokenType::Friday, r"\b(friday|frida|frid|fri|fr|f)\b"),
-            (TokenType::Sunday, r"\b(sunday|sunda|sund|sun|su)\b"),
+            (TokenType::Wednesday, r"(?i)\b(wednesday|wednesda|wednesd|wednes|wedne|wedn|wed|we|w)\b"),
+            (TokenType::Thursday, r"(?i)\b(thursday|thursda|thurs|thur|thu|th)\b"),
+            (TokenType::Saturday, r"(?i)\b(saturday|saturda|saturd|satur|satu|sat|sa)\b"),
+            (TokenType::Tuesday, r"(?i)\b(tuesday|tuesda|tuesd|tues|tue|tu)\b"),
+            (TokenType::Monday, r"(?i)\b(monday|monda|mond|mon|mo|m)\b"),
+            (TokenType::Friday, r"(?i)\b(friday|frida|frid|fri|fr|f)\b"),
+            (TokenType::Sunday, r"(?i)\b(sunday|sunda|sund|sun|su)\b"),
+            
+            // Keywords - these must come before the general identifier pattern
+            (TokenType::Contains, r"(?i)\bcontains\b"),
+            (TokenType::Prereqs, r"(?i)\bprereqs\b"),
+            (TokenType::Corereqs, r"(?i)\bcorereqs\b"),
+            (TokenType::Subject, r"(?i)\b(subject|sub)\b"),
+            (TokenType::Course, r"(?i)\bcourse\b"),
+            (TokenType::Method, r"(?i)\bmethod\b"),
+            (TokenType::Campus, r"(?i)\bcampus\b"),
+            (TokenType::Credit, r"(?i)\bcredit\b"),
+            (TokenType::Hours, r"(?i)\bhours\b"),
+            (TokenType::Title, r"(?i)\btitle\b"),
+            (TokenType::Term, r"(?i)\bterm\b"),
+            (TokenType::Prof, r"(?i)\bprof\b"),
+            (TokenType::Section, r"(?i)\bsection\b"),
+            (TokenType::Number, r"(?i)\bnumber\b"),
+            (TokenType::Description, r"(?i)\bdescription\b"),
+            (TokenType::Enrollment, r"(?i)\benrollment\b"),
+            (TokenType::Cap, r"(?i)\bcap\b"),
+            (TokenType::Instruction, r"(?i)\binstruction\b"),
+            (TokenType::Meeting, r"(?i)\bmeeting\b"),
+            (TokenType::Type, r"(?i)\btype\b"),
+            (TokenType::Full, r"(?i)\bfull\b"),
+            (TokenType::Email, r"(?i)\bemail\b"),
+            
+            // Logical
+            (TokenType::And, r"(?i)\band\b"),
+            (TokenType::Or, r"(?i)\bor\b"),
+            (TokenType::Not, r"(?i)\bnot\b"),
+            
+            // Conditions
+            (TokenType::Has, r"(?i)\bhas\b"),
+            (TokenType::Is, r"(?i)\bis\b"),
             
             // Operators
             (TokenType::NotEquals, r"!="),
@@ -171,20 +199,16 @@ impl TokenType {
             (TokenType::LeftParen, r"\("),
             (TokenType::RightParen, r"\)"),
             
-            // Logical
-            (TokenType::And, r"\band\b"),
-            (TokenType::Or, r"\bor\b"),
-            (TokenType::Not, r"\bnot\b"),
-            
-            // Conditions
-            (TokenType::Has, r"\bhas\b"),
-            (TokenType::Is, r"\bis\b"),
-            
             // Literals
             (TokenType::String, r#""[^"]*"?"#),
             (TokenType::Time, r"[0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)"),
             (TokenType::Integer, r"[0-9]+"),
+            
+            // General identifier pattern - must come last
             (TokenType::Identifier, r"[a-zA-Z_][a-zA-Z0-9_]*"),
+            
+            // Unrecognized characters - must come last to catch anything else
+            (TokenType::Unrecognized, r"[^\s]"),
         ]
     }
 } 

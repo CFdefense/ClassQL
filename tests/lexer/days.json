@@ -110,7 +110,7 @@
         "description": "Test day scheduling expressions with parentheses for precedence control",
         "code": "(monday = true and wednesday = true) or (friday = true and saturday = false)",
         "result": [
-            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
             {"type": "T_MONDAY", "content": "monday"},
             {"type": "T_EQUALS", "content": "="},
             {"type": "T_IDENTIFIER", "content": "true"},
@@ -118,9 +118,9 @@
             {"type": "T_WEDNESDAY", "content": "wednesday"},
             {"type": "T_EQUALS", "content": "="},
             {"type": "T_IDENTIFIER", "content": "true"},
-            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHTPAREN", "content": ")"},
             {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
             {"type": "T_FRIDAY", "content": "friday"},
             {"type": "T_EQUALS", "content": "="},
             {"type": "T_IDENTIFIER", "content": "true"},
@@ -128,7 +128,7 @@
             {"type": "T_SATURDAY", "content": "saturday"},
             {"type": "T_EQUALS", "content": "="},
             {"type": "T_IDENTIFIER", "content": "false"},
-            {"type": "T_RIGHT_PAREN", "content": ")"}
+            {"type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -136,29 +136,29 @@
         "description": "Test complex day logic with deeply nested parentheses",
         "code": "((monday or tuesday) and (wednesday or thursday)) or ((friday and saturday) or sunday)",
         "result": [
-            {"type": "T_LEFT_PAREN", "content": "("},
-            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
             {"type": "T_MONDAY", "content": "monday"},
             {"type": "T_OR", "content": "or"},
             {"type": "T_TUESDAY", "content": "tuesday"},
-            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHTPAREN", "content": ")"},
             {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
             {"type": "T_WEDNESDAY", "content": "wednesday"},
             {"type": "T_OR", "content": "or"},
             {"type": "T_THURSDAY", "content": "thursday"},
-            {"type": "T_RIGHT_PAREN", "content": ")"},
-            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHTPAREN", "content": ")"},
+            {"type": "T_RIGHTPAREN", "content": ")"},
             {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFT_PAREN", "content": "("},
-            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
             {"type": "T_FRIDAY", "content": "friday"},
             {"type": "T_AND", "content": "and"},
             {"type": "T_SATURDAY", "content": "saturday"},
-            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHTPAREN", "content": ")"},
             {"type": "T_OR", "content": "or"},
             {"type": "T_SUNDAY", "content": "sunday"},
-            {"type": "T_RIGHT_PAREN", "content": ")"}
+            {"type": "T_RIGHTPAREN", "content": ")"}
         ]
     }
 ] 

@@ -17,8 +17,8 @@
         "code": "= < > !",
         "result": [
             {"type": "T_EQUALS", "content": "="},
-            {"type": "T_LESS_THAN", "content": "<"},
-            {"type": "T_GREATER_THAN", "content": ">"},
+            {"type": "T_LESSTHAN", "content": "<"},
+            {"type": "T_GREATERTHAN", "content": ">"},
             {"type": "T_EXCLAMATION", "content": "!"}
         ]
     },
@@ -56,11 +56,11 @@
         "description": "Test case sensitivity of keywords",
         "code": "Term PROF Course subject SUB",
         "result": [
-            {"type": "T_IDENTIFIER", "content": "Term"},
-            {"type": "T_IDENTIFIER", "content": "PROF"},
-            {"type": "T_IDENTIFIER", "content": "Course"},
+            {"type": "T_TERM", "content": "Term"},
+            {"type": "T_PROF", "content": "PROF"},
+            {"type": "T_COURSE", "content": "Course"},
             {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_IDENTIFIER", "content": "SUB"}
+            {"type": "T_SUBJECT", "content": "SUB"}
         ]
     },
     {
@@ -68,9 +68,9 @@
         "description": "Test adjacent operators without spaces",
         "code": ">=<=!=",
         "result": [
-            {"type": "T_GREATER_EQUAL", "content": ">="},
-            {"type": "T_LESS_EQUAL", "content": "<="},
-            {"type": "T_NOT_EQUALS", "content": "!="}
+            {"type": "T_GREATEREQUAL", "content": ">="},
+            {"type": "T_LESSEQUAL", "content": "<="},
+            {"type": "T_NOTEQUALS", "content": "!="}
         ]
     },
     {
@@ -78,13 +78,13 @@
         "description": "Test adjacent parentheses without spaces",
         "code": "()((())",
         "result": [
-            {"type": "T_LEFT_PAREN", "content": "("},
-            {"type": "T_RIGHT_PAREN", "content": ")"},
-            {"type": "T_LEFT_PAREN", "content": "("},
-            {"type": "T_LEFT_PAREN", "content": "("},
-            {"type": "T_LEFT_PAREN", "content": "("},
-            {"type": "T_RIGHT_PAREN", "content": ")"},
-            {"type": "T_RIGHT_PAREN", "content": ")"}
+            {"type": "T_LEFTPAREN", "content": "("},
+            {"type": "T_RIGHTPAREN", "content": ")"},
+            {"type": "T_LEFTPAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
+            {"type": "T_RIGHTPAREN", "content": ")"},
+            {"type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -92,17 +92,39 @@
         "description": "Test parentheses adjacent to operators without spaces",
         "code": "(prof=Alan)and(course=CS)",
         "result": [
-            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
             {"type": "T_PROF", "content": "prof"},
             {"type": "T_EQUALS", "content": "="},
             {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHT_PAREN", "content": ")"},
+            {"type": "T_RIGHTPAREN", "content": ")"},
             {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFT_PAREN", "content": "("},
+            {"type": "T_LEFTPAREN", "content": "("},
             {"type": "T_COURSE", "content": "course"},
             {"type": "T_EQUALS", "content": "="},
             {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHT_PAREN", "content": ")"}
+            {"type": "T_RIGHTPAREN", "content": ")"}
+        ]
+    },
+    {
+        "test_name": "Mixed Valid and Invalid Characters",
+        "description": "Test mixing valid tokens with unrecognized characters",
+        "code": "subject#course",
+        "result": [
+            {"type": "T_UNRECOGNIZED", "content": "#"}
+        ]
+    },
+    {
+        "test_name": "Special Characters Galore",
+        "description": "Test lots of special characters that should be ignored",
+        "code": "@#$%^&*()subject!=course",
+        "result": [
+            {"type": "T_UNRECOGNIZED", "content": "@"},
+            {"type": "T_UNRECOGNIZED", "content": "#"},
+            {"type": "T_UNRECOGNIZED", "content": "$"},
+            {"type": "T_UNRECOGNIZED", "content": "%"},
+            {"type": "T_UNRECOGNIZED", "content": "^"},
+            {"type": "T_UNRECOGNIZED", "content": "&"},
+            {"type": "T_UNRECOGNIZED", "content": "*"}
         ]
     }
 ] 

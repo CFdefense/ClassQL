@@ -195,4 +195,19 @@ fn test_unrecognized_tests() {
 #[test]
 fn test_parentheses_grouping() {
     run_test_file("parentheses_grouping_tests.json");
+}
+
+#[test]
+fn test_core_tokens() {
+    run_test_file("core_tokens.json");
+}
+
+#[test]
+fn test_core_tokens_edge_cases() {
+    run_test_file("core_tokens_edge_cases.json");
+}
+
+#[test]
+fn test_core_tokens_stress_tests() {
+    run_test_file("core_tokens_stress_tests.json");
 } 
