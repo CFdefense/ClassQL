@@ -98,6 +98,10 @@ impl<'a> Tui<'a> {
                         }
                     }
                     KeyCode::Backspace => {
+                        // Clear any previous toasts and problematic tokens when user backspaces
+                        self.toast_message = None;
+                        self.toast_start_time = None;
+                        self.problematic_tokens.clear();
                         self.input.pop();
                     }
                     KeyCode::Char(c) => {
