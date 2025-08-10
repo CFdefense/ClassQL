@@ -71,7 +71,7 @@ pub enum TokenType {
     Unrecognized,
 }
 
-#[allow(dead_code)]
+#[derive(Debug, Clone)]
 pub struct Token {
     token_type: TokenType,
     pub lexeme: String,

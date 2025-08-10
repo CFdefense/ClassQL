@@ -134,25 +134,23 @@ impl Lexer {
     }
 
     pub fn handle_unrecognized_tokens(tokens: &[Token]) -> Option<AppError> {
-        // Check if any token is unrecognized
-        let unrecognized_tokens: Vec<&Token> = tokens.iter()
+        let unrecognized_tokens: Vec<&Token> = tokens
+            .iter()
             .filter(|token| matches!(token.get_token_type(), TokenType::Unrecognized))
             .collect();
 
-        if unrecognized_tokens.is_empty() {
-            return None;
+        if !unrecognized_tokens.is_empty() {
+            let error_msg = format!(
+                "Unrecognized tokens found: {}",
+                unrecognized_tokens
+                    .iter()
+                    .map(|t| format!("'{}'", t.get_lexeme()))
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            );
+            Some(AppError::UnrecognizedTokens(error_msg))
+        } else {
+            None
         }
-
-        // Create simple error message
-        let unrecognized_chars: Vec<String> = unrecognized_tokens.iter()
-            .map(|token| token.lexeme.clone())
-            .collect();
-        
-        let error_message = format!(
-            "Unrecognized tokens found: {}\n\nPlease remove or replace these characters with valid syntax.",
-            unrecognized_chars.join(", ")
-        );
-
-        Some(AppError::UnrecognizedTokens(error_message))
     }
 }

@@ -6,15 +6,18 @@
     The AST can then be used by the semantic analyzer to check for semantic errors
 */
 
+use crate::compiler::token::{Token, TokenType as NodeType};
+
 pub struct AST {
     head: TreeNode,
-}
-
-enum NodeType {
-    
 }
 
 struct TreeNode {
     children: Vec<TreeNode>,
     node_type: NodeType,
+    node_content: String,
+}
+
+pub fn parse(ast: &AST, tokens: Vec<Token>) {
+    
 }
