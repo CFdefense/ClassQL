@@ -91,8 +91,8 @@ impl TokenType {
 
 #[derive(Debug, Clone)]
 pub struct Token {
-    pub token_type: TokenType,
-    pub lexeme: String,
+    token_type: TokenType,
+    lexeme: String,
     start: i32,
     end: i32,
 }

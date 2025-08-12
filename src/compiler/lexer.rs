@@ -109,7 +109,7 @@ impl Lexer {
         // Check if we found any unrecognized tokens
         let unrecognized_tokens: Vec<Token> = all_tokens
             .iter()
-            .filter(|token| matches!(token.token_type, TokenType::Unrecognized))
+            .filter(|token| matches!(token.get_token_type(), TokenType::Unrecognized))
             .cloned()
             .collect();
         

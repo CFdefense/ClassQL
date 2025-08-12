@@ -108,7 +108,7 @@ impl Parser  {
         let mut first_term = self.parse_logical_term(tokens)?;
         
         // continue parsing logical terms until we hit the end of the tokens or we hit a non-or token
-        while self.token_pointer < tokens.len() && tokens[self.token_pointer].token_type == TokenType::Or {
+        while self.token_pointer < tokens.len() && *tokens[self.token_pointer].get_token_type() == TokenType::Or {
             self.token_pointer += 1;
             let next_term = self.parse_logical_term(tokens)?;
             
@@ -131,7 +131,7 @@ impl Parser  {
         let mut first_factor = self.parse_logical_factor(tokens)?;
 
         // continue parsing logical factors until we hit the end of the tokens or we hit a non-and token
-        while self.token_pointer < tokens.len() && tokens[self.token_pointer].token_type == TokenType::And {
+        while self.token_pointer < tokens.len() && *tokens[self.token_pointer].get_token_type() == TokenType::And {
             self.token_pointer += 1;
             let next_factor = self.parse_logical_factor(tokens)?;
 
@@ -152,12 +152,12 @@ impl Parser  {
         let first_query = self.parse_entity_query(tokens)?;
 
         // continue if more
-        if self.token_pointer < tokens.len() && tokens[self.token_pointer].token_type == TokenType::LeftParen {
+        if self.token_pointer < tokens.len() && *tokens[self.token_pointer].get_token_type() == TokenType::LeftParen {
             self.token_pointer += 1;
             let next_query = self.parse_query(tokens)?;
             
             // check that next token is closing paren or error
-            if self.token_pointer >= tokens.len() || tokens[self.token_pointer].token_type != TokenType::RightParen {
+            if self.token_pointer >= tokens.len() || *tokens[self.token_pointer].get_token_type() != TokenType::RightParen {
                 // Return error with the problematic tokens
                 let problematic_tokens = vec![tokens[self.token_pointer - 1].clone()]; // the opening paren
                 return Err((SyntaxError::UnclosedParenthesis, problematic_tokens));
@@ -174,7 +174,7 @@ impl Parser  {
         let mut entity_query = TreeNode::new(NodeType::EntityQuery, NodeType::EntityQuery.to_string());
 
         // match next keyword
-        let next_query = match tokens[self.token_pointer].token_type {
+        let next_query = match *tokens[self.token_pointer].get_token_type() {
             TokenType::Prof => self.parse_professor_query(tokens)?,
             TokenType::Course => self.parse_course_query(tokens)?,
             TokenType::Subject => self.parse_subject_query(tokens)?,
@@ -189,7 +189,7 @@ impl Parser  {
             TokenType::Method => self.parse_instruction_method_query(tokens)?,
             TokenType::Campus => self.parse_campus_query(tokens)?,
             TokenType::Meeting => self.parse_meeting_type_query(tokens)?,
-            _ => return Err((SyntaxError::UnexpectedToken(tokens[self.token_pointer].token_type.to_string()), vec![tokens[self.token_pointer].clone()]))
+            _ => return Err((SyntaxError::UnexpectedToken(tokens[self.token_pointer].get_token_type().to_string()), vec![tokens[self.token_pointer].clone()]))
         };
 
         entity_query.children.push(next_query);
