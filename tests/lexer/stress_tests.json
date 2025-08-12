@@ -32,10 +32,8 @@
         "description": "Test mixed valid and invalid symbols",
         "code": "prof@email.com<>campus",
         "result": [
-            {"type": "T_IDENTIFIER", "content": "prof@email.com"},
-            {"type": "T_LESSTHAN", "content": "<"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_CAMPUS", "content": "campus"}
+            {"type": "T_UNRECOGNIZED", "content": "@"},
+            {"type": "T_UNRECOGNIZED", "content": "."}
         ]
     },
     {
@@ -146,6 +144,20 @@
             {"type": "T_IDENTIFIER", "content": "Online"},
             {"type": "T_RIGHTPAREN", "content": ")"},
             {"type": "T_RIGHTPAREN", "content": ")"}
+        ]
+    },
+    {
+        "test_name": "Unrecognized Tokens in Quotes",
+        "description": "Test that unrecognized characters inside quotes are treated as part of the string",
+        "code": "title = \"CS@101\" and course = \"Data&Algorithms\"",
+        "result": [
+            {"type": "T_TITLE", "content": "title"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"CS@101\""},
+            {"type": "T_AND", "content": "and"},
+            {"type": "T_COURSE", "content": "course"},
+            {"type": "T_EQUALS", "content": "="},
+            {"type": "T_STRING", "content": "\"Data&Algorithms\""}
         ]
     }
 ] 

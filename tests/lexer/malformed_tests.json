@@ -66,12 +66,12 @@
         "description": "Test mixed case versions of keywords",
         "code": "SUBJECT Prof CouRSe AnD Or NoT",
         "result": [
-            {"type": "T_IDENTIFIER", "content": "SUBJECT"},
-            {"type": "T_IDENTIFIER", "content": "Prof"},
-            {"type": "T_IDENTIFIER", "content": "CouRSe"},
-            {"type": "T_IDENTIFIER", "content": "AnD"},
-            {"type": "T_IDENTIFIER", "content": "Or"},
-            {"type": "T_IDENTIFIER", "content": "NoT"}
+            {"type": "T_SUBJECT", "content": "SUBJECT"},
+            {"type": "T_PROF", "content": "Prof"},
+            {"type": "T_COURSE", "content": "CouRSe"},
+            {"type": "T_AND", "content": "AnD"},
+            {"type": "T_OR", "content": "Or"},
+            {"type": "T_NOT", "content": "NoT"}
         ]
     },
     {

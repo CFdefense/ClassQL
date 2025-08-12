@@ -60,32 +60,32 @@ impl Lexer {
             })
             .collect();
         
-        let mut tokens = Vec::new();
-        let mut unrecognized_positions = Vec::new(); // Track positions as we go
+        let mut all_tokens = Vec::new();
+        let mut byte_pos = 0;
         
-        while self.position < self.chars.len() {
-            let remaining: String = self.chars[self.position..].iter().collect();
+        // First pass: parse the entire input and collect all tokens
+        while byte_pos < self.input.len() {
+            let remaining = &self.input[byte_pos..];
             
             // Skip whitespace
-            if self.current_char.is_whitespace() {
-                self.advance();
+            if remaining.starts_with(char::is_whitespace) {
+                let next_char = remaining.chars().next().unwrap();
+                byte_pos += next_char.len_utf8();
                 continue;
             }
             
             let mut matched = false;
             for (token_type, regex) in &compiled_patterns {
-                if let Some(mat) = regex.find(remaining.as_str()) {
+                if let Some(mat) = regex.find(remaining) {
                     if mat.start() == 0 { // Must match at beginning
                         let lexeme = mat.as_str().to_string();
-                        let start_pos = self.position as i32;
-                        let end_pos = (self.position + mat.len()) as i32;
-                        let token = Token::new(token_type.clone(), lexeme, start_pos, end_pos);
-                        tokens.push(token);
+                        let start_pos = byte_pos as i32;
+                        let end_pos = (byte_pos + mat.len()) as i32;
+                        let token = Token::new(token_type.clone(), lexeme.clone(), start_pos, end_pos);
+                        all_tokens.push(token);
                         
-                        // Advance position by match length
-                        for _ in 0..mat.len() {
-                            self.advance();
-                        }
+                        // Advance byte position by match length
+                        byte_pos += mat.len();
                         matched = true;
                         break;
                     }
@@ -93,43 +93,32 @@ impl Lexer {
             }
             
             if !matched {
-                // Handle unrecognized character - collect it for error reporting
-                self.unrecognized_chars.push(self.current_char);
-                unrecognized_positions.push(self.position); // Store the actual position
-                self.advance();
+                // Found unrecognized character - collect it
+                let next_char = remaining.chars().next().unwrap();
+                let token = Token::new(
+                    TokenType::Unrecognized,
+                    next_char.to_string(),
+                    byte_pos as i32,
+                    (byte_pos + next_char.len_utf8()) as i32
+                );
+                all_tokens.push(token);
+                byte_pos += next_char.len_utf8();
             }
         }
         
-        // If we found unrecognized characters, return an error instead
-        if !self.unrecognized_chars.is_empty() {
-            let error_msg = format!(
-                "Unrecognized tokens found: {}",
-                self.unrecognized_chars
-                    .iter()
-                    .map(|ch| format!("'{}'", ch))
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            );
-            
-            // Collect problematic token positions for highlighting
-            let mut problematic_positions = Vec::new();
-            for &pos in &unrecognized_positions {
-                problematic_positions.push((pos, pos + 1));
-            }
-            
-            return Err(AppError::UnrecognizedTokens(error_msg, problematic_positions));
+        // Check if we found any unrecognized tokens
+        let unrecognized_tokens: Vec<Token> = all_tokens
+            .iter()
+            .filter(|token| matches!(token.token_type, TokenType::Unrecognized))
+            .cloned()
+            .collect();
+        
+        // If we found any unrecognized characters, return only those
+        if !unrecognized_tokens.is_empty() {
+            return Ok(unrecognized_tokens);
         }
         
-        Ok(tokens)
-    }
-
-    // Helper method to advance position and update current_char
-    fn advance(&mut self) {
-        self.position += 1;
-        if self.position < self.chars.len() {
-            self.current_char = self.chars[self.position];
-        } else {
-            self.current_char = '\0'; // End of input
-        }
+        // Otherwise return all valid tokens
+        Ok(all_tokens)
     }
 }
