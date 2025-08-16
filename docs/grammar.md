@@ -129,7 +129,7 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 <enrollment_cap_query> ::= "cap" <binop> <integer>
 <instruction_method_query> ::= "method" <condition> <string>
 <campus_query> ::= "campus" <condition> <string>
-<enrollment_query> ::= "size" <binop> <integer>
+<enrollment_query> ::= "size" <binop> <integer>  # ! Might be missing this
 <full_query> ::= <condition> "full"
 
 <meeting_type_query> ::= ("meeting type" | "type") <condition> <string>
