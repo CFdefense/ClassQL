@@ -76,8 +76,15 @@
     "description": "Start time with invalid token should fail",
     "input": "invalid > 9:00",
     "should_succeed": false,
-    "expected_error_type": "UnexpectedToken",
-    "expected_problematic_tokens": null
+    "expected_error_type": "InvalidContext",
+    "expected_error_message": "Invalid token 'T_IDENTIFIER ('invalid')' in query start context. Try: prof, course, subject, title, section, number, description, credit, prereqs, enrollment, campus, meeting",
+    "expected_problematic_tokens": [
+      {
+        "lexeme": "invalid",
+        "start": 0,
+        "end": 7
+      }
+    ]
   },
   {
     "test_name": "time_range_missing_to",

@@ -13,8 +13,8 @@
     "description": "Using '>' operator with string value (should fail)",
     "input": "course > CS",
     "should_succeed": false,
-    "expected_error_type": "InvalidOperator",
-    "expected_error_message": ">",
+    "expected_error_type": "InvalidContext",
+    "expected_error_message": "Invalid token '>' in after 'course' context. Try: subject, number, title, description, credit, is, contains, equals",
     "expected_problematic_tokens": [
       {
         "lexeme": ">",

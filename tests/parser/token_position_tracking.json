@@ -13,8 +13,8 @@
     "description": "Test position tracking for malformed expressions",
     "input": "prof is Alan and course",
     "should_succeed": false,
-    "expected_error_type": "MissingToken",
-    "expected_error_message": "Expected condition or sub-query after course",
+    "expected_error_type": "ExpectedAfter",
+    "expected_error_message": "Expected one of [subject, number, title, description, credit, is, contains, equals] after 'course'",
     "expected_problematic_tokens": []
   }
 ] 

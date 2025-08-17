@@ -4,8 +4,8 @@
     "description": "Query with incomplete AND clause that should report the problematic 'and'",
     "input": "prof is Alan and course contains CS and",
     "should_succeed": false,
-    "expected_error_type": "MissingToken",
-    "expected_error_message": "Expected entity query keyword",
+    "expected_error_type": "ExpectedAfter",
+    "expected_error_message": "Expected one of [prof, course, subject, title, section] after 'start of query'",
     "expected_problematic_tokens": []
   },
   {
@@ -22,8 +22,8 @@
     "description": "Query with incomplete OR clause that should report the problematic 'or'",
     "input": "prof is Alan or course contains CS or",
     "should_succeed": false,
-    "expected_error_type": "MissingToken",
-    "expected_error_message": "Expected entity query keyword",
+    "expected_error_type": "ExpectedAfter",
+    "expected_error_message": "Expected one of [prof, course, subject, title, section] after 'start of query'",
     "expected_problematic_tokens": []
   }
 ] 

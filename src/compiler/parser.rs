@@ -1221,8 +1221,38 @@ impl Parser {
             )
         })?;
 
-        // For now, we'll assume any token can be an identifier
-        // In a real implementation, you'd validate it matches the identifier pattern
+        // Check if this is an operator token that shouldn't be here
+        match *id_token.get_token_type() {
+            // Binary operators that are invalid in string context
+            TokenType::Equals | TokenType::NotEquals | TokenType::LessThan | 
+            TokenType::GreaterThan | TokenType::LessEqual | TokenType::GreaterEqual => {
+                return Err((
+                    SyntaxError::InvalidContext {
+                        token: id_token.get_lexeme().to_string(),
+                        context: "after string condition".to_string(),
+                        suggestions: vec!["text value".to_string(), "quoted string".to_string(), "identifier".to_string()],
+                    },
+                    vec![id_token],
+                ));
+            }
+            // String condition operators that are invalid here (double operators)
+            TokenType::Contains | TokenType::Has | TokenType::Starts | TokenType::Ends | 
+            TokenType::Is | TokenType::Equal | TokenType::EqualsWord | TokenType::Does => {
+                return Err((
+                    SyntaxError::InvalidContext {
+                        token: id_token.get_lexeme().to_string(),
+                        context: "after string condition".to_string(),
+                        suggestions: vec!["text value".to_string(), "remove duplicate operator".to_string()],
+                    },
+                    vec![id_token],
+                ));
+            }
+            // Accept other tokens as valid identifiers
+            _ => {
+                // Valid identifier
+            }
+        }
+
         identifier_node.children.push(TreeNode::new(NodeType::String, id_token.get_token_type().to_string()));
 
         Ok(identifier_node)

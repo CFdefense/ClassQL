@@ -4,8 +4,8 @@
     "description": "Query with only one token",
     "input": "prof",
     "should_succeed": false,
-    "expected_error_type": "MissingToken",
-    "expected_error_message": "Expected condition",
+    "expected_error_type": "ExpectedAfter",
+    "expected_error_message": "Expected one of [is, equals, contains, has, starts, ends] after 'entity keyword'",
     "expected_problematic_tokens": []
   },
   {
@@ -22,13 +22,13 @@
     "description": "Query starting with invalid entity",
     "input": "invalid_entity is value",
     "should_succeed": false,
-    "expected_error_type": "UnexpectedToken",
-    "expected_error_message": "T_IS (content: 'is')",
+    "expected_error_type": "InvalidContext",
+    "expected_error_message": "Invalid token 'T_IDENTIFIER ('invalid_entity')' in query start context. Try: prof, course, subject, title, section, number, description, credit, prereqs, enrollment, campus, meeting",
     "expected_problematic_tokens": [
       {
-        "lexeme": "is",
-        "start": 15,
-        "end": 17
+        "lexeme": "invalid_entity",
+        "start": 0,
+        "end": 14
       }
     ]
   },
@@ -46,13 +46,13 @@
     "description": "Query with invalid operator sequence",
     "input": "prof is = Alan",
     "should_succeed": false,
-    "expected_error_type": "UnexpectedToken",
-    "expected_error_message": "T_IDENTIFIER (content: 'Alan')",
+    "expected_error_type": "InvalidContext",
+    "expected_error_message": "Invalid token '=' in after string condition context. Try: text value, quoted string, identifier",
     "expected_problematic_tokens": [
       {
-        "lexeme": "Alan",
-        "start": 10,
-        "end": 14
+        "lexeme": "=",
+        "start": 8,
+        "end": 9
       }
     ]
   },
@@ -61,8 +61,8 @@
     "description": "Query missing operator between entity and value",
     "input": "prof Alan",
     "should_succeed": false,
-    "expected_error_type": "UnexpectedToken",
-    "expected_error_message": "T_IDENTIFIER (content: 'Alan')",
+    "expected_error_type": "InvalidContext",
+    "expected_error_message": "Invalid token 'T_IDENTIFIER ('Alan')' in string condition context. Try: is, equals, contains, has, starts, ends",
     "expected_problematic_tokens": [
       {
         "lexeme": "Alan",
@@ -76,13 +76,13 @@
     "description": "Query with logical operator at wrong position",
     "input": "and prof is Alan",
     "should_succeed": false,
-    "expected_error_type": "UnexpectedToken",
-    "expected_error_message": "T_PROF (content: 'prof')",
+    "expected_error_type": "InvalidContext",
+    "expected_error_message": "Invalid token 'T_AND ('and')' in query start context. Try: prof, course, subject, title, section, number, description, credit, prereqs, enrollment, campus, meeting",
     "expected_problematic_tokens": [
       {
-        "lexeme": "prof",
-        "start": 4,
-        "end": 8
+        "lexeme": "and",
+        "start": 0,
+        "end": 3
       }
     ]
   },
@@ -91,8 +91,8 @@
     "description": "Query ending with logical operator",
     "input": "prof is Alan or",
     "should_succeed": false,
-    "expected_error_type": "MissingToken",
-    "expected_error_message": "Expected entity query keyword",
+    "expected_error_type": "ExpectedAfter",
+    "expected_error_message": "Expected one of [prof, course, subject, title, section] after 'start of query'",
     "expected_problematic_tokens": []
   },
   {
@@ -100,13 +100,13 @@
     "description": "Query with consecutive logical operators",
     "input": "prof is Alan and and course contains CS",
     "should_succeed": false,
-    "expected_error_type": "UnexpectedToken",
-    "expected_error_message": "T_COURSE (content: 'course')",
+    "expected_error_type": "InvalidContext",
+    "expected_error_message": "Invalid token 'T_AND ('and')' in query start context. Try: prof, course, subject, title, section, number, description, credit, prereqs, enrollment, campus, meeting",
     "expected_problematic_tokens": [
       {
-        "lexeme": "course",
-        "start": 21,
-        "end": 27
+        "lexeme": "and",
+        "start": 17,
+        "end": 20
       }
     ]
   },
@@ -115,8 +115,8 @@
     "description": "Query with invalid field name",
     "input": "prof invalid_field is value",
     "should_succeed": false,
-    "expected_error_type": "UnexpectedToken",
-    "expected_error_message": "T_IDENTIFIER (content: 'invalid_field')",
+    "expected_error_type": "InvalidContext",
+    "expected_error_message": "Invalid token 'T_IDENTIFIER ('invalid_field')' in string condition context. Try: is, equals, contains, has, starts, ends",
     "expected_problematic_tokens": [
       {
         "lexeme": "invalid_field",
