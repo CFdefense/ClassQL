@@ -69,6 +69,7 @@
     "input": "size 25",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
+    "expected_error_message": "Missing: Expected comparison operator after size/enrollment",
     "expected_problematic_tokens": null
   },
   {
@@ -77,6 +78,7 @@
     "input": "size >",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
+    "expected_error_message": "Missing: Expected number",
     "expected_problematic_tokens": null
   },
   {
@@ -85,7 +87,7 @@
     "input": "invalid > 25",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "Invalid token 'T_IDENTIFIER ('invalid')' in query start context. Try: prof, course, subject, title, section, number, description, credit, prereqs, enrollment, campus, meeting",
+    "expected_error_message": "'invalid' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
     "expected_problematic_tokens": [
       {
         "lexeme": "invalid",

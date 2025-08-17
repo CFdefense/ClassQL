@@ -56,7 +56,7 @@ impl ParserTestHelper {
         let result = self.parser.parse(&tokens);
         
         match result {
-            Ok(()) => {
+            Ok(_) => {
                 if test_case.should_succeed {
                     println!("Parse succeeded as expected");
                     // TODO: Add AST validation here once AST structure is implemented
@@ -143,10 +143,8 @@ impl ParserTestHelper {
     
     fn validate_error_type(&self, actual_error: &SyntaxError, expected_error_type: &str) {
         let actual_error_type = match actual_error {
-            SyntaxError::UnexpectedToken(_) => "UnexpectedToken",
             SyntaxError::MissingToken(_) => "MissingToken",
             SyntaxError::UnclosedParenthesis => "UnclosedParenthesis",
-            SyntaxError::InvalidOperator(_) => "InvalidOperator",
             SyntaxError::EmptyQuery => "EmptyQuery",
             SyntaxError::ExpectedAfter { .. } => "ExpectedAfter",
             SyntaxError::InvalidContext { .. } => "InvalidContext",
@@ -162,27 +160,7 @@ impl ParserTestHelper {
     }
     
     fn validate_error_message(&self, actual_error: &SyntaxError, expected_message: &str) {
-        let actual_message = match actual_error {
-            SyntaxError::UnexpectedToken(token) => token.clone(),
-            SyntaxError::MissingToken(token) => token.clone(),
-            SyntaxError::InvalidOperator(op) => op.clone(),
-            SyntaxError::UnclosedParenthesis => "Unclosed parenthesis".to_string(),
-            SyntaxError::EmptyQuery => "Empty query".to_string(),
-            SyntaxError::ExpectedAfter { expected, after, .. } => {
-                if expected.len() == 1 {
-                    format!("Expected {} after '{}'", expected[0], after)
-                } else {
-                    format!("Expected one of [{}] after '{}'", expected.join(", "), after)
-                }
-            },
-            SyntaxError::InvalidContext { token, context, suggestions } => {
-                if suggestions.is_empty() {
-                    format!("Invalid token '{}' in {} context", token, context)
-                } else {
-                    format!("Invalid token '{}' in {} context. Try: {}", token, context, suggestions.join(", "))
-                }
-            },
-        };
+        let actual_message = actual_error.to_string();
         
         assert_eq!(
             actual_message, 

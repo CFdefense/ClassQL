@@ -1,5 +1,5 @@
 use super::lexer::Lexer;
-use super::parser::Parser;
+use super::parser::{Parser, AST};
 use crate::tui::errors::AppError;
 
 pub struct Compiler {
@@ -37,8 +37,8 @@ impl Compiler {
         };
 
         // Parse the tokens
-        let _ = match self.parser.parse(&tokens) {
-            Ok(()) => (),
+        let ast = match self.parser.parse(&tokens) {
+            Ok(ast) => ast,
             Err(error_tuple) => {
                 let (e, problematic_tokens) = error_tuple;
                 let problematic_positions: Vec<(usize, usize)> = problematic_tokens
@@ -51,7 +51,7 @@ impl Compiler {
                 };
             }
         };
-        CompilerResult::Success { message: "Success".to_string() }
+        CompilerResult::Success { message: "Success".to_string(), ast }
     }
 }
 
@@ -59,6 +59,7 @@ impl Compiler {
 pub enum CompilerResult {
     Success {
         message: String,
+        ast: AST,
     },
     LexerError {
         message: String,

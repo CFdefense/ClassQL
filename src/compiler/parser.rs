@@ -55,21 +55,16 @@ impl NodeType {
     }
 }
 
-pub struct Parser {
-    ast: AST,
-    token_pointer: usize,
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AST {
-    head: Option<TreeNode>,
+    pub head: Option<TreeNode>,
 }
 
 #[derive(Debug, Clone)]
-struct TreeNode {
-    children: Vec<TreeNode>,
-    node_type: NodeType,
-    node_content: String,
+pub struct TreeNode {
+    pub children: Vec<TreeNode>,
+    pub node_type: NodeType,
+    pub node_content: String,
 }
 
 impl TreeNode {
@@ -86,6 +81,11 @@ impl AST {
     fn new() -> Self {
         AST { head: None }
     }
+}
+
+pub struct Parser {
+    ast: AST,
+    token_pointer: usize,
 }
 
 impl Parser {
@@ -116,7 +116,7 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self, tokens: &Vec<Token>) -> Result<(), (SyntaxError, Vec<Token>)> {
+    pub fn parse(&mut self, tokens: &Vec<Token>) -> Result<AST, (SyntaxError, Vec<Token>)> {
         self.token_pointer = 0;
         self.ast = AST::new();
 
@@ -144,7 +144,7 @@ impl Parser {
             ));
         }
 
-        Ok(())
+        Ok(AST { head: self.ast.head.take() })
     }
 
     // <query> ::= <logical_term> ("or" <logical_term>)*
@@ -382,7 +382,7 @@ impl Parser {
                         suggestions: vec!["prof".to_string(), "course".to_string(), "subject".to_string(), 
                                         "title".to_string(), "section".to_string(), "number".to_string(),
                                         "description".to_string(), "credit".to_string(), "prereqs".to_string(),
-                                        "enrollment".to_string(), "campus".to_string(), "meeting".to_string()],
+                                        "corereqs".to_string(), "enrollment".to_string(), "campus".to_string(), "meeting".to_string()],
                     },
                     vec![next_token],
                 ))
@@ -742,7 +742,7 @@ impl Parser {
         // Check if next token is a valid binary operator
         if self.token_pointer >= tokens.len() {
             return Err((
-                SyntaxError::MissingToken("Expected binary operator after size/enrollment".into()),
+                SyntaxError::MissingToken("Expected comparison operator after size/enrollment".into()),
                 vec![],
             ));
         }
@@ -750,7 +750,7 @@ impl Parser {
         let next_token = &tokens[self.token_pointer];
         if !Self::is_valid_binop_token(next_token.get_token_type()) {
             return Err((
-                SyntaxError::MissingToken("Expected binary operator after size/enrollment".into()),
+                SyntaxError::MissingToken("Expected comparison operator after size/enrollment".into()),
                 vec![],
             ));
         }
@@ -841,7 +841,7 @@ impl Parser {
                 let next_token = &tokens[self.token_pointer];
                 if !Self::is_valid_binop_token(next_token.get_token_type()) {
                     return Err((
-                        SyntaxError::MissingToken("Expected binary operator after start/end".into()),
+                        SyntaxError::MissingToken("Expected comparison operator after start/end".into()),
                         vec![],
                     ));
                 }
@@ -1195,7 +1195,7 @@ impl Parser {
 
         let digit_token = self.next_token(tokens).map_err(|_| {
             (
-                SyntaxError::MissingToken("Expected integer".into()),
+                SyntaxError::MissingToken("Expected number".into()),
                 vec![],
             )
         })?;

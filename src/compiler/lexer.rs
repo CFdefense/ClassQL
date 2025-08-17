@@ -113,9 +113,25 @@ impl Lexer {
             .cloned()
             .collect();
         
-        // If we found any unrecognized characters, return only those
+        // If we found any unrecognized characters, return an error
         if !unrecognized_tokens.is_empty() {
-            return Ok(unrecognized_tokens);
+            let problematic_positions: Vec<(usize, usize)> = unrecognized_tokens
+                .iter()
+                .map(|token| (token.get_start() as usize, token.get_end() as usize))
+                .collect();
+            
+            let unrecognized_chars: Vec<String> = unrecognized_tokens
+                .iter()
+                .map(|token| format!("'{}'", token.get_lexeme()))
+                .collect();
+            
+            let message = format!(
+                "Unrecognized character{}: {}",
+                if unrecognized_chars.len() > 1 { "s" } else { "" },
+                unrecognized_chars.join(", ")
+            );
+            
+            return Err(AppError::UnrecognizedTokens(message, problematic_positions));
         }
         
         // Otherwise return all valid tokens

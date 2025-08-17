@@ -35,10 +35,8 @@ impl Display for AppError {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum SyntaxError {
-    UnexpectedToken(String),
     MissingToken(String),
     UnclosedParenthesis,
-    InvalidOperator(String),
     EmptyQuery,
     ExpectedAfter {
         expected: Vec<String>,
@@ -55,25 +53,96 @@ pub enum SyntaxError {
 impl Display for SyntaxError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            SyntaxError::UnexpectedToken(token) => write!(f, "Unexpected token: {}", token),
-            SyntaxError::MissingToken(token) => write!(f, "Missing token: {}", token),
-            SyntaxError::UnclosedParenthesis => write!(f, "Unclosed parenthesis"),
-            SyntaxError::InvalidOperator(op) => write!(f, "Invalid operator: {}", op),
-            SyntaxError::EmptyQuery => write!(f, "Empty query"),
+            SyntaxError::MissingToken(token) => write!(f, "Missing: {}", token),
+            SyntaxError::UnclosedParenthesis => write!(f, "Missing closing parenthesis ')'"),
+            SyntaxError::EmptyQuery => write!(f, "Please enter a query to search"),
             SyntaxError::ExpectedAfter { expected, after, position: _ } => {
-                if expected.len() == 1 {
-                    write!(f, "Expected {} after '{}'", expected[0], after)
+                let user_friendly_expected: Vec<String> = expected
+                    .iter()
+                    .map(|s| format!("'{}'", make_user_friendly(s)))
+                    .collect();
+                
+                let user_friendly_after = make_user_friendly(after);
+                
+                // Special case for start of query - use "Please start with" instead of "After..."
+                if after == "start of query" {
+                    if user_friendly_expected.len() == 1 {
+                        write!(f, "Please start with: {}", user_friendly_expected[0])
+                    } else {
+                        write!(f, "Please start with one of: {}", user_friendly_expected.join(", "))
+                    }
                 } else {
-                    write!(f, "Expected one of [{}] after '{}'", expected.join(", "), after)
+                    if user_friendly_expected.len() == 1 {
+                        write!(f, "After '{}', please add: {}", user_friendly_after, user_friendly_expected[0])
+                    } else {
+                        write!(f, "After '{}', please add one of: {}", user_friendly_after, user_friendly_expected.join(", "))
+                    }
                 }
             },
             SyntaxError::InvalidContext { token, context, suggestions } => {
+                let clean_token = extract_user_text(token);
+                let user_friendly_context = make_user_friendly(context);
+                
                 if suggestions.is_empty() {
-                    write!(f, "Invalid token '{}' in {} context", token, context)
+                    write!(f, "'{}' is not valid here ({})", clean_token, user_friendly_context)
                 } else {
-                    write!(f, "Invalid token '{}' in {} context. Try: {}", token, context, suggestions.join(", "))
+                    let user_friendly_suggestions: Vec<String> = suggestions
+                        .iter()
+                        .map(|s| format!("'{}'", make_user_friendly(s)))
+                        .collect();
+                    write!(f, "'{}' is not valid here. Try: {}", clean_token, user_friendly_suggestions.join(", "))
                 }
             },
         }
+    }
+}
+
+// Helper function to extract the actual user text from technical token descriptions
+fn extract_user_text(token: &str) -> String {
+    // Handle patterns like "T_IDENTIFIER ('man')" -> "man"
+    if let Some(start) = token.find("('") {
+        if let Some(end) = token.rfind("')") {
+            return token[start + 2..end].to_string();
+        }
+    }
+    
+    // Handle patterns like "T_CONTAINS" -> "contains" 
+    if token.starts_with("T_") {
+        // Extract the token name and convert to user-friendly format
+        let token_name = &token[2..]; // Remove "T_" prefix
+        return token_name.to_lowercase().replace("_", " ");
+    }
+    
+    // Otherwise return the token as-is
+    token.to_string()
+}
+
+// Helper function to make technical terms more user-friendly - I dont want to manually change every error message so well convert
+fn make_user_friendly(term: &str) -> String {
+    match term {
+        "entity keyword" => "search field".to_string(),
+        "string condition" => "when searching".to_string(),
+        "after string condition" => "when searching for text".to_string(),
+        "numeric comparison" => "when comparing numbers".to_string(),
+        "query start" => "at the beginning".to_string(),
+        "end of query" => "at the end".to_string(),
+        "start of query" => "the beginning".to_string(),
+        "prof" => "professor".to_string(),
+        "corereqs" => "corequisites".to_string(),
+        "prereqs" => "prerequisites".to_string(),
+        "is" => "is".to_string(),
+        "equals" => "equals".to_string(),
+        "contains" => "contains".to_string(),
+        "has" => "has".to_string(),
+        "starts" => "starts with".to_string(),
+        "ends" => "ends with".to_string(),
+        "and" => "and".to_string(),
+        "or" => "or".to_string(),
+        "remove extra text" => "remove extra words".to_string(),
+        "text value" => "some text".to_string(),
+        "quoted string" => "text in quotes".to_string(),
+        "identifier" => "a name or value".to_string(),
+        "remove duplicate operator" => "remove the repeated word".to_string(),
+        _ => term.replace("_", " ").to_lowercase(),
     }
 }

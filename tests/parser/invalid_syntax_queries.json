@@ -5,7 +5,7 @@
     "input": "prof is",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Expected identifier",
+    "expected_error_message": "Missing: Expected identifier",
     "expected_problematic_tokens": []
   },
   {
@@ -14,7 +14,7 @@
     "input": "is Alan",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "Invalid token 'T_IS ('is')' in query start context. Try: prof, course, subject, title, section, number, description, credit, prereqs, enrollment, campus, meeting",
+    "expected_error_message": "'is' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
     "expected_problematic_tokens": [
       {
         "lexeme": "is",
@@ -29,7 +29,7 @@
     "input": "prof is Alan and",
     "should_succeed": false,
     "expected_error_type": "ExpectedAfter",
-    "expected_error_message": "Expected one of [prof, course, subject, title, section] after 'start of query'",
+    "expected_error_message": "Please start with one of: 'professor', 'course', 'subject', 'title', 'section'",
     "expected_problematic_tokens": []
   },
   {
@@ -38,7 +38,7 @@
     "input": "prof is Alan or",
     "should_succeed": false,
     "expected_error_type": "ExpectedAfter",
-    "expected_error_message": "Expected one of [prof, course, subject, title, section] after 'start of query'",
+    "expected_error_message": "Please start with one of: 'professor', 'course', 'subject', 'title', 'section'",
     "expected_problematic_tokens": []
   },
   {
@@ -47,7 +47,7 @@
     "input": "prof < Smith",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "Invalid token '<' in string condition context. Try: is, equals, contains, has, starts, ends",
+    "expected_error_message": "'<' is not valid here. Try: 'is', 'equals', 'contains', 'has', 'starts with', 'ends with'",
     "expected_problematic_tokens": [
       {
         "lexeme": "<",
@@ -62,7 +62,7 @@
     "input": "course",
     "should_succeed": false,
     "expected_error_type": "ExpectedAfter",
-    "expected_error_message": "Expected one of [subject, number, title, description, credit, is, contains, equals] after 'course'",
+    "expected_error_message": "After 'course', please add one of: 'subject', 'number', 'title', 'description', 'credit', 'is', 'contains', 'equals'",
     "expected_problematic_tokens": []
   },
   {
@@ -71,7 +71,7 @@
     "input": "credit hours contains 3",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "Invalid token 'T_CONTAINS' in numeric comparison context. Try: =, !=, <, >, <=, >=, equals, is, less than, greater than",
+    "expected_error_message": "'contains' is not valid here. Try: '=', '!=', '<', '>', '<=', '>=', 'equals', 'is', 'less than', 'greater than'",
     "expected_problematic_tokens": [
       {
         "lexeme": "contains",
@@ -86,7 +86,7 @@
     "input": "credit = 3",
     "should_succeed": false,
     "expected_error_type": "ExpectedAfter",
-    "expected_error_message": "Expected hours after 'credit'",
+    "expected_error_message": "After 'credit', please add: 'hours'",
     "expected_problematic_tokens": [
       {
         "lexeme": "=",
@@ -101,7 +101,7 @@
     "input": "meeting is Lab",
     "should_succeed": false,
     "expected_error_type": "ExpectedAfter",
-    "expected_error_message": "Expected type after 'meeting'",
+    "expected_error_message": "After 'meeting', please add: 'type'",
     "expected_problematic_tokens": []
   },
   {
@@ -110,7 +110,7 @@
     "input": "prof is Smith extra tokens",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "Invalid token 'T_IDENTIFIER ('extra')' in end of query context. Try: and, or, remove extra text",
+    "expected_error_message": "'extra' is not valid here. Try: 'and', 'or', 'remove extra words'",
     "expected_problematic_tokens": [
       {
         "lexeme": "extra",

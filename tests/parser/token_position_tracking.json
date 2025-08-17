@@ -5,7 +5,7 @@
     "input": "prof is Alan and course contains",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Expected identifier",
+    "expected_error_message": "Missing: Expected identifier",
     "expected_problematic_tokens": []
   },
   {
@@ -14,7 +14,7 @@
     "input": "prof is Alan and course",
     "should_succeed": false,
     "expected_error_type": "ExpectedAfter",
-    "expected_error_message": "Expected one of [subject, number, title, description, credit, is, contains, equals] after 'course'",
+    "expected_error_message": "After 'course', please add one of: 'subject', 'number', 'title', 'description', 'credit', 'is', 'contains', 'equals'",
     "expected_problematic_tokens": []
   }
 ] 

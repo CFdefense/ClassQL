@@ -61,6 +61,7 @@
     "input": "start 9:00",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
+    "expected_error_message": "Missing: Expected comparison operator after start/end",
     "expected_problematic_tokens": null
   },
   {
@@ -69,6 +70,7 @@
     "input": "end >",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
+    "expected_error_message": "Missing: Expected time",
     "expected_problematic_tokens": null
   },
   {
@@ -77,7 +79,7 @@
     "input": "invalid > 9:00",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "Invalid token 'T_IDENTIFIER ('invalid')' in query start context. Try: prof, course, subject, title, section, number, description, credit, prereqs, enrollment, campus, meeting",
+    "expected_error_message": "'invalid' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
     "expected_problematic_tokens": [
       {
         "lexeme": "invalid",
@@ -92,6 +94,7 @@
     "input": "start 9:00 17:00",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
+    "expected_error_message": "Missing: Expected comparison operator after start/end",
     "expected_problematic_tokens": null
   },
   {
@@ -100,6 +103,7 @@
     "input": "start 9:00 to",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
+    "expected_error_message": "Missing: Expected time",
     "expected_problematic_tokens": null
   }
 ] 
