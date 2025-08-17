@@ -20,8 +20,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
-use ratatui::DefaultTerminal;
-use ratatui::Frame;
+use ratatui::{DefaultTerminal, Frame};
 use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone)]
@@ -39,6 +38,10 @@ pub struct Tui<'a> {
     error_type: Option<ErrorType>,
     problematic_tokens: Vec<(usize, usize)>,
     compiler: &'a mut Compiler,
+    // Tab completion state
+    completions: Vec<String>,
+    completion_index: Option<usize>,
+    show_completions: bool,
 }
 
 impl<'a> Tui<'a> {
@@ -60,6 +63,9 @@ impl<'a> Tui<'a> {
             error_type: None,
             problematic_tokens: Vec::new(),
             compiler,
+            completions: Vec::new(),
+            completion_index: None,
+            show_completions: false,
         });
     }
 
@@ -74,15 +80,72 @@ impl<'a> Tui<'a> {
             let problematic_tokens = self.problematic_tokens.clone();
             let toast_message = self.toast_message.clone();
             let error_type = self.error_type.clone();
+            let completions = self.completions.clone();
+            let completion_index = self.completion_index;
+            let show_completions = self.show_completions;
 
             // Draw the current state
             let terminal = &mut self.terminal;
             terminal.draw(|f| {
-                render_frame(f, &input, &problematic_tokens, &toast_message, &error_type);
+                render_frame(f, &input, &problematic_tokens, &toast_message, &error_type, &completions, completion_index, show_completions);
             })?;
 
             // Handle input events
             if let Event::Key(key) = event::read()? {
+                // Handle completion navigation first if completions are showing
+                if self.show_completions {
+                    match key.code {
+                        KeyCode::Esc => {
+                            self.show_completions = false;
+                            self.completion_index = None;
+                        }
+                        KeyCode::Up => {
+                            if let Some(index) = self.completion_index {
+                                if index > 0 {
+                                    self.completion_index = Some(index - 1);
+                                }
+                            }
+                        }
+                        KeyCode::Down => {
+                            if let Some(index) = self.completion_index {
+                                if index < self.completions.len() - 1 {
+                                    self.completion_index = Some(index + 1);
+                                }
+                            }
+                        }
+                        KeyCode::Enter => {
+                            // Insert selected completion
+                            if let Some(index) = self.completion_index {
+                                if index < self.completions.len() {
+                                    let completion = &self.completions[index];
+                                    // Don't add placeholders like <value>
+                                    if !completion.starts_with('<') {
+                                        if !self.input.is_empty() && !self.input.ends_with(' ') {
+                                            self.input.push(' ');
+                                        }
+                                        self.input.push_str(completion);
+                                        if !completion.starts_with('"') { // Don't add space after quoted strings
+                                            self.input.push(' ');
+                                        }
+                                    }
+                                }
+                            }
+                            self.show_completions = false;
+                            self.completion_index = None;
+                        }
+                        KeyCode::Tab => {
+                            // Refresh completions on tab
+                            self.handle_tab_completion();
+                        }
+                        _ => {
+                            // Any other key hides completions
+                            self.show_completions = false;
+                            self.completion_index = None;
+                        }
+                    }
+                    continue; // Skip normal key handling when completions are shown
+                }
+
                 match key.code {
                     KeyCode::Esc => break Ok(()),
                     KeyCode::Enter => {
@@ -120,6 +183,10 @@ impl<'a> Tui<'a> {
                         self.clear_error_state();
                         self.input.pop();
                     }
+                    KeyCode::Tab => {
+                        // Handle tab completion
+                        self.handle_tab_completion();
+                    }
                     KeyCode::Char(c) => {
                         // Clear any previous toasts and problematic tokens when user starts typing
                         self.clear_error_state();
@@ -136,6 +203,16 @@ impl<'a> Tui<'a> {
         self.toast_start_time = None;
         self.error_type = None;
         self.problematic_tokens.clear();
+    }
+
+    fn handle_tab_completion(&mut self) {
+        // Get completion suggestions from compiler
+        self.completions = self.compiler.get_tab_completion(self.input.clone());
+        
+        if !self.completions.is_empty() {
+            self.show_completions = true;
+            self.completion_index = Some(0);
+        }
     }
 
     // function to terminate the tui gracefully
@@ -163,13 +240,14 @@ impl<'a> Tui<'a> {
 }
 
 // Standalone render function to avoid borrow checker conflicts
-fn render_frame(frame: &mut Frame, input: &str, problematic_tokens: &[(usize, usize)], toast_message: &Option<String>, error_type: &Option<ErrorType>) {
+fn render_frame(frame: &mut Frame, input: &str, problematic_tokens: &[(usize, usize)], toast_message: &Option<String>, error_type: &Option<ErrorType>, completions: &Vec<String>, completion_index: Option<usize>, show_completions: bool) {
     render_logo(frame);
     render_search_bar_with_data(frame, input, problematic_tokens);
     render_query_results(frame);
     render_search_helpers_with_data(frame, input, toast_message);
     render_syntax_highlighting(frame);
     render_toast_with_data(frame, toast_message, error_type);
+    render_completion_dropdown(frame, completions, completion_index, show_completions);
 }
 
 fn render_logo(frame: &mut Frame) {
@@ -355,4 +433,48 @@ fn render_toast_with_data(frame: &mut Frame, toast_message: &Option<String>, err
 
         frame.render_widget(toast_paragraph, toast_area);
     }
+}
+
+fn render_completion_dropdown(frame: &mut Frame, completions: &Vec<String>, completion_index: Option<usize>, show_completions: bool) {
+    if !show_completions {
+        return;
+    }
+
+    let dropdown_width = 50;
+    let dropdown_height = (completions.len() as u16).min(8) + 2; // Dynamic height based on completions, max 8 items + borders
+    
+    // Position below the search bar
+    let logo_height = 7; // Height of the ASCII art logo
+    let search_y = logo_height + 2; // Search bar position
+    let search_height = 3; // Search bar height
+    let dropdown_y = search_y + search_height + 1; // 1 line below search bar
+
+    let dropdown_area = Rect {
+        x: frame.area().width.saturating_sub(dropdown_width) / 2,
+        y: dropdown_y,
+        width: dropdown_width,
+        height: dropdown_height,
+    };
+
+    let mut styled_lines = Vec::new();
+    for (i, completion) in completions.iter().enumerate() {
+        let style = if Some(i) == completion_index {
+            Style::default().fg(Color::Black).bg(Color::White) // Better contrast for selected item
+        } else {
+            Style::default().fg(Color::Gray)
+        };
+        styled_lines.push(Line::from(Span::styled(completion, style)));
+    }
+
+    let dropdown_paragraph = Paragraph::new(styled_lines)
+        .style(Style::default().fg(Color::Gray))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Suggestions (↑↓ to navigate, Enter to select)")
+                .title_style(Style::default().fg(Color::Yellow))
+                .border_style(Style::default().fg(Color::Yellow))
+        );
+
+    frame.render_widget(dropdown_paragraph, dropdown_area);
 }

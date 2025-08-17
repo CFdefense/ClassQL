@@ -30,5 +30,37 @@
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "professor_starts_with",
+    "description": "Professor query with 'starts with' operator",
+    "input": "prof starts with A",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "professor_ends_with",
+    "description": "Professor query with 'ends with' operator",
+    "input": "prof ends with son",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "title_starts_with",
+    "description": "Title query with 'starts with' operator",
+    "input": "title starts with Introduction",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "title_ends_with",
+    "description": "Title query with 'ends with' operator", 
+    "input": "title ends with Analysis",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
   }
 ] 

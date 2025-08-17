@@ -117,7 +117,23 @@ fn extract_user_text(token: &str) -> String {
     token.to_string()
 }
 
-// Helper function to make technical terms more user-friendly - I dont want to manually change every error message so well convert
+// Helper function to make technical terms more user-friendly for completion
+pub fn make_user_friendly_for_completion(term: &str) -> String {
+    match term {
+        "prof" => "professor".to_string(),
+        "corereqs" => "corequisites".to_string(),
+        "prereqs" => "prerequisites".to_string(),
+        "starts" => "starts with".to_string(),
+        "ends" => "ends with".to_string(),
+        "remove extra text" => "remove extra words".to_string(),
+        "text value" => "<value>".to_string(),
+        "quoted string" => "\"text\"".to_string(),
+        "identifier" => "<name>".to_string(),
+        _ => term.replace("_", " ").to_lowercase(),
+    }
+}
+
+// Helper function to make technical terms more user-friendly
 fn make_user_friendly(term: &str) -> String {
     match term {
         "entity keyword" => "search field".to_string(),

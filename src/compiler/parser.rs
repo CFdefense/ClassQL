@@ -7,7 +7,7 @@
 */
 
 use crate::compiler::token::{Token, TokenType};
-use crate::tui::errors::SyntaxError;
+use crate::tui::errors::{SyntaxError, make_user_friendly_for_completion};
 use std::vec;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -93,6 +93,65 @@ impl Parser {
         Parser {
             ast: AST::new(),
             token_pointer: 0,
+        }
+    }
+
+    /// Get completion suggestions based on current parser state
+    pub fn get_completion_suggestions(&mut self, tokens: &Vec<Token>) -> Vec<String> {
+        // Reset parser state
+        self.token_pointer = 0;
+        self.ast = AST::new();
+
+        // Try to parse and see where it fails
+        match self.parse(tokens) {
+            Ok(_) => {
+                // Parse succeeded - suggest logical operators or end query
+                vec!["and".to_string(), "or".to_string()]
+            }
+            Err((error, _)) => {
+                // Parse failed - extract suggestions from error
+                match error {
+                    SyntaxError::ExpectedAfter { expected, .. } => {
+                        expected.iter().map(|s| make_user_friendly_for_completion(s)).collect()
+                    }
+                    SyntaxError::InvalidContext { suggestions, .. } => {
+                        suggestions.iter().map(|s| make_user_friendly_for_completion(s)).collect()
+                    }
+                    SyntaxError::MissingToken(_) => {
+                        // Provide generic suggestions based on current context
+                        self.get_context_suggestions(tokens)
+                    }
+                    _ => vec![]
+                }
+            }
+        }
+    }
+
+    /// Get context-aware suggestions when we have a missing token
+    fn get_context_suggestions(&self, tokens: &Vec<Token>) -> Vec<String> {
+        if tokens.is_empty() {
+            // Start of query
+            vec!["professor".to_string(), "course".to_string(), "subject".to_string(), 
+                 "title".to_string(), "section".to_string()]
+        } else {
+            let last_token = &tokens[tokens.len() - 1];
+            match *last_token.get_token_type() {
+                TokenType::Prof => vec!["is".to_string(), "equals".to_string(), "contains".to_string()],
+                TokenType::Course => vec!["subject".to_string(), "number".to_string(), "title".to_string()],
+                TokenType::Credit => vec!["hours".to_string()],
+                TokenType::Meeting => vec!["type".to_string()],
+                TokenType::Size | TokenType::Enrollment => vec!["=".to_string(), ">".to_string(), "<".to_string()],
+                TokenType::Start | TokenType::End => vec!["=".to_string(), ">".to_string(), "<".to_string()],
+                // String condition operators
+                TokenType::Is | TokenType::Equals | TokenType::Contains => {
+                    vec!["<value>".to_string()] // Placeholder for user input
+                }
+                // After values
+                TokenType::Identifier | TokenType::String => {
+                    vec!["and".to_string(), "or".to_string()]
+                }
+                _ => vec![]
+            }
         }
     }
 
@@ -1060,9 +1119,54 @@ impl Parser {
         // Check if it's a valid condition token
         match *condition_token.get_token_type() {
             TokenType::Equals | TokenType::NotEquals | TokenType::Contains | 
-            TokenType::Has | TokenType::Starts | TokenType::With | TokenType::Ends | 
-            TokenType::Is | TokenType::Equal | TokenType::EqualsWord | TokenType::Does => {
-                // Valid condition
+            TokenType::Has | TokenType::Is | TokenType::Equal | TokenType::EqualsWord | TokenType::Does => {
+                // Valid standalone condition
+            }
+            TokenType::Starts => {
+                // "starts" must be followed by "with"
+                if self.token_pointer >= tokens.len() || 
+                   *tokens[self.token_pointer].get_token_type() != TokenType::With {
+                    return Err((
+                        SyntaxError::MissingToken("Expected 'with' after 'starts'".into()),
+                        vec![],
+                    ));
+                }
+                // Consume the "with" token
+                self.next_token(tokens).map_err(|_| {
+                    (
+                        SyntaxError::MissingToken("Expected 'with' after 'starts'".into()),
+                        vec![],
+                    )
+                })?;
+            }
+            TokenType::Ends => {
+                // "ends" must be followed by "with"
+                if self.token_pointer >= tokens.len() || 
+                   *tokens[self.token_pointer].get_token_type() != TokenType::With {
+                    return Err((
+                        SyntaxError::MissingToken("Expected 'with' after 'ends'".into()),
+                        vec![],
+                    ));
+                }
+                // Consume the "with" token
+                self.next_token(tokens).map_err(|_| {
+                    (
+                        SyntaxError::MissingToken("Expected 'with' after 'ends'".into()),
+                        vec![],
+                    )
+                })?;
+            }
+            TokenType::With => {
+                // "with" by itself is not valid
+                return Err((
+                    SyntaxError::InvalidContext {
+                        token: condition_token.get_lexeme().to_string(),
+                        context: "string condition".to_string(),
+                        suggestions: vec!["is".to_string(), "equals".to_string(), "contains".to_string(), 
+                                        "has".to_string(), "starts with".to_string(), "ends with".to_string()],
+                    },
+                    vec![condition_token],
+                ));
             }
             _ => {
                 // Check if it's a binary operator (invalid in condition context)

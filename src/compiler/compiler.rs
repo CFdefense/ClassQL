@@ -53,6 +53,26 @@ impl Compiler {
         };
         CompilerResult::Success { message: "Success".to_string(), ast }
     }
+
+    /// Get tab completion suggestions for the current input
+    pub fn get_tab_completion(&mut self, input: String) -> Vec<String> {
+        // First, try to lex the input
+        match self.lexer.lexical_analysis(input.clone()) {
+            Ok(tokens) => {
+                // Lexing succeeded, now try to get completion suggestions from parser
+                self.parser.get_completion_suggestions(&tokens)
+            }
+            Err(_) => {
+                // Lexing failed, provide basic suggestions
+                if input.trim().is_empty() {
+                    vec!["professor".to_string(), "course".to_string(), "subject".to_string(), 
+                         "title".to_string(), "section".to_string()]
+                } else {
+                    vec![] // Can't provide suggestions for invalid tokens
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug)]

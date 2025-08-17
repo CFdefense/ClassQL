@@ -118,5 +118,41 @@
         "end": 19
       }
     ]
+  },
+  {
+    "test_name": "incomplete_starts_with",
+    "description": "Query with 'starts with' but missing value",
+    "input": "prof starts with",
+    "should_succeed": false,
+    "expected_error_type": "MissingToken",
+    "expected_error_message": "Missing: Expected identifier",
+    "expected_problematic_tokens": []
+  },
+  {
+    "test_name": "incomplete_ends_with",
+    "description": "Query with 'ends with' but missing value",
+    "input": "prof ends with",
+    "should_succeed": false,
+    "expected_error_type": "MissingToken",
+    "expected_error_message": "Missing: Expected identifier",
+    "expected_problematic_tokens": []
+  },
+  {
+    "test_name": "starts_with_only_starts",
+    "description": "Query with just 'starts' without 'with'",
+    "input": "prof starts",
+    "should_succeed": false,
+    "expected_error_type": "MissingToken",
+    "expected_error_message": "Missing: Expected 'with' after 'starts'",
+    "expected_problematic_tokens": []
+  },
+  {
+    "test_name": "ends_with_only_ends",
+    "description": "Query with just 'ends' without 'with'", 
+    "input": "prof ends",
+    "should_succeed": false,
+    "expected_error_type": "MissingToken",
+    "expected_error_message": "Missing: Expected 'with' after 'ends'",
+    "expected_problematic_tokens": []
   }
 ] 
