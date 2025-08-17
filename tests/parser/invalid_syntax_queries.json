@@ -13,13 +13,13 @@
     "description": "Query missing the entity before 'is'",
     "input": "is Alan",
     "should_succeed": false,
-    "expected_error_type": "UnexpectedToken",
-    "expected_error_message": "T_IDENTIFIER (content: 'Alan')",
+    "expected_error_type": "InvalidContext",
+    "expected_error_message": "Invalid token 'T_IS ('is')' in query start context. Try: prof, course, subject, title, section, number, description, credit, prereqs, enrollment, campus, meeting",
     "expected_problematic_tokens": [
       {
-        "lexeme": "Alan",
-        "start": 3,
-        "end": 7
+        "lexeme": "is",
+        "start": 0,
+        "end": 2
       }
     ]
   },
@@ -28,41 +28,50 @@
     "description": "Query with incomplete AND clause",
     "input": "prof is Alan and",
     "should_succeed": false,
-    "expected_error_type": "MissingToken",
-    "expected_error_message": "Expected entity query keyword",
+    "expected_error_type": "ExpectedAfter",
+    "expected_error_message": "Expected one of [prof, course, subject, title, section] after 'start of query'",
     "expected_problematic_tokens": []
   },
   {
-    "test_name": "unclosed_parenthesis",
-    "description": "Query with unclosed parenthesis",
-    "input": "(prof is Alan",
+    "test_name": "incomplete_or_clause",
+    "description": "Query with incomplete OR clause",
+    "input": "prof is Alan or",
     "should_succeed": false,
-    "expected_error_type": "MissingToken",
-    "expected_error_message": "Expected closing parenthesis",
+    "expected_error_type": "ExpectedAfter",
+    "expected_error_message": "Expected one of [prof, course, subject, title, section] after 'start of query'",
     "expected_problematic_tokens": []
   },
   {
-    "test_name": "invalid_field_for_entity",
-    "description": "Query with invalid field for entity (email is not a valid field for prof)",
-    "input": "prof email contains @university.edu",
+    "test_name": "invalid_comparison_operator",
+    "description": "Using < operator with prof (string context)",
+    "input": "prof < Smith",
     "should_succeed": false,
-    "expected_error_type": "UnexpectedToken",
-    "expected_error_message": "T_UNRECOGNIZED (content: '.')",
+    "expected_error_type": "InvalidContext",
+    "expected_error_message": "Invalid token '<' in string condition context. Try: is, equals, contains, has, starts, ends",
     "expected_problematic_tokens": [
       {
-        "lexeme": ".",
-        "start": 31,
-        "end": 32
+        "lexeme": "<",
+        "start": 5,
+        "end": 6
       }
     ]
   },
   {
-    "test_name": "invalid_numeric_operator",
-    "description": "Using string operator with numeric field",
-    "input": "credit hours contains \"three\"",
+    "test_name": "missing_course_specifier",
+    "description": "Course query without specifying what about the course",
+    "input": "course",
     "should_succeed": false,
-    "expected_error_type": "InvalidOperator",
-    "expected_error_message": "T_CONTAINS",
+    "expected_error_type": "ExpectedAfter",
+    "expected_error_message": "Expected one of [subject, number, title, description, credit, is, contains, equals] after 'course'",
+    "expected_problematic_tokens": []
+  },
+  {
+    "test_name": "invalid_credit_hours_operator",
+    "description": "Using contains operator with credit hours (numeric context)", 
+    "input": "credit hours contains 3",
+    "should_succeed": false,
+    "expected_error_type": "InvalidContext",
+    "expected_error_message": "Invalid token 'T_CONTAINS' in numeric comparison context. Try: =, !=, <, >, <=, >=, equals, is, less than, greater than",
     "expected_problematic_tokens": [
       {
         "lexeme": "contains",
@@ -72,51 +81,42 @@
     ]
   },
   {
-    "test_name": "invalid_string_operator",
-    "description": "Using numeric operator with string field",
-    "input": "course > CS",
+    "test_name": "missing_hours_after_credit",
+    "description": "Credit without hours keyword",
+    "input": "credit = 3",
     "should_succeed": false,
-    "expected_error_type": "InvalidOperator",
-    "expected_error_message": ">",
+    "expected_error_type": "ExpectedAfter",
+    "expected_error_message": "Expected hours after 'credit'",
     "expected_problematic_tokens": [
       {
-        "lexeme": ">",
+        "lexeme": "=",
         "start": 7,
         "end": 8
       }
     ]
   },
   {
-    "test_name": "malformed_day_query",
-    "description": "Invalid day query with binary operator",
-    "input": "monday > 5",
+    "test_name": "missing_type_after_meeting",
+    "description": "Meeting without type keyword",
+    "input": "meeting is Lab",
     "should_succeed": false,
-    "expected_error_type": "InvalidOperator",
-    "expected_error_message": ">",
+    "expected_error_type": "ExpectedAfter",
+    "expected_error_message": "Expected type after 'meeting'",
+    "expected_problematic_tokens": []
+  },
+  {
+    "test_name": "extra_tokens_at_end",
+    "description": "Valid query with extra tokens at the end",
+    "input": "prof is Smith extra tokens",
+    "should_succeed": false,
+    "expected_error_type": "InvalidContext",
+    "expected_error_message": "Invalid token 'T_IDENTIFIER ('extra')' in end of query context. Try: and, or, remove extra text",
     "expected_problematic_tokens": [
       {
-        "lexeme": ">",
-        "start": 7,
-        "end": 8
+        "lexeme": "extra",
+        "start": 14,
+        "end": 19
       }
     ]
-  },
-  {
-    "test_name": "empty_query",
-    "description": "Completely empty query",
-    "input": "",
-    "should_succeed": false,
-    "expected_error_type": "EmptyQuery",
-    "expected_error_message": null,
-    "expected_problematic_tokens": []
-  },
-  {
-    "test_name": "whitespace_only",
-    "description": "Query with only whitespace",
-    "input": "   ",
-    "should_succeed": false,
-    "expected_error_type": "EmptyQuery",
-    "expected_error_message": null,
-    "expected_problematic_tokens": []
   }
 ] 

@@ -104,22 +104,24 @@ impl<'a> Tui<'a> {
                     }
                     KeyCode::Backspace => {
                         // Clear any previous toasts and problematic tokens when user backspaces
-                        self.toast_message = None;
-                        self.toast_start_time = None;
-                        self.problematic_tokens.clear();
+                        self.clear_error_state();
                         self.input.pop();
                     }
                     KeyCode::Char(c) => {
                         // Clear any previous toasts and problematic tokens when user starts typing
-                        self.toast_message = None;
-                        self.toast_start_time = None;
-                        self.problematic_tokens.clear();
+                        self.clear_error_state();
                         self.input.push(c);
                     }
                     _ => {}
                 }
             }
         }
+    }
+
+    fn clear_error_state(&mut self) {
+        self.toast_message = None;
+        self.toast_start_time = None;
+        self.problematic_tokens.clear();
     }
 
     // function to terminate the tui gracefully

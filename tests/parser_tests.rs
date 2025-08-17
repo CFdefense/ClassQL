@@ -148,6 +148,8 @@ impl ParserTestHelper {
             SyntaxError::UnclosedParenthesis => "UnclosedParenthesis",
             SyntaxError::InvalidOperator(_) => "InvalidOperator",
             SyntaxError::EmptyQuery => "EmptyQuery",
+            SyntaxError::ExpectedAfter { .. } => "ExpectedAfter",
+            SyntaxError::InvalidContext { .. } => "InvalidContext",
         };
         
         assert_eq!(
@@ -161,11 +163,25 @@ impl ParserTestHelper {
     
     fn validate_error_message(&self, actual_error: &SyntaxError, expected_message: &str) {
         let actual_message = match actual_error {
-            SyntaxError::UnexpectedToken(token) => token,
-            SyntaxError::MissingToken(token) => token,
-            SyntaxError::InvalidOperator(op) => op,
-            SyntaxError::UnclosedParenthesis => "Unclosed parenthesis",
-            SyntaxError::EmptyQuery => "Empty query",
+            SyntaxError::UnexpectedToken(token) => token.clone(),
+            SyntaxError::MissingToken(token) => token.clone(),
+            SyntaxError::InvalidOperator(op) => op.clone(),
+            SyntaxError::UnclosedParenthesis => "Unclosed parenthesis".to_string(),
+            SyntaxError::EmptyQuery => "Empty query".to_string(),
+            SyntaxError::ExpectedAfter { expected, after, .. } => {
+                if expected.len() == 1 {
+                    format!("Expected {} after '{}'", expected[0], after)
+                } else {
+                    format!("Expected one of [{}] after '{}'", expected.join(", "), after)
+                }
+            },
+            SyntaxError::InvalidContext { token, context, suggestions } => {
+                if suggestions.is_empty() {
+                    format!("Invalid token '{}' in {} context", token, context)
+                } else {
+                    format!("Invalid token '{}' in {} context. Try: {}", token, context, suggestions.join(", "))
+                }
+            },
         };
         
         assert_eq!(

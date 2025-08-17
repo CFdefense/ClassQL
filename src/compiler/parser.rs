@@ -132,10 +132,14 @@ impl Parser {
         // Check if there are remaining unconsumed tokens
         if self.token_pointer < tokens.len() {
             return Err((
-                SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
-                    tokens[self.token_pointer].get_token_type().to_string(),
-                    tokens[self.token_pointer].get_lexeme()
-                )),
+                SyntaxError::InvalidContext {
+                    token: format!("{} ('{}')", 
+                        tokens[self.token_pointer].get_token_type().to_string(),
+                        tokens[self.token_pointer].get_lexeme()
+                    ),
+                    context: "end of query".to_string(),
+                    suggestions: vec!["and".to_string(), "or".to_string(), "remove extra text".to_string()],
+                },
                 vec![tokens[self.token_pointer].clone()],
             ));
         }
@@ -301,7 +305,12 @@ impl Parser {
         // match next keyword
         let next_token = self.next_token(tokens).map_err(|_| {
             (
-                SyntaxError::MissingToken("Expected entity query keyword".into()),
+                SyntaxError::ExpectedAfter {
+                    expected: vec!["prof".to_string(), "course".to_string(), "subject".to_string(), 
+                                  "title".to_string(), "section".to_string()],
+                    after: "start of query".to_string(),
+                    position: self.token_pointer,
+                },
                 vec![],
             )
         })?;
@@ -338,12 +347,26 @@ impl Parser {
                     // Consume the "type" token
                     self.next_token(tokens).map_err(|_| {
                         (
-                            SyntaxError::MissingToken("Expected 'type' token".into()),
+                            SyntaxError::ExpectedAfter {
+                                expected: vec!["type".to_string()],
+                                after: "meeting".to_string(),
+                                position: self.token_pointer,
+                            },
                             vec![],
                         )
                     })?;
+                    self.parse_meeting_type_query(tokens)?
+                } else {
+                    // "meeting" must be followed by "type" according to grammar
+                    return Err((
+                        SyntaxError::ExpectedAfter {
+                            expected: vec!["type".to_string()],
+                            after: "meeting".to_string(),
+                            position: self.token_pointer,
+                        },
+                        vec![],
+                    ));
                 }
-                self.parse_meeting_type_query(tokens)?
             },
             TokenType::Type => self.parse_meeting_type_query(tokens)?,
             TokenType::Time => self.parse_time_query(tokens)?,
@@ -353,11 +376,15 @@ impl Parser {
             TokenType::Sunday => self.parse_day_query(tokens)?,
             _ => {
                 return Err((
-                    SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
-                        tokens[self.token_pointer].get_token_type().to_string(),
-                        tokens[self.token_pointer].get_lexeme()
-                    )),
-                    vec![tokens[self.token_pointer].clone()],
+                    SyntaxError::InvalidContext {
+                        token: format!("{} ('{}')", next_token.get_token_type().to_string(), next_token.get_lexeme()),
+                        context: "query start".to_string(),
+                        suggestions: vec!["prof".to_string(), "course".to_string(), "subject".to_string(), 
+                                        "title".to_string(), "section".to_string(), "number".to_string(),
+                                        "description".to_string(), "credit".to_string(), "prereqs".to_string(),
+                                        "enrollment".to_string(), "campus".to_string(), "meeting".to_string()],
+                    },
+                    vec![next_token],
                 ))
             }
         };
@@ -396,7 +423,13 @@ impl Parser {
         // Check what the next token is to decide between direct condition or sub-query
         if self.token_pointer >= tokens.len() {
             return Err((
-                SyntaxError::MissingToken("Expected condition or sub-query after course".into()),
+                SyntaxError::ExpectedAfter {
+                    expected: vec!["subject".to_string(), "number".to_string(), "title".to_string(), 
+                                  "description".to_string(), "credit".to_string(), "is".to_string(), 
+                                  "contains".to_string(), "equals".to_string()],
+                    after: "course".to_string(),
+                    position: self.token_pointer,
+                },
                 vec![],
             ));
         }
@@ -428,15 +461,24 @@ impl Parser {
                 // Check if it's a binary operator (invalid for course conditions)
                 if Self::is_valid_binop_token(next_token.get_token_type()) {
                     return Err((
-                        SyntaxError::InvalidOperator(next_token.get_lexeme().to_string()),
+                        SyntaxError::InvalidContext {
+                            token: next_token.get_lexeme().to_string(),
+                            context: "after 'course'".to_string(),
+                            suggestions: vec!["subject".to_string(), "number".to_string(), "title".to_string(), 
+                                            "description".to_string(), "credit".to_string(), "is".to_string(), 
+                                            "contains".to_string(), "equals".to_string()],
+                        },
                         vec![next_token.clone()],
                     ));
                 } else {
                     return Err((
-                        SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
-                            next_token.get_token_type().to_string(),
-                            next_token.get_lexeme()
-                        )),
+                        SyntaxError::InvalidContext {
+                            token: format!("{} ('{}')", next_token.get_token_type().to_string(), next_token.get_lexeme()),
+                            context: "after 'course'".to_string(),
+                            suggestions: vec!["subject".to_string(), "number".to_string(), "title".to_string(), 
+                                            "description".to_string(), "credit".to_string(), "is".to_string(), 
+                                            "contains".to_string(), "equals".to_string()],
+                        },
                         vec![next_token.clone()],
                     ));
                 }
@@ -483,10 +525,16 @@ impl Parser {
             TokenType::Full => self.parse_full_query(tokens)?,
             _ => {
                 return Err((
-                    SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
-                        tokens[self.token_pointer].get_token_type().to_string(),
-                        tokens[self.token_pointer].get_lexeme()
-                    )),
+                    SyntaxError::InvalidContext {
+                        token: format!("{} ('{}')", 
+                            tokens[self.token_pointer].get_token_type().to_string(),
+                            tokens[self.token_pointer].get_lexeme()
+                        ),
+                        context: "after 'section'".to_string(),
+                        suggestions: vec!["subject".to_string(), "course".to_string(), "enrollment".to_string(), 
+                                        "instruction".to_string(), "campus".to_string(), "size".to_string(), 
+                                        "cap".to_string(), "full".to_string()],
+                    },
                     vec![tokens[self.token_pointer].clone()],
                 ))
             }
@@ -561,17 +609,22 @@ impl Parser {
         // The "credit" token was already consumed, now consume "hours"
         let hours_token = self.next_token(tokens).map_err(|_| {
             (
-                SyntaxError::MissingToken("Expected 'hours' token".into()),
+                SyntaxError::ExpectedAfter {
+                    expected: vec!["hours".to_string()],
+                    after: "credit".to_string(),
+                    position: self.token_pointer,
+                },
                 vec![],
             )
         })?;
 
         if *hours_token.get_token_type() != TokenType::Hours {
             return Err((
-                SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
-                    hours_token.get_token_type().to_string(),
-                    hours_token.get_lexeme()
-                )),
+                SyntaxError::ExpectedAfter {
+                    expected: vec!["hours".to_string()],
+                    after: "credit".to_string(),
+                    position: self.token_pointer,
+                },
                 vec![hours_token],
             ));
         }
@@ -759,10 +812,14 @@ impl Parser {
         // Validate it's a start or end token
         if *time_type_token.get_token_type() != TokenType::Start && *time_type_token.get_token_type() != TokenType::End {
             return Err((
-                SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
-                    time_type_token.get_token_type().to_string(),
-                    time_type_token.get_lexeme()
-                )),
+                SyntaxError::InvalidContext {
+                    token: format!("{} ('{}')", 
+                        time_type_token.get_token_type().to_string(),
+                        time_type_token.get_lexeme()
+                    ),
+                    context: "time query".to_string(),
+                    suggestions: vec!["start".to_string(), "end".to_string()],
+                },
                 vec![time_type_token.clone()],
             ));
         }
@@ -822,10 +879,11 @@ impl Parser {
 
         if *to_token.get_token_type() != TokenType::To {
             return Err((
-                SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
-                    to_token.get_token_type().to_string(),
-                    to_token.get_lexeme()
-                )),
+                SyntaxError::ExpectedAfter {
+                    expected: vec!["to".to_string()],
+                    after: "start time".to_string(),
+                    position: self.token_pointer,
+                },
                 vec![to_token],
             ));
         }
@@ -858,10 +916,16 @@ impl Parser {
             TokenType::Sunday => self.parse_sunday_query(tokens)?,
             _ => {
                 return Err((
-                    SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
-                        day_token.get_token_type().to_string(),
-                        day_token.get_lexeme()
-                    )),
+                    SyntaxError::InvalidContext {
+                        token: format!("{} ('{}')", 
+                            day_token.get_token_type().to_string(),
+                            day_token.get_lexeme()
+                        ),
+                        context: "day name".to_string(),
+                        suggestions: vec!["monday".to_string(), "tuesday".to_string(), "wednesday".to_string(), 
+                                        "thursday".to_string(), "friday".to_string(), "saturday".to_string(), 
+                                        "sunday".to_string()],
+                    },
                     vec![day_token.clone()],
                 ));
             }
@@ -983,7 +1047,12 @@ impl Parser {
 
         let condition_token = self.next_token(tokens).map_err(|_| {
             (
-                SyntaxError::MissingToken("Expected condition".into()),
+                SyntaxError::ExpectedAfter {
+                    expected: vec!["is".to_string(), "equals".to_string(), "contains".to_string(), 
+                                  "has".to_string(), "starts".to_string(), "ends".to_string()],
+                    after: "entity keyword".to_string(),
+                    position: self.token_pointer,
+                },
                 vec![],
             )
         })?;
@@ -999,15 +1068,22 @@ impl Parser {
                 // Check if it's a binary operator (invalid in condition context)
                 if Self::is_valid_binop_token(condition_token.get_token_type()) {
                     return Err((
-                        SyntaxError::InvalidOperator(condition_token.get_lexeme().to_string()),
+                        SyntaxError::InvalidContext {
+                            token: condition_token.get_lexeme().to_string(),
+                            context: "string condition".to_string(),
+                            suggestions: vec!["is".to_string(), "equals".to_string(), "contains".to_string(), 
+                                            "has".to_string(), "starts".to_string(), "ends".to_string()],
+                        },
                         vec![condition_token],
                     ));
                 } else {
                     return Err((
-                        SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
-                            condition_token.get_token_type().to_string(),
-                            condition_token.get_lexeme()
-                        )),
+                        SyntaxError::InvalidContext {
+                            token: format!("{} ('{}')", condition_token.get_token_type().to_string(), condition_token.get_lexeme()),
+                            context: "string condition".to_string(),
+                            suggestions: vec!["is".to_string(), "equals".to_string(), "contains".to_string(), 
+                                            "has".to_string(), "starts".to_string(), "ends".to_string()],
+                        },
                         vec![condition_token],
                     ));
                 }
@@ -1025,7 +1101,13 @@ impl Parser {
 
         let operator_token = self.next_token(tokens).map_err(|_| {
             (
-                SyntaxError::MissingToken("Expected binary operator".into()),
+                SyntaxError::ExpectedAfter {
+                    expected: vec!["=".to_string(), "!=".to_string(), "<".to_string(), ">".to_string(), 
+                                  "<=".to_string(), ">=".to_string(), "equals".to_string(), "is".to_string(),
+                                  "less than".to_string(), "greater than".to_string()],
+                    after: "numeric field".to_string(),
+                    position: self.token_pointer,
+                },
                 vec![],
             )
         })?;
@@ -1041,7 +1123,13 @@ impl Parser {
             }
             _ => {
                 return Err((
-                    SyntaxError::InvalidOperator(operator_token.get_token_type().to_string()),
+                    SyntaxError::InvalidContext {
+                        token: operator_token.get_token_type().to_string(),
+                        context: "numeric comparison".to_string(),
+                        suggestions: vec!["=".to_string(), "!=".to_string(), "<".to_string(), ">".to_string(), 
+                                        "<=".to_string(), ">=".to_string(), "equals".to_string(), "is".to_string(),
+                                        "less than".to_string(), "greater than".to_string()],
+                    },
                     vec![operator_token],
                 ));
             }

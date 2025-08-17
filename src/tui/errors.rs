@@ -33,13 +33,23 @@ impl Display for AppError {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum SyntaxError {
     UnexpectedToken(String),
     MissingToken(String),
     UnclosedParenthesis,
     InvalidOperator(String),
     EmptyQuery,
+    ExpectedAfter {
+        expected: Vec<String>,
+        after: String,
+        position: usize,
+    },
+    InvalidContext {
+        token: String,
+        context: String,
+        suggestions: Vec<String>,
+    },
 }
 
 impl Display for SyntaxError {
@@ -50,6 +60,20 @@ impl Display for SyntaxError {
             SyntaxError::UnclosedParenthesis => write!(f, "Unclosed parenthesis"),
             SyntaxError::InvalidOperator(op) => write!(f, "Invalid operator: {}", op),
             SyntaxError::EmptyQuery => write!(f, "Empty query"),
+            SyntaxError::ExpectedAfter { expected, after, position: _ } => {
+                if expected.len() == 1 {
+                    write!(f, "Expected {} after '{}'", expected[0], after)
+                } else {
+                    write!(f, "Expected one of [{}] after '{}'", expected.join(", "), after)
+                }
+            },
+            SyntaxError::InvalidContext { token, context, suggestions } => {
+                if suggestions.is_empty() {
+                    write!(f, "Invalid token '{}' in {} context", token, context)
+                } else {
+                    write!(f, "Invalid token '{}' in {} context. Try: {}", token, context, suggestions.join(", "))
+                }
+            },
         }
     }
 }
