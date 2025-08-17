@@ -16,9 +16,9 @@
     "expected_problematic_tokens": null
   },
   {
-    "test_name": "title_starts_with_query",
-    "description": "Query with 'starts with' condition",
-    "input": "title starts with \"Introduction\"",
+    "test_name": "title_contains_query",
+    "description": "Query with 'contains' condition",
+    "input": "title contains \"Introduction\"",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null

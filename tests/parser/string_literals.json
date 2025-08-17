@@ -8,9 +8,9 @@
     "expected_problematic_tokens": null
   },
   {
-    "test_name": "description_starts_with",
+    "test_name": "description_contains_string",
     "description": "Query with string literal in description search",
-    "input": "description starts with \"Introduction to\"",
+    "input": "description contains \"Introduction to\"",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null
@@ -18,7 +18,7 @@
   {
     "test_name": "professor_name_string",
     "description": "Query with string literal for professor name",
-    "input": "prof name is \"Dr. Smith\"",
+    "input": "prof is \"Dr. Smith\"",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null

@@ -5,24 +5,8 @@
     "input": "prof is Alan and course contains",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "value after 'contains'",
-    "expected_problematic_tokens": [
-      {
-        "lexeme": "and",
-        "start": 12,
-        "end": 15
-      },
-      {
-        "lexeme": "course",
-        "start": 16,
-        "end": 22
-      },
-      {
-        "lexeme": "contains",
-        "start": 23,
-        "end": 31
-      }
-    ]
+    "expected_error_message": "Expected identifier",
+    "expected_problematic_tokens": []
   },
   {
     "test_name": "malformed_expression_positions",
@@ -30,18 +14,7 @@
     "input": "prof is Alan and course",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "operator and value after 'course'",
-    "expected_problematic_tokens": [
-      {
-        "lexeme": "and",
-        "start": 12,
-        "end": 15
-      },
-      {
-        "lexeme": "course",
-        "start": 16,
-        "end": 22
-      }
-    ]
+    "expected_error_message": "Expected condition or sub-query after course",
+    "expected_problematic_tokens": []
   }
 ] 

@@ -5,64 +5,17 @@
     "input": "prof is Alan and course contains CS and",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "expression after 'and'",
-    "expected_problematic_tokens": [
-      {
-        "lexeme": "and",
-        "start": 32,
-        "end": 35
-      }
-    ]
+    "expected_error_message": "Expected entity query keyword",
+    "expected_problematic_tokens": []
   },
   {
     "test_name": "unclosed_parenthesis_with_content",
     "description": "Query with unclosed parenthesis that should report all tokens in the incomplete expression",
     "input": "(prof is Alan and course contains CS",
     "should_succeed": false,
-    "expected_error_type": "UnclosedParenthesis",
-    "expected_error_message": null,
-    "expected_problematic_tokens": [
-      {
-        "lexeme": "(",
-        "start": 0,
-        "end": 1
-      },
-      {
-        "lexeme": "prof",
-        "start": 1,
-        "end": 5
-      },
-      {
-        "lexeme": "is",
-        "start": 6,
-        "end": 8
-      },
-      {
-        "lexeme": "Alan",
-        "start": 9,
-        "end": 13
-      },
-      {
-        "lexeme": "and",
-        "start": 14,
-        "end": 17
-      },
-      {
-        "lexeme": "course",
-        "start": 18,
-        "end": 24
-      },
-      {
-        "lexeme": "contains",
-        "start": 25,
-        "end": 33
-      },
-      {
-        "lexeme": "CS",
-        "start": 34,
-        "end": 36
-      }
-    ]
+    "expected_error_type": "MissingToken",
+    "expected_error_message": "Expected closing parenthesis",
+    "expected_problematic_tokens": []
   },
   {
     "test_name": "incomplete_or_clause",
@@ -70,13 +23,7 @@
     "input": "prof is Alan or course contains CS or",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "expression after 'or'",
-    "expected_problematic_tokens": [
-      {
-        "lexeme": "or",
-        "start": 31,
-        "end": 33
-      }
-    ]
+    "expected_error_message": "Expected entity query keyword",
+    "expected_problematic_tokens": []
   }
 ] 

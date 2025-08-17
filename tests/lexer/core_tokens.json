@@ -144,5 +144,14 @@
       {"type": "T_INTEGER", "content": "3"},
       {"type": "T_RIGHTPAREN", "content": ")"}
     ]
+  },
+  {
+    "test_name": "meeting_type_compound",
+    "description": "Test compound meeting type keyword recognition",
+    "code": "meeting type",
+    "result": [
+      {"type": "T_MEETING", "content": "meeting"},
+      {"type": "T_TYPE", "content": "type"}
+    ]
   }
 ] 

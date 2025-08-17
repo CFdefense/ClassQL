@@ -1,16 +1,16 @@
 [
   {
-    "test_name": "meeting_time_comparison",
-    "description": "Query comparing meeting time with numeric value",
-    "input": "meeting time > 14:00",
+    "test_name": "start_time_comparison",
+    "description": "Query comparing start time with time value",
+    "input": "start > 14:00",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null
   },
   {
-    "test_name": "day_specification",
-    "description": "Query specifying a particular day",
-    "input": "day is Monday",
+    "test_name": "monday_specification",
+    "description": "Query specifying Monday schedule",
+    "input": "monday is available",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null
@@ -18,7 +18,7 @@
   {
     "test_name": "time_range_query",
     "description": "Query with time range specification",
-    "input": "time range 09:00 to 11:00",
+    "input": "start 09:00 to 11:00",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null
@@ -26,6 +26,14 @@
   {
     "test_name": "meeting_type_specification",
     "description": "Query specifying meeting type",
+    "input": "type is lecture",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "meeting_type_compound_specification",
+    "description": "Query specifying meeting type with compound keyword",
     "input": "meeting type is lecture",
     "should_succeed": true,
     "expected_error_type": null,

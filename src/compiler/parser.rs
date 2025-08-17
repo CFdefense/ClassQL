@@ -96,6 +96,16 @@ impl Parser {
         }
     }
 
+    fn is_valid_binop_token(token_type: &TokenType) -> bool {
+        matches!(*token_type, 
+            TokenType::Equals | TokenType::NotEquals | TokenType::LessThan | 
+            TokenType::GreaterThan | TokenType::LessEqual | TokenType::GreaterEqual |
+            TokenType::Equal | TokenType::EqualsWord | TokenType::Is | TokenType::Not |
+            TokenType::Does | TokenType::Less | TokenType::Than | TokenType::Greater |
+            TokenType::Least | TokenType::Most | TokenType::More | TokenType::Fewer
+        )
+    }
+
     fn next_token(&mut self, tokens: &Vec<Token>) -> Result<Token, String> {
         if self.token_pointer < tokens.len() {
             let token = tokens[self.token_pointer].clone();
@@ -110,9 +120,25 @@ impl Parser {
         self.token_pointer = 0;
         self.ast = AST::new();
 
+        // Check for empty query
+        if tokens.is_empty() {
+            return Err((SyntaxError::EmptyQuery, vec![]));
+        }
+
         // Create Query node and set it as AST head
         let query_node = self.parse_query(tokens)?;
         self.ast.head = Some(query_node);
+
+        // Check if there are remaining unconsumed tokens
+        if self.token_pointer < tokens.len() {
+            return Err((
+                SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
+                    tokens[self.token_pointer].get_token_type().to_string(),
+                    tokens[self.token_pointer].get_lexeme()
+                )),
+                vec![tokens[self.token_pointer].clone()],
+            ));
+        }
 
         Ok(())
     }
@@ -305,7 +331,21 @@ impl Parser {
             TokenType::Full => self.parse_full_query(tokens)?,
             TokenType::Method => self.parse_instruction_method_query(tokens)?,
             TokenType::Campus => self.parse_campus_query(tokens)?,
-            TokenType::Meeting => self.parse_meeting_type_query(tokens)?,
+            TokenType::Meeting => {
+                // Check if next token is "type" for "meeting type" compound
+                if self.token_pointer < tokens.len() && 
+                   *tokens[self.token_pointer].get_token_type() == TokenType::Type {
+                    // Consume the "type" token
+                    self.next_token(tokens).map_err(|_| {
+                        (
+                            SyntaxError::MissingToken("Expected 'type' token".into()),
+                            vec![],
+                        )
+                    })?;
+                }
+                self.parse_meeting_type_query(tokens)?
+            },
+            TokenType::Type => self.parse_meeting_type_query(tokens)?,
             TokenType::Time => self.parse_time_query(tokens)?,
             TokenType::Start | TokenType::End => self.parse_time_query(tokens)?,
             TokenType::Monday | TokenType::Tuesday | TokenType::Wednesday | 
@@ -313,8 +353,11 @@ impl Parser {
             TokenType::Sunday => self.parse_day_query(tokens)?,
             _ => {
                 return Err((
-                    SyntaxError::UnexpectedToken(next_token.get_token_type().to_string()),
-                    vec![next_token],
+                    SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
+                        tokens[self.token_pointer].get_token_type().to_string(),
+                        tokens[self.token_pointer].get_lexeme()
+                    )),
+                    vec![tokens[self.token_pointer].clone()],
                 ))
             }
         };
@@ -351,6 +394,13 @@ impl Parser {
             TreeNode::new(NodeType::CourseQuery, NodeType::CourseQuery.to_string());
 
         // Check what the next token is to decide between direct condition or sub-query
+        if self.token_pointer >= tokens.len() {
+            return Err((
+                SyntaxError::MissingToken("Expected condition or sub-query after course".into()),
+                vec![],
+            ));
+        }
+        
         let next_token = &tokens[self.token_pointer];
         let next_query = match *next_token.get_token_type() {
             // Sub-queries
@@ -375,12 +425,21 @@ impl Parser {
                 number_node
             },
             _ => {
-                return Err((
-                    SyntaxError::UnexpectedToken(
-                        tokens[self.token_pointer].get_token_type().to_string(),
-                    ),
-                    vec![tokens[self.token_pointer].clone()],
-                ))
+                // Check if it's a binary operator (invalid for course conditions)
+                if Self::is_valid_binop_token(next_token.get_token_type()) {
+                    return Err((
+                        SyntaxError::InvalidOperator(next_token.get_lexeme().to_string()),
+                        vec![next_token.clone()],
+                    ));
+                } else {
+                    return Err((
+                        SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
+                            next_token.get_token_type().to_string(),
+                            next_token.get_lexeme()
+                        )),
+                        vec![next_token.clone()],
+                    ));
+                }
             }
         };
 
@@ -424,9 +483,10 @@ impl Parser {
             TokenType::Full => self.parse_full_query(tokens)?,
             _ => {
                 return Err((
-                    SyntaxError::UnexpectedToken(
+                    SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
                         tokens[self.token_pointer].get_token_type().to_string(),
-                    ),
+                        tokens[self.token_pointer].get_lexeme()
+                    )),
                     vec![tokens[self.token_pointer].clone()],
                 ))
             }
@@ -508,7 +568,10 @@ impl Parser {
 
         if *hours_token.get_token_type() != TokenType::Hours {
             return Err((
-                SyntaxError::UnexpectedToken(hours_token.get_token_type().to_string()),
+                SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
+                    hours_token.get_token_type().to_string(),
+                    hours_token.get_lexeme()
+                )),
                 vec![hours_token],
             ));
         }
@@ -623,6 +686,22 @@ impl Parser {
         let mut enrollment_node =
             TreeNode::new(NodeType::EnrollmentQuery, NodeType::EnrollmentQuery.to_string());
 
+        // Check if next token is a valid binary operator
+        if self.token_pointer >= tokens.len() {
+            return Err((
+                SyntaxError::MissingToken("Expected binary operator after size/enrollment".into()),
+                vec![],
+            ));
+        }
+        
+        let next_token = &tokens[self.token_pointer];
+        if !Self::is_valid_binop_token(next_token.get_token_type()) {
+            return Err((
+                SyntaxError::MissingToken("Expected binary operator after size/enrollment".into()),
+                vec![],
+            ));
+        }
+
         let binop_query = self.parse_binop(tokens)?;
         let integer_query = self.parse_integer(tokens)?;
         
@@ -680,7 +759,10 @@ impl Parser {
         // Validate it's a start or end token
         if *time_type_token.get_token_type() != TokenType::Start && *time_type_token.get_token_type() != TokenType::End {
             return Err((
-                SyntaxError::UnexpectedToken(time_type_token.get_token_type().to_string()),
+                SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
+                    time_type_token.get_token_type().to_string(),
+                    time_type_token.get_lexeme()
+                )),
                 vec![time_type_token.clone()],
             ));
         }
@@ -688,22 +770,34 @@ impl Parser {
         // Add time type to node
         time_node.children.push(TreeNode::new(NodeType::String, time_type_token.get_token_type().to_string()));
 
-        // Check if next token is "to" to determine if this is a time range
+        // Check if this is a time range by looking ahead
         if self.token_pointer < tokens.len() {
-            let next_token = &tokens[self.token_pointer];
-            if *next_token.get_token_type() == TokenType::To {
-                // Parse: <time_range>
+            // If next token looks like a time, check if the one after that is "to"
+            if self.token_pointer + 1 < tokens.len() && 
+               *tokens[self.token_pointer + 1].get_token_type() == TokenType::To {
+                // Parse: <time_range> (start 9:00 to 17:00)
                 let time_range_spec = self.parse_time_range(tokens)?;
                 time_node.children.push(time_range_spec);
             } else {
-                // Parse: <time> (direct time)
+                // Parse: <binop> <time> (start > 9:00)
+                // Check if next token is a valid binary operator
+                let next_token = &tokens[self.token_pointer];
+                if !Self::is_valid_binop_token(next_token.get_token_type()) {
+                    return Err((
+                        SyntaxError::MissingToken("Expected binary operator after start/end".into()),
+                        vec![],
+                    ));
+                }
+                let binop_spec = self.parse_binop(tokens)?;
                 let time_spec = self.parse_time(tokens)?;
+                time_node.children.push(binop_spec);
                 time_node.children.push(time_spec);
             }
         } else {
-            // No more tokens, default to direct time
-            let time_spec = self.parse_time(tokens)?;
-            time_node.children.push(time_spec);
+            return Err((
+                SyntaxError::MissingToken("Expected operator or time after start/end".into()),
+                vec![],
+            ));
         }
 
         Ok(time_node)
@@ -728,7 +822,10 @@ impl Parser {
 
         if *to_token.get_token_type() != TokenType::To {
             return Err((
-                SyntaxError::UnexpectedToken(to_token.get_token_type().to_string()),
+                SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
+                    to_token.get_token_type().to_string(),
+                    to_token.get_lexeme()
+                )),
                 vec![to_token],
             ));
         }
@@ -761,7 +858,10 @@ impl Parser {
             TokenType::Sunday => self.parse_sunday_query(tokens)?,
             _ => {
                 return Err((
-                    SyntaxError::UnexpectedToken(day_token.get_token_type().to_string()),
+                    SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
+                        day_token.get_token_type().to_string(),
+                        day_token.get_lexeme()
+                    )),
                     vec![day_token.clone()],
                 ));
             }
@@ -896,10 +996,21 @@ impl Parser {
                 // Valid condition
             }
             _ => {
-                return Err((
-                    SyntaxError::UnexpectedToken(condition_token.get_token_type().to_string()),
-                    vec![condition_token],
-                ));
+                // Check if it's a binary operator (invalid in condition context)
+                if Self::is_valid_binop_token(condition_token.get_token_type()) {
+                    return Err((
+                        SyntaxError::InvalidOperator(condition_token.get_lexeme().to_string()),
+                        vec![condition_token],
+                    ));
+                } else {
+                    return Err((
+                        SyntaxError::UnexpectedToken(format!("{} (content: '{}')", 
+                            condition_token.get_token_type().to_string(),
+                            condition_token.get_lexeme()
+                        )),
+                        vec![condition_token],
+                    ));
+                }
             }
         }
 

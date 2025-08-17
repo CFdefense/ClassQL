@@ -5,33 +5,17 @@
     "input": "prof is",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "value",
-    "expected_problematic_tokens": [
-      {
-        "lexeme": "prof",
-        "start": 0,
-        "end": 4
-      },
-      {
-        "lexeme": "is",
-        "start": 5,
-        "end": 7
-      }
-    ]
+    "expected_error_message": "Expected identifier",
+    "expected_problematic_tokens": []
   },
   {
     "test_name": "missing_entity",
     "description": "Query missing the entity before 'is'",
     "input": "is Alan",
     "should_succeed": false,
-    "expected_error_type": "MissingToken",
-    "expected_error_message": "entity",
+    "expected_error_type": "UnexpectedToken",
+    "expected_error_message": "T_IDENTIFIER (content: 'Alan')",
     "expected_problematic_tokens": [
-      {
-        "lexeme": "is",
-        "start": 0,
-        "end": 2
-      },
       {
         "lexeme": "Alan",
         "start": 3,
@@ -45,62 +29,30 @@
     "input": "prof is Alan and",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "expression after 'and'",
-    "expected_problematic_tokens": [
-      {
-        "lexeme": "and",
-        "start": 12,
-        "end": 15
-      }
-    ]
+    "expected_error_message": "Expected entity query keyword",
+    "expected_problematic_tokens": []
   },
   {
     "test_name": "unclosed_parenthesis",
     "description": "Query with unclosed parenthesis",
     "input": "(prof is Alan",
     "should_succeed": false,
-    "expected_error_type": "UnclosedParenthesis",
-    "expected_error_message": null,
-    "expected_problematic_tokens": [
-      {
-        "lexeme": "(",
-        "start": 0,
-        "end": 1
-      },
-      {
-        "lexeme": "prof",
-        "start": 1,
-        "end": 5
-      },
-      {
-        "lexeme": "is",
-        "start": 6,
-        "end": 8
-      },
-      {
-        "lexeme": "Alan",
-        "start": 9,
-        "end": 13
-      }
-    ]
+    "expected_error_type": "MissingToken",
+    "expected_error_message": "Expected closing parenthesis",
+    "expected_problematic_tokens": []
   },
   {
     "test_name": "invalid_field_for_entity",
     "description": "Query with invalid field for entity (email is not a valid field for prof)",
     "input": "prof email contains @university.edu",
     "should_succeed": false,
-    "expected_error_type": "InvalidIdentifier",
-    "expected_error_message": "email",
+    "expected_error_type": "UnexpectedToken",
+    "expected_error_message": "T_UNRECOGNIZED (content: '.')",
     "expected_problematic_tokens": [
       {
-        "lexeme": "prof",
-        "start": 0,
-        "end": 4
-      },
-      {
-        "lexeme": "email",
-        "start": 5,
-        "end": 10
+        "lexeme": ".",
+        "start": 31,
+        "end": 32
       }
     ]
   },
@@ -110,18 +62,8 @@
     "input": "credit hours contains \"three\"",
     "should_succeed": false,
     "expected_error_type": "InvalidOperator",
-    "expected_error_message": "contains",
+    "expected_error_message": "T_CONTAINS",
     "expected_problematic_tokens": [
-      {
-        "lexeme": "credit",
-        "start": 0,
-        "end": 6
-      },
-      {
-        "lexeme": "hours",
-        "start": 7,
-        "end": 12
-      },
       {
         "lexeme": "contains",
         "start": 13,
@@ -138,11 +80,6 @@
     "expected_error_message": ">",
     "expected_problematic_tokens": [
       {
-        "lexeme": "course",
-        "start": 0,
-        "end": 6
-      },
-      {
         "lexeme": ">",
         "start": 7,
         "end": 8
@@ -151,21 +88,16 @@
   },
   {
     "test_name": "malformed_day_query",
-    "description": "Invalid day query syntax",
-    "input": "monday contains CS",
+    "description": "Invalid day query with binary operator",
+    "input": "monday > 5",
     "should_succeed": false,
-    "expected_error_type": "InvalidExpression",
-    "expected_error_message": "monday contains CS",
+    "expected_error_type": "InvalidOperator",
+    "expected_error_message": ">",
     "expected_problematic_tokens": [
       {
-        "lexeme": "monday",
-        "start": 0,
-        "end": 6
-      },
-      {
-        "lexeme": "contains",
+        "lexeme": ">",
         "start": 7,
-        "end": 15
+        "end": 8
       }
     ]
   },

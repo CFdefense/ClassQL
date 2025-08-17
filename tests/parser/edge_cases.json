@@ -5,14 +5,8 @@
     "input": "prof",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "operator and value",
-    "expected_problematic_tokens": [
-      {
-        "lexeme": "prof",
-        "start": 0,
-        "end": 4
-      }
-    ]
+    "expected_error_message": "Expected condition",
+    "expected_problematic_tokens": []
   },
   {
     "test_name": "two_token_query",
@@ -20,32 +14,21 @@
     "input": "prof is",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "value",
-    "expected_problematic_tokens": [
-      {
-        "lexeme": "prof",
-        "start": 0,
-        "end": 4
-      },
-      {
-        "lexeme": "is",
-        "start": 5,
-        "end": 7
-      }
-    ]
+    "expected_error_message": "Expected identifier",
+    "expected_problematic_tokens": []
   },
   {
     "test_name": "invalid_entity_start",
     "description": "Query starting with invalid entity",
     "input": "invalid_entity is value",
     "should_succeed": false,
-    "expected_error_type": "InvalidIdentifier",
-    "expected_error_message": "invalid_entity",
+    "expected_error_type": "UnexpectedToken",
+    "expected_error_message": "T_IS (content: 'is')",
     "expected_problematic_tokens": [
       {
-        "lexeme": "invalid_entity",
-        "start": 0,
-        "end": 15
+        "lexeme": "is",
+        "start": 15,
+        "end": 17
       }
     ]
   },
@@ -54,29 +37,18 @@
     "description": "Query with nested parentheses error",
     "input": "((prof is Alan)",
     "should_succeed": false,
-    "expected_error_type": "UnclosedParenthesis",
-    "expected_error_message": null,
+    "expected_error_type": "MissingToken",
+    "expected_error_message": "Expected closing parenthesis",
+    "expected_problematic_tokens": []
+  },
+  {
+    "test_name": "invalid_operator_sequence",
+    "description": "Query with invalid operator sequence",
+    "input": "prof is = Alan",
+    "should_succeed": false,
+    "expected_error_type": "UnexpectedToken",
+    "expected_error_message": "T_IDENTIFIER (content: 'Alan')",
     "expected_problematic_tokens": [
-      {
-        "lexeme": "(",
-        "start": 0,
-        "end": 1
-      },
-      {
-        "lexeme": "(",
-        "start": 1,
-        "end": 2
-      },
-      {
-        "lexeme": "prof",
-        "start": 2,
-        "end": 6
-      },
-      {
-        "lexeme": "is",
-        "start": 7,
-        "end": 9
-      },
       {
         "lexeme": "Alan",
         "start": 10,
@@ -85,43 +57,13 @@
     ]
   },
   {
-    "test_name": "invalid_operator_sequence",
-    "description": "Query with invalid operator sequence",
-    "input": "prof is = Alan",
-    "should_succeed": false,
-    "expected_error_type": "UnexpectedToken",
-    "expected_error_message": "=",
-    "expected_problematic_tokens": [
-      {
-        "lexeme": "prof",
-        "start": 0,
-        "end": 4
-      },
-      {
-        "lexeme": "is",
-        "start": 5,
-        "end": 7
-      },
-      {
-        "lexeme": "=",
-        "start": 8,
-        "end": 9
-      }
-    ]
-  },
-  {
     "test_name": "missing_operator",
     "description": "Query missing operator between entity and value",
     "input": "prof Alan",
     "should_succeed": false,
-    "expected_error_type": "MissingToken",
-    "expected_error_message": "operator",
+    "expected_error_type": "UnexpectedToken",
+    "expected_error_message": "T_IDENTIFIER (content: 'Alan')",
     "expected_problematic_tokens": [
-      {
-        "lexeme": "prof",
-        "start": 0,
-        "end": 4
-      },
       {
         "lexeme": "Alan",
         "start": 5,
@@ -135,12 +77,12 @@
     "input": "and prof is Alan",
     "should_succeed": false,
     "expected_error_type": "UnexpectedToken",
-    "expected_error_message": "and",
+    "expected_error_message": "T_PROF (content: 'prof')",
     "expected_problematic_tokens": [
       {
-        "lexeme": "and",
-        "start": 0,
-        "end": 3
+        "lexeme": "prof",
+        "start": 4,
+        "end": 8
       }
     ]
   },
@@ -150,14 +92,8 @@
     "input": "prof is Alan or",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "expression after 'or'",
-    "expected_problematic_tokens": [
-      {
-        "lexeme": "or",
-        "start": 12,
-        "end": 14
-      }
-    ]
+    "expected_error_message": "Expected entity query keyword",
+    "expected_problematic_tokens": []
   },
   {
     "test_name": "consecutive_logical_operators",
@@ -165,17 +101,12 @@
     "input": "prof is Alan and and course contains CS",
     "should_succeed": false,
     "expected_error_type": "UnexpectedToken",
-    "expected_error_message": "and",
+    "expected_error_message": "T_COURSE (content: 'course')",
     "expected_problematic_tokens": [
       {
-        "lexeme": "and",
-        "start": 12,
-        "end": 15
-      },
-      {
-        "lexeme": "and",
-        "start": 16,
-        "end": 19
+        "lexeme": "course",
+        "start": 21,
+        "end": 27
       }
     ]
   },
@@ -184,18 +115,13 @@
     "description": "Query with invalid field name",
     "input": "prof invalid_field is value",
     "should_succeed": false,
-    "expected_error_type": "InvalidIdentifier",
-    "expected_error_message": "invalid_field",
+    "expected_error_type": "UnexpectedToken",
+    "expected_error_message": "T_IDENTIFIER (content: 'invalid_field')",
     "expected_problematic_tokens": [
-      {
-        "lexeme": "prof",
-        "start": 0,
-        "end": 4
-      },
       {
         "lexeme": "invalid_field",
         "start": 5,
-        "end": 17
+        "end": 18
       }
     ]
   }

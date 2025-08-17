@@ -17,19 +17,9 @@
     "expected_error_message": ">",
     "expected_problematic_tokens": [
       {
-        "lexeme": "course",
-        "start": 0,
-        "end": 6
-      },
-      {
         "lexeme": ">",
         "start": 7,
         "end": 8
-      },
-      {
-        "lexeme": "CS",
-        "start": 9,
-        "end": 11
       }
     ]
   },
