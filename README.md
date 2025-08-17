@@ -1,3 +1,3 @@
 # ClassQL
 
-A terminal-based query language interface for college class selection
+A Domain-Specific Natural Language Query Engine For Finding Your Ideal Schedule
