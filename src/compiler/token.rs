@@ -21,10 +21,13 @@ pub enum TokenType {
     Description,
     Enrollment,
     Cap,
+    Size,
     Instruction,
     Meeting,
     Type,
     Full,
+    Start,
+    End,
     
     // Days
     Monday,
@@ -67,6 +70,7 @@ pub enum TokenType {
     Most,
     More,
     Fewer,
+    To,
     
     // Grouping
     LeftParen,
@@ -145,6 +149,7 @@ impl TokenType {
             (TokenType::Most, r"(?i)\bmost\b"),
             (TokenType::More, r"(?i)\bmore\b"),
             (TokenType::Fewer, r"(?i)\bfewer\b"),
+            (TokenType::To, r"(?i)\bto\b"),
             
             // Days 
             (TokenType::Wednesday, r"(?i)\b(wednesday|wednesda|wednesd|wednes|wedne|wedn|wed|we|w)\b"),
@@ -173,10 +178,13 @@ impl TokenType {
             (TokenType::Description, r"(?i)\bdescription\b"),
             (TokenType::Enrollment, r"(?i)\benrollment\b"),
             (TokenType::Cap, r"(?i)\bcap\b"),
+            (TokenType::Size, r"(?i)\bsize\b"),
             (TokenType::Instruction, r"(?i)\binstruction\b"),
             (TokenType::Meeting, r"(?i)\bmeeting\b"),
             (TokenType::Type, r"(?i)\btype\b"),
             (TokenType::Full, r"(?i)\bfull\b"),
+            (TokenType::Start, r"(?i)\bstart\b"),
+            (TokenType::End, r"(?i)\bend\b"),
             (TokenType::Email, r"(?i)\bemail\b"),
             
             // Logical

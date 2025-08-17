@@ -6,9 +6,6 @@
     The AST can then be used by the semantic analyzer to check for semantic errors
 */
 
-use ratatui::widgets::block::title;
-use serde::de::IntoDeserializer;
-
 use crate::compiler::token::{Token, TokenType};
 use crate::tui::errors::SyntaxError;
 use std::vec;
@@ -283,6 +280,7 @@ impl Parser {
             TokenType::Method => self.parse_instruction_method_query(tokens)?,
             TokenType::Campus => self.parse_campus_query(tokens)?,
             TokenType::Meeting => self.parse_meeting_type_query(tokens)?,
+            TokenType::Time => self.parse_time_query(tokens)?,
             _ => {
                 return Err((
                     SyntaxError::UnexpectedToken(next_token.get_token_type().to_string()),
@@ -431,7 +429,8 @@ impl Parser {
             TokenType::Enrollment => self.parse_enrollment_query(tokens)?,
             TokenType::Instruction => self.parse_instruction_method_query(tokens)?,
             TokenType::Campus => self.parse_campus_query(tokens)?,
-            TokenType::Not => self.parse_enrollment_cap_query(tokens)?, // ! add SIZE HERE
+            TokenType::Size => self.parse_enrollment_query(tokens)?,
+            TokenType::Cap => self.parse_enrollment_cap_query(tokens)?,
             TokenType::Full => self.parse_full_query(tokens)?,
             _ => {
                 return Err((
@@ -462,12 +461,12 @@ impl Parser {
             )
         })?;
 
-        if *number_token.get_token_type() == TokenType::Number {
+        if *number_token.get_token_type() != TokenType::Number {
             return Err((
                 SyntaxError::UnexpectedToken(number_token.get_token_type().to_string()),
                 vec![number_token],
             ));
-        };
+        }
 
         let condition_query = self.parse_condition(tokens)?;
         let string_query = self.parse_string(tokens)?;
@@ -574,28 +573,60 @@ impl Parser {
         Ok(credit_node)
     }
 
-    // <prereqs_query> ::= "prereqs" <string> | "prereqs" <string_list>
+    // <prereqs_query> ::= "prereqs" <string_list>
     fn parse_prereqs_query(
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::PrereqsQuery,
-            NodeType::PrereqsQuery.to_string(),
-        ))
+        let mut prereqs_node =
+            TreeNode::new(NodeType::PrereqsQuery, NodeType::PrereqsQuery.to_string());
+
+        let prereqs_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected prereqs token".into()),
+                vec![],
+            )
+        })?;
+
+        if *prereqs_token.get_token_type() != TokenType::Prereqs {
+            return Err((
+                SyntaxError::UnexpectedToken(prereqs_token.get_token_type().to_string()),
+                vec![prereqs_token],
+            ));
+        }
+
+        let string_list_query = self.parse_string_list(tokens)?;
+        prereqs_node.children.push(string_list_query);
+
+        Ok(prereqs_node)
     }
 
-    // <coreqs_query> ::= "corereqs" <string> | "corereqs" <string_list>
+    // <coreqs_query> ::= "corereqs" <string_list>
     fn parse_coreqs_query(
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::CoreqsQuery,
-            NodeType::CoreqsQuery.to_string(),
-        ))
+        let mut coreqs_node =
+            TreeNode::new(NodeType::CoreqsQuery, NodeType::CoreqsQuery.to_string());
+
+        let coreqs_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected corereqs token".into()),
+                vec![],
+            )
+        })?;
+
+        if *coreqs_token.get_token_type() != TokenType::Corereqs {
+            return Err((
+                SyntaxError::UnexpectedToken(coreqs_token.get_token_type().to_string()),
+                vec![coreqs_token],
+            ));
+        }
+
+        let string_list_query = self.parse_string_list(tokens)?;
+        coreqs_node.children.push(string_list_query);
+
+        Ok(coreqs_node)
     }
 
     // <enrollment_cap_query> ::= "cap" <binop> <integer>
@@ -603,11 +634,30 @@ impl Parser {
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::EnrollmentCapQuery,
-            NodeType::EnrollmentCapQuery.to_string(),
-        ))
+        let mut cap_node =
+            TreeNode::new(NodeType::EnrollmentCapQuery, NodeType::EnrollmentCapQuery.to_string());
+
+        let cap_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected cap token".into()),
+                vec![],
+            )
+        })?;
+
+        if *cap_token.get_token_type() != TokenType::Cap {
+            return Err((
+                SyntaxError::UnexpectedToken(cap_token.get_token_type().to_string()),
+                vec![cap_token],
+            ));
+        }
+
+        let binop_query = self.parse_binop(tokens)?;
+        let integer_query = self.parse_integer(tokens)?;
+
+        cap_node.children.push(binop_query);
+        cap_node.children.push(integer_query);
+
+        Ok(cap_node)
     }
 
     // <instruction_method_query> ::= "method" <condition> <string>
@@ -615,11 +665,30 @@ impl Parser {
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::InstructionMethodQuery,
-            NodeType::InstructionMethodQuery.to_string(),
-        ))
+        let mut method_node =
+            TreeNode::new(NodeType::InstructionMethodQuery, NodeType::InstructionMethodQuery.to_string());
+
+        let method_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected method token".into()),
+                vec![],
+            )
+        })?;
+
+        if *method_token.get_token_type() != TokenType::Method {
+            return Err((
+                SyntaxError::UnexpectedToken(method_token.get_token_type().to_string()),
+                vec![method_token],
+            ));
+        }
+
+        let condition_query = self.parse_condition(tokens)?;
+        let string_query = self.parse_string(tokens)?;
+
+        method_node.children.push(condition_query);
+        method_node.children.push(string_query);
+
+        Ok(method_node)
     }
 
     // <campus_query> ::= "campus" <condition> <string>
@@ -627,11 +696,30 @@ impl Parser {
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::CampusQuery,
-            NodeType::CampusQuery.to_string(),
-        ))
+        let mut campus_node =
+            TreeNode::new(NodeType::CampusQuery, NodeType::CampusQuery.to_string());
+
+        let campus_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected campus token".into()),
+                vec![],
+            )
+        })?;
+
+        if *campus_token.get_token_type() != TokenType::Campus {
+            return Err((
+                SyntaxError::UnexpectedToken(campus_token.get_token_type().to_string()),
+                vec![campus_token],
+            ));
+        }
+
+        let condition_query = self.parse_condition(tokens)?;
+        let string_query = self.parse_string(tokens)?;
+
+        campus_node.children.push(condition_query);
+        campus_node.children.push(string_query);
+
+        Ok(campus_node)
     }
 
     // <enrollment_query> ::= "size" <binop> <integer>
@@ -639,11 +727,30 @@ impl Parser {
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::EnrollmentQuery,
-            NodeType::EnrollmentQuery.to_string(),
-        ))
+        let mut enrollment_node =
+            TreeNode::new(NodeType::EnrollmentQuery, NodeType::EnrollmentQuery.to_string());
+
+        let size_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected size token".into()),
+                vec![],
+            )
+        })?;
+
+        if *size_token.get_token_type() != TokenType::Size {
+            return Err((
+                SyntaxError::UnexpectedToken(size_token.get_token_type().to_string()),
+                vec![size_token],
+            ));
+        }
+
+        let binop_query = self.parse_binop(tokens)?;
+        let integer_query = self.parse_integer(tokens)?;
+        
+        enrollment_node.children.push(binop_query);
+        enrollment_node.children.push(integer_query);
+
+        Ok(enrollment_node)
     }
 
     // <full_query> ::= <condition> "full"
@@ -651,11 +758,29 @@ impl Parser {
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::FullQuery,
-            NodeType::FullQuery.to_string(),
-        ))
+        let mut full_node =
+            TreeNode::new(NodeType::FullQuery, NodeType::FullQuery.to_string());
+
+        let condition_query = self.parse_condition(tokens)?;
+        
+        let full_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected full token".into()),
+                vec![],
+            )
+        })?;
+
+        if *full_token.get_token_type() != TokenType::Full {
+            return Err((
+                SyntaxError::UnexpectedToken(full_token.get_token_type().to_string()),
+                vec![full_token],
+            ));
+        }
+
+        full_node.children.push(condition_query);
+        full_node.children.push(TreeNode::new(NodeType::String, "full".to_string()));
+
+        Ok(full_node)
     }
 
     // <meeting_type_query> ::= ("meeting type" | "type") <condition> <string>
@@ -663,35 +788,116 @@ impl Parser {
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::MeetingTypeQuery,
-            NodeType::MeetingTypeQuery.to_string(),
-        ))
+        let mut meeting_node =
+            TreeNode::new(NodeType::MeetingTypeQuery, NodeType::MeetingTypeQuery.to_string());
+
+        let meeting_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected meeting type or type token".into()),
+                vec![],
+            )
+        })?;
+
+        // Check for either "meeting type" or "type"
+        match *meeting_token.get_token_type() {
+            TokenType::Meeting | TokenType::Type => {
+                // Valid token
+            }
+            _ => {
+                return Err((
+                    SyntaxError::UnexpectedToken(meeting_token.get_token_type().to_string()),
+                    vec![meeting_token],
+                ));
+            }
+        }
+
+        let condition_query = self.parse_condition(tokens)?;
+        let string_query = self.parse_string(tokens)?;
+
+        meeting_node.children.push(condition_query);
+        meeting_node.children.push(string_query);
+
+        Ok(meeting_node)
     }
 
-    // <time_query> ::= ("start" | "end") ((<binop> <time>) | (("from" | "in") | ("not in") <time_range>))
+    // <time_query> ::= ("start" | "end") (<binop> <time> | <time_range>)
     fn parse_time_query(
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::TimeQuery,
-            NodeType::TimeQuery.to_string(),
-        ))
+        let mut time_node =
+            TreeNode::new(NodeType::TimeQuery, NodeType::TimeQuery.to_string());
+
+        // Parse start/end token
+        let time_type_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected start or end token".into()),
+                vec![],
+            )
+        })?;
+
+        // Validate it's a start or end token
+        if *time_type_token.get_token_type() != TokenType::Start && *time_type_token.get_token_type() != TokenType::End {
+            return Err((
+                SyntaxError::UnexpectedToken(time_type_token.get_token_type().to_string()),
+                vec![time_type_token],
+            ));
+        }
+
+        // Add time type to node
+        time_node.children.push(TreeNode::new(NodeType::String, time_type_token.get_token_type().to_string()));
+
+        // Check if next token is "to" to determine if this is a time range
+        if self.token_pointer < tokens.len() {
+            let next_token = &tokens[self.token_pointer];
+            if *next_token.get_token_type() == TokenType::To {
+                // Parse: <time_range>
+                let time_range_spec = self.parse_time_range(tokens)?;
+                time_node.children.push(time_range_spec);
+            } else {
+                // Parse: <time> (direct time)
+                let time_spec = self.parse_time(tokens)?;
+                time_node.children.push(time_spec);
+            }
+        } else {
+            // No more tokens, default to direct time
+            let time_spec = self.parse_time(tokens)?;
+            time_node.children.push(time_spec);
+        }
+
+        Ok(time_node)
     }
 
-    // <time_range> ::= <time> to <time>
+    // <time_range> ::= <time> "to" <time>
     fn parse_time_range(
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::TimeRange,
-            NodeType::TimeRange.to_string(),
-        ))
+        let mut time_range_node =
+            TreeNode::new(NodeType::TimeRange, NodeType::TimeRange.to_string());
+
+        let start_time = self.parse_time(tokens)?;
+        
+        let to_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected 'to' separator".into()),
+                vec![],
+            )
+        })?;
+
+        if *to_token.get_token_type() != TokenType::To {
+            return Err((
+                SyntaxError::UnexpectedToken(to_token.get_token_type().to_string()),
+                vec![to_token],
+            ));
+        }
+        
+        let end_time = self.parse_time(tokens)?;
+
+        time_range_node.children.push(start_time);
+        time_range_node.children.push(end_time);
+
+        Ok(time_range_node)
     }
 
     // <day_query> ::= <monday_query> | <tuesday_query> | <wednesday_query> | <thursday_query> | <friday_query> | <saturday_query> | <sunday_query>
@@ -699,17 +905,237 @@ impl Parser {
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::DayQuery,
-            NodeType::DayQuery.to_string(),
-        ))
+        let mut day_node =
+            TreeNode::new(NodeType::DayQuery, NodeType::DayQuery.to_string());
+
+        // Check the next token to determine which day query to parse
+        if self.token_pointer >= tokens.len() {
+            return Err((
+                SyntaxError::MissingToken("Expected day token".into()),
+                vec![],
+            ));
+        }
+
+        let next_token = &tokens[self.token_pointer];
+        let day_query = match *next_token.get_token_type() {
+            TokenType::Monday => self.parse_monday_query(tokens)?,
+            TokenType::Tuesday => self.parse_tuesday_query(tokens)?,
+            TokenType::Wednesday => self.parse_wednesday_query(tokens)?,
+            TokenType::Thursday => self.parse_thursday_query(tokens)?,
+            TokenType::Friday => self.parse_friday_query(tokens)?,
+            TokenType::Saturday => self.parse_saturday_query(tokens)?,
+            TokenType::Sunday => self.parse_sunday_query(tokens)?,
+            _ => {
+                return Err((
+                    SyntaxError::UnexpectedToken(next_token.get_token_type().to_string()),
+                    vec![next_token.clone()],
+                ));
+            }
+        };
+
+        day_node.children.push(day_query);
+        Ok(day_node)
+    }
+
+    // Helper functions for individual day queries
+    fn parse_monday_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        let mut monday_node = TreeNode::new(NodeType::String, "monday".to_string());
+        
+        let monday_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected monday token".into()),
+                vec![],
+            )
+        })?;
+
+        if *monday_token.get_token_type() != TokenType::Monday {
+            return Err((
+                SyntaxError::UnexpectedToken(monday_token.get_token_type().to_string()),
+                vec![monday_token],
+            ));
+        }
+
+        let condition_query = self.parse_condition(tokens)?;
+        let string_query = self.parse_string(tokens)?;
+
+        monday_node.children.push(condition_query);
+        monday_node.children.push(string_query);
+
+        Ok(monday_node)
+    }
+
+    fn parse_tuesday_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        let mut tuesday_node = TreeNode::new(NodeType::String, "tuesday".to_string());
+        
+        let tuesday_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected tuesday token".into()),
+                vec![],
+            )
+        })?;
+
+        if *tuesday_token.get_token_type() != TokenType::Tuesday {
+            return Err((
+                SyntaxError::UnexpectedToken(tuesday_token.get_token_type().to_string()),
+                vec![tuesday_token],
+            ));
+        }
+
+        let condition_query = self.parse_condition(tokens)?;
+        let string_query = self.parse_string(tokens)?;
+
+        tuesday_node.children.push(condition_query);
+        tuesday_node.children.push(string_query);
+
+        Ok(tuesday_node)
+    }
+
+    fn parse_wednesday_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        let mut wednesday_node = TreeNode::new(NodeType::String, "wednesday".to_string());
+        
+        let wednesday_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected wednesday token".into()),
+                vec![],
+            )
+        })?;
+
+        if *wednesday_token.get_token_type() != TokenType::Wednesday {
+            return Err((
+                SyntaxError::UnexpectedToken(wednesday_token.get_token_type().to_string()),
+                vec![wednesday_token],
+            ));
+        }
+
+        let condition_query = self.parse_condition(tokens)?;
+        let string_query = self.parse_string(tokens)?;
+
+        wednesday_node.children.push(condition_query);
+        wednesday_node.children.push(string_query);
+
+        Ok(wednesday_node)
+    }
+
+    fn parse_thursday_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        let mut thursday_node = TreeNode::new(NodeType::String, "thursday".to_string());
+        
+        let thursday_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected thursday token".into()),
+                vec![],
+            )
+        })?;
+
+        if *thursday_token.get_token_type() != TokenType::Thursday {
+            return Err((
+                SyntaxError::UnexpectedToken(thursday_token.get_token_type().to_string()),
+                vec![thursday_token],
+            ));
+        }
+
+        let condition_query = self.parse_condition(tokens)?;
+        let string_query = self.parse_string(tokens)?;
+
+        thursday_node.children.push(condition_query);
+        thursday_node.children.push(string_query);
+
+        Ok(thursday_node)
+    }
+
+    fn parse_friday_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        let mut friday_node = TreeNode::new(NodeType::String, "friday".to_string());
+        
+        let friday_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected friday token".into()),
+                vec![],
+            )
+        })?;
+
+        if *friday_token.get_token_type() != TokenType::Friday {
+            return Err((
+                SyntaxError::UnexpectedToken(friday_token.get_token_type().to_string()),
+                vec![friday_token],
+            ));
+        }
+
+        let condition_query = self.parse_condition(tokens)?;
+        let string_query = self.parse_string(tokens)?;
+
+        friday_node.children.push(condition_query);
+        friday_node.children.push(string_query);
+
+        Ok(friday_node)
+    }
+
+    fn parse_saturday_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        let mut saturday_node = TreeNode::new(NodeType::String, "saturday".to_string());
+        
+        let saturday_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected saturday token".into()),
+                vec![],
+            )
+        })?;
+
+        if *saturday_token.get_token_type() != TokenType::Saturday {
+            return Err((
+                SyntaxError::UnexpectedToken(saturday_token.get_token_type().to_string()),
+                vec![saturday_token],
+            ));
+        }
+
+        let condition_query = self.parse_condition(tokens)?;
+        let string_query = self.parse_string(tokens)?;
+
+        saturday_node.children.push(condition_query);
+        saturday_node.children.push(string_query);
+
+        Ok(saturday_node)
+    }
+
+    fn parse_sunday_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
+        let mut sunday_node = TreeNode::new(NodeType::String, "sunday".to_string());
+        
+        let sunday_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected sunday token".into()),
+                vec![],
+            )
+        })?;
+
+        if *sunday_token.get_token_type() != TokenType::Sunday {
+            return Err((
+                SyntaxError::UnexpectedToken(sunday_token.get_token_type().to_string()),
+                vec![sunday_token],
+            ));
+        }
+
+        let condition_query = self.parse_condition(tokens)?;
+        let string_query = self.parse_string(tokens)?;
+
+        sunday_node.children.push(condition_query);
+        sunday_node.children.push(string_query);
+
+        Ok(sunday_node)
     }
 
     // <time> ::= [0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)
     fn parse_time(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(NodeType::Time, NodeType::Time.to_string()))
+        let mut time_node = TreeNode::new(NodeType::Time, NodeType::Time.to_string());
+
+        let time_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected time".into()),
+                vec![],
+            )
+        })?;
+
+        // For now, we'll assume any token can be a time
+        // In a real implementation, you'd validate it matches the time regex pattern
+        time_node.children.push(TreeNode::new(NodeType::String, time_token.get_token_type().to_string()));
+
+        Ok(time_node)
     }
 
     // <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal"
@@ -717,17 +1143,66 @@ impl Parser {
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::Condition,
-            NodeType::Condition.to_string(),
-        ))
+        let mut condition_node = TreeNode::new(NodeType::Condition, NodeType::Condition.to_string());
+
+        let condition_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected condition".into()),
+                vec![],
+            )
+        })?;
+
+        // Check if it's a valid condition token
+        match *condition_token.get_token_type() {
+            TokenType::Equals | TokenType::NotEquals | TokenType::Contains | 
+            TokenType::Has | TokenType::Starts | TokenType::With | TokenType::Ends | 
+            TokenType::Is | TokenType::Equal | TokenType::EqualsWord | TokenType::Does => {
+                // Valid condition
+            }
+            _ => {
+                return Err((
+                    SyntaxError::UnexpectedToken(condition_token.get_token_type().to_string()),
+                    vec![condition_token],
+                ));
+            }
+        }
+
+        condition_node.children.push(TreeNode::new(NodeType::String, condition_token.get_token_type().to_string()));
+
+        Ok(condition_node)
     }
 
     // <binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "equals" | "is" | "not equals" | "not" | "does not equal" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at least" | "at most" | "more than" | "fewer than"
     fn parse_binop(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(NodeType::Binop, NodeType::Binop.to_string()))
+        let mut binop_node = TreeNode::new(NodeType::Binop, NodeType::Binop.to_string());
+
+        let operator_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected binary operator".into()),
+                vec![],
+            )
+        })?;
+
+        // Check if it's a valid binary operator
+        match *operator_token.get_token_type() {
+            TokenType::Equals | TokenType::NotEquals | TokenType::LessThan | 
+            TokenType::GreaterThan | TokenType::LessEqual | TokenType::GreaterEqual |
+            TokenType::Equal | TokenType::EqualsWord | TokenType::Is | TokenType::Not |
+            TokenType::Does | TokenType::Less | TokenType::Than | TokenType::Greater |
+            TokenType::Least | TokenType::Most | TokenType::More | TokenType::Fewer => {
+                // Valid operator
+            }
+            _ => {
+                return Err((
+                    SyntaxError::InvalidOperator(operator_token.get_token_type().to_string()),
+                    vec![operator_token],
+                ));
+            }
+        }
+
+        binop_node.children.push(TreeNode::new(NodeType::String, operator_token.get_token_type().to_string()));
+
+        Ok(binop_node)
     }
 
     // <string_list> ::= <string> | <string_list> "," <string>
@@ -735,20 +1210,45 @@ impl Parser {
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::StringList,
-            NodeType::StringList.to_string(),
-        ))
+        let mut string_list_node =
+            TreeNode::new(NodeType::StringList, NodeType::StringList.to_string());
+
+        // Parse first string
+        let first_string = self.parse_string(tokens)?;
+        string_list_node.children.push(first_string);
+
+        // Check if there are more strings separated by commas
+        while self.token_pointer < tokens.len() {
+            let next_token = &tokens[self.token_pointer];
+            
+            // If we hit a comma, parse the next string
+            if next_token.get_token_type().to_string() == "comma" || 
+               next_token.get_token_type().to_string().contains(",") {
+                self.token_pointer += 1; // consume comma
+                let next_string = self.parse_string(tokens)?;
+                string_list_node.children.push(next_string);
+            } else {
+                // No more strings in the list
+                break;
+            }
+        }
+
+        Ok(string_list_node)
     }
 
     // <string> ::= "[^"]*"?
     fn parse_string(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::String,
-            NodeType::String.to_string(),
-        ))
+        // Try to parse as email first, fallback to regular identifier
+        if self.token_pointer < tokens.len() {
+            let next_token = &tokens[self.token_pointer];
+            if next_token.get_token_type().to_string().contains("@") {
+                self.parse_email_identifier(tokens)
+            } else {
+                self.parse_identifier(tokens)
+            }
+        } else {
+            self.parse_identifier(tokens)
+        }
     }
 
     // <integer> ::= [0-9]+
@@ -756,11 +1256,20 @@ impl Parser {
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::Integer,
-            NodeType::Integer.to_string(),
-        ))
+        let mut integer_node = TreeNode::new(NodeType::Integer, NodeType::Integer.to_string());
+
+        let digit_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected integer".into()),
+                vec![],
+            )
+        })?;
+
+        // For now, we'll assume any token can be an integer
+        // In a real implementation, you'd validate it's actually numeric
+        integer_node.children.push(TreeNode::new(NodeType::String, digit_token.get_token_type().to_string()));
+
+        Ok(integer_node)
     }
 
     // <identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*
@@ -768,11 +1277,20 @@ impl Parser {
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::Identifier,
-            NodeType::Identifier.to_string(),
-        ))
+        let mut identifier_node = TreeNode::new(NodeType::Identifier, NodeType::Identifier.to_string());
+
+        let id_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected identifier".into()),
+                vec![],
+            )
+        })?;
+
+        // For now, we'll assume any token can be an identifier
+        // In a real implementation, you'd validate it matches the identifier pattern
+        identifier_node.children.push(TreeNode::new(NodeType::String, id_token.get_token_type().to_string()));
+
+        Ok(identifier_node)
     }
 
     // <email_identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*@[a-zA-Z0-9_]*\.[a-zA-Z0-9_.]*
@@ -780,10 +1298,19 @@ impl Parser {
         &mut self,
         tokens: &Vec<Token>,
     ) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // TODO: Implement actual parsing logic
-        Ok(TreeNode::new(
-            NodeType::EmailIdentifier,
-            NodeType::EmailIdentifier.to_string(),
-        ))
+        let mut email_node = TreeNode::new(NodeType::EmailIdentifier, NodeType::EmailIdentifier.to_string());
+
+        let email_token = self.next_token(tokens).map_err(|_| {
+            (
+                SyntaxError::MissingToken("Expected email identifier".into()),
+                vec![],
+            )
+        })?;
+
+        // For now, we'll assume any token can be an email identifier
+        // In a real implementation, you'd validate it matches the email pattern
+        email_node.children.push(TreeNode::new(NodeType::String, email_token.get_token_type().to_string()));
+
+        Ok(email_node)
     }
 }

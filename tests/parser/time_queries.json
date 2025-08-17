@@ -1,0 +1,98 @@
+[
+  {
+    "test_name": "start_time_greater_than",
+    "description": "Start time with greater than operator",
+    "input": "start > 9:00",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "end_time_less_equal",
+    "description": "End time with less than or equal operator",
+    "input": "end <= 17:00",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "start_time_equals",
+    "description": "Start time with equals operator",
+    "input": "start = 8:30",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "start_time_range",
+    "description": "Start time with time range",
+    "input": "start 9:00 to 17:00",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "end_time_range",
+    "description": "End time with time range",
+    "input": "end 8:00 to 16:00",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "start_time_not_equals",
+    "description": "Start time with not equals operator",
+    "input": "start != 12:00",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "end_time_greater_equal",
+    "description": "End time with greater than or equal operator",
+    "input": "end >= 15:00",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "start_time_missing_operator",
+    "description": "Start time missing operator should fail",
+    "input": "start 9:00",
+    "should_succeed": false,
+    "expected_error_type": "MissingToken",
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "end_time_missing_time",
+    "description": "End time missing time should fail",
+    "input": "end >",
+    "should_succeed": false,
+    "expected_error_type": "MissingToken",
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "start_time_invalid_token",
+    "description": "Start time with invalid token should fail",
+    "input": "invalid > 9:00",
+    "should_succeed": false,
+    "expected_error_type": "UnexpectedToken",
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "time_range_missing_to",
+    "description": "Time range missing 'to' separator should fail",
+    "input": "start 9:00 17:00",
+    "should_succeed": false,
+    "expected_error_type": "MissingToken",
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "time_range_missing_end_time",
+    "description": "Time range missing end time should fail",
+    "input": "start 9:00 to",
+    "should_succeed": false,
+    "expected_error_type": "MissingToken",
+    "expected_problematic_tokens": null
+  }
+] 

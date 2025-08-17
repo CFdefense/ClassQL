@@ -237,8 +237,18 @@ fn test_time_and_day_queries() {
 }
 
 #[test]
+fn test_time_queries() {
+    run_test_file("time_queries.json");
+}
+
+#[test]
 fn test_enrollment_queries() {
     run_test_file("enrollment_queries.json");
+}
+
+#[test]
+fn test_size_queries() {
+    run_test_file("size_queries.json");
 }
 
 #[test]

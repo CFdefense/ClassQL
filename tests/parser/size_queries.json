@@ -1,0 +1,90 @@
+[
+  {
+    "test_name": "size_basic_greater_than",
+    "description": "Basic size query with greater than operator",
+    "input": "size > 20",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "size_less_than",
+    "description": "Size query with less than operator",
+    "input": "size < 30",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "size_equals",
+    "description": "Size query with equals operator",
+    "input": "size = 25",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "size_not_equals",
+    "description": "Size query with not equals operator",
+    "input": "size != 0",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "size_greater_equal",
+    "description": "Size query with greater than or equal operator",
+    "input": "size >= 15",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "size_less_equal",
+    "description": "Size query with less than or equal operator",
+    "input": "size <= 40",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "size_with_large_number",
+    "description": "Size query with a large number",
+    "input": "size > 1000",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "size_with_zero",
+    "description": "Size query with zero",
+    "input": "size >= 0",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "size_missing_operator",
+    "description": "Size query missing operator should fail",
+    "input": "size 25",
+    "should_succeed": false,
+    "expected_error_type": "MissingToken",
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "size_missing_number",
+    "description": "Size query missing number should fail",
+    "input": "size >",
+    "should_succeed": false,
+    "expected_error_type": "MissingToken",
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "size_invalid_token",
+    "description": "Size query with invalid token should fail",
+    "input": "invalid > 25",
+    "should_succeed": false,
+    "expected_error_type": "UnexpectedToken",
+    "expected_problematic_tokens": null
+  }
+] 

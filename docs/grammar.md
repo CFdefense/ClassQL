@@ -122,8 +122,8 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 <title_query> ::= "title" <condition> <string>
 <description_query> ::= "description" <condition> <string>
 <credit_hours_query> ::= "credit hours" <binop> <integer>
-<prereqs_query> ::= "prereqs" <string> | "prereqs" <string_list>
-<coreqs_query> ::= "corereqs" <string> | "corereqs" <string_list>
+<prereqs_query> ::= "prereqs" <string_list>
+<coreqs_query> ::= "corereqs" <string_list>
 
 <section_query> ::= "section" <subject_query> | <course_query> | <enrollment_cap_query> | <instruction_method_query> | <campus_query> | <enrollment_query> | <full_query>
 <enrollment_cap_query> ::= "cap" <binop> <integer>
@@ -133,8 +133,8 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 <full_query> ::= <condition> "full"
 
 <meeting_type_query> ::= ("meeting type" | "type") <condition> <string>
-<time_query> ::= ("start" | "end") ((<binop> <time>) | (("from" | "in") | ("not in") <time_range>))
-<time_range> ::= <time> to <time>
+<time_query> ::= ("start" | "end") (<binop> <time> | <time_range>)
+<time_range> ::= <time> "to" <time>
 <day_query> ::= <monday_query> | <tuesday_query> | <wednesday_query> | <thursday_query> | <friday_query> | <saturday_query> | <sunday_query>
 <monday_query> ::= ("mon" | "monday" | "m") <condition> <string>
 <tuesday_query> ::= ("tues" | "tuesday" | "tu") <condition> <string>
