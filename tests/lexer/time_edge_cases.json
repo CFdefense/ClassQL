@@ -1,0 +1,105 @@
+[
+  {
+    "test_name": "Invalid Time Formats - Invalid Hours",
+    "description": "Test that invalid hour values are still tokenized as T_TIME (lexer only does pattern matching)",
+    "code": "25:00 99:30 100:00",
+    "result": [
+      {"type": "T_TIME", "content": "25:00"},
+      {"type": "T_TIME", "content": "99:30"},
+      {"type": "T_TIME", "content": "100:00"}
+    ]
+  },
+  {
+    "test_name": "Invalid Time Formats - Invalid Minutes",
+    "description": "Test that invalid minute values are still tokenized as T_TIME (lexer only does pattern matching)",
+    "code": "12:60 15:99 8:70",
+    "result": [
+      {"type": "T_TIME", "content": "12:60"},
+      {"type": "T_TIME", "content": "15:99"},
+      {"type": "T_TIME", "content": "8:70"}
+    ]
+  },
+  {
+    "test_name": "Invalid Time Formats - Invalid AM/PM",
+    "description": "Test that invalid AM/PM values are not tokenized as T_TIME",
+    "code": "9:00xm 2:30ym 8:15zm",
+    "result": [
+      {"type": "T_TIME", "content": "9:00"},
+      {"type": "T_IDENTIFIER", "content": "xm"},
+      {"type": "T_TIME", "content": "2:30"},
+      {"type": "T_IDENTIFIER", "content": "ym"},
+      {"type": "T_TIME", "content": "8:15"},
+      {"type": "T_IDENTIFIER", "content": "zm"}
+    ]
+  },
+  {
+    "test_name": "Invalid Time Formats - Missing Colon",
+    "description": "Test that times without colons are not tokenized as T_TIME",
+    "code": "900am 230pm 800",
+    "result": [
+      {"type": "T_TIME", "content": "900am"},
+      {"type": "T_TIME", "content": "230pm"},
+      {"type": "T_INTEGER", "content": "800"}
+    ]
+  },
+  {
+    "test_name": "Invalid Time Formats - Extra Characters",
+    "description": "Test that times with extra characters are not tokenized as T_TIME",
+    "code": "9:00am! 2:30pm? 8:15am#",
+    "result": [
+      {"type": "T_UNRECOGNIZED", "content": "?"},
+      {"type": "T_UNRECOGNIZED", "content": "#"}
+    ]
+  },
+  {
+    "test_name": "Invalid Time Formats - Decimal Hours",
+    "description": "Test that decimal hours are not tokenized as T_TIME",
+    "code": "9.5:00 2.75:30 8.25am",
+    "result": [
+      {"type": "T_UNRECOGNIZED", "content": "."},
+      {"type": "T_UNRECOGNIZED", "content": "."},
+      {"type": "T_UNRECOGNIZED", "content": "."}
+    ]
+  },
+  {
+    "test_name": "Invalid Time Formats - Negative Times",
+    "description": "Test that negative times are not tokenized as T_TIME",
+    "code": "-9:00 -2:30pm -8am",
+    "result": [
+      {"type": "T_UNRECOGNIZED", "content": "-"},
+      {"type": "T_UNRECOGNIZED", "content": "-"},
+      {"type": "T_UNRECOGNIZED", "content": "-"}
+    ]
+  },
+  {
+    "test_name": "Invalid Time Formats - Mixed Separators",
+    "description": "Test that times with mixed separators are not tokenized as T_TIME",
+    "code": "9-00 2.30 8/15",
+    "result": [
+      {"type": "T_UNRECOGNIZED", "content": "-"},
+      {"type": "T_UNRECOGNIZED", "content": "."},
+      {"type": "T_UNRECOGNIZED", "content": "/"}
+    ]
+  },
+  {
+    "test_name": "Invalid Time Formats - Leading Zeros",
+    "description": "Test that times with leading zeros are handled correctly",
+    "code": "09:00 02:30am 08:15pm",
+    "result": [
+      {"type": "T_TIME", "content": "09:00"},
+      {"type": "T_TIME", "content": "02:30am"},
+      {"type": "T_TIME", "content": "08:15pm"}
+    ]
+  },
+  {
+    "test_name": "Invalid Time Formats - Boundary Values",
+    "description": "Test boundary values for time formats",
+    "code": "00:00am 12:00pm 23:59pm 24:00am",
+    "result": [
+      {"type": "T_TIME", "content": "00:00am"},
+      {"type": "T_TIME", "content": "12:00pm"},
+      {"type": "T_TIME", "content": "23:59pm"},
+      {"type": "T_TIME", "content": "24:00am"}
+    ]
+  }
+] 

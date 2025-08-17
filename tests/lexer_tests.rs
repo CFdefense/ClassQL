@@ -210,4 +210,14 @@ fn test_core_tokens_edge_cases() {
 #[test]
 fn test_core_tokens_stress_tests() {
     run_test_file("core_tokens_stress_tests.json");
+}
+
+#[test]
+fn test_time_queries() {
+    run_test_file("time_queries.json");
+}
+
+#[test]
+fn test_time_edge_cases() {
+    run_test_file("time_edge_cases.json");
 } 
