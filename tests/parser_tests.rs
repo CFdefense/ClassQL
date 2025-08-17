@@ -145,12 +145,9 @@ impl ParserTestHelper {
         let actual_error_type = match actual_error {
             SyntaxError::UnexpectedToken(_) => "UnexpectedToken",
             SyntaxError::MissingToken(_) => "MissingToken",
-            SyntaxError::InvalidExpression(_) => "InvalidExpression",
             SyntaxError::UnclosedParenthesis => "UnclosedParenthesis",
             SyntaxError::InvalidOperator(_) => "InvalidOperator",
             SyntaxError::EmptyQuery => "EmptyQuery",
-            SyntaxError::InvalidIdentifier(_) => "InvalidIdentifier",
-            SyntaxError::NOIMPL => "NOIMPL",
         };
         
         assert_eq!(
@@ -166,12 +163,9 @@ impl ParserTestHelper {
         let actual_message = match actual_error {
             SyntaxError::UnexpectedToken(token) => token,
             SyntaxError::MissingToken(token) => token,
-            SyntaxError::InvalidExpression(expr) => expr,
             SyntaxError::InvalidOperator(op) => op,
-            SyntaxError::InvalidIdentifier(id) => id,
             SyntaxError::UnclosedParenthesis => "Unclosed parenthesis",
             SyntaxError::EmptyQuery => "Empty query",
-            SyntaxError::NOIMPL => "Not implemented",
         };
         
         assert_eq!(

@@ -35,27 +35,21 @@ impl Display for AppError {
 
 #[derive(Debug, PartialEq)]
 pub enum SyntaxError {
-    NOIMPL,
     UnexpectedToken(String),
     MissingToken(String),
-    InvalidExpression(String),
     UnclosedParenthesis,
     InvalidOperator(String),
     EmptyQuery,
-    InvalidIdentifier(String),
 }
 
 impl Display for SyntaxError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            SyntaxError::NOIMPL => write!(f, "Not implemented"),
             SyntaxError::UnexpectedToken(token) => write!(f, "Unexpected token: {}", token),
             SyntaxError::MissingToken(token) => write!(f, "Missing token: {}", token),
-            SyntaxError::InvalidExpression(expr) => write!(f, "Invalid expression: {}", expr),
             SyntaxError::UnclosedParenthesis => write!(f, "Unclosed parenthesis"),
             SyntaxError::InvalidOperator(op) => write!(f, "Invalid operator: {}", op),
             SyntaxError::EmptyQuery => write!(f, "Empty query"),
-            SyntaxError::InvalidIdentifier(id) => write!(f, "Invalid identifier: {}", id),
         }
     }
 }

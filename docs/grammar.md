@@ -110,13 +110,13 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 
 <logical_term> ::= <logical_factor> ("and" <logical_factor>)*
 
-<logical_factor> ::= <entity_query> | "(" <query> ")"
+<logical_factor> ::= <entity_query> | "(" <query> ")" | "not" <logical_factor>
 
 <entity_query> ::= <professor_query> | <course_query> | <section_query> | <meeting_type_query> | <time_query> | <day_query>
 
 <professor_query> ::= "prof" <condition> <string>
 
-<course_query> ::= "course" <subject_query> | <number_query> | <title_query> | <description_query> | <credit_hours_query> | <prereqs_query> | <coreqs_query>
+<course_query> ::= "course" (<condition> <string> | <subject_query> | <number_query> | <title_query> | <description_query> | <credit_hours_query> | <prereqs_query> | <coreqs_query>)
 <subject_query> ::= ("subject" | "sub") <condition> <string>
 <number_query> ::= "number" <condition> <string>
 <title_query> ::= "title" <condition> <string>
@@ -126,11 +126,11 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 <coreqs_query> ::= "corereqs" <string_list>
 
 <section_query> ::= "section" <subject_query> | <course_query> | <enrollment_cap_query> | <instruction_method_query> | <campus_query> | <enrollment_query> | <full_query>
-<enrollment_cap_query> ::= "cap" <binop> <integer>
+<enrollment_query> ::= "size" <binop> <integer> | "enrollment" <binop> <integer>
+<enrollment_cap_query> ::= "enrollment cap" <binop> <integer> | "cap" <binop> <integer>
 <instruction_method_query> ::= "method" <condition> <string>
 <campus_query> ::= "campus" <condition> <string>
-<enrollment_query> ::= "size" <binop> <integer>  # ! Might be missing this
-<full_query> ::= <condition> "full"
+<full_query> ::= "full" <condition> <string>
 
 <meeting_type_query> ::= ("meeting type" | "type") <condition> <string>
 <time_query> ::= ("start" | "end") (<binop> <time> | <time_range>)
