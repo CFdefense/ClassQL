@@ -5,7 +5,7 @@
     "input": "prof",
     "should_succeed": false,
     "expected_error_type": "ExpectedAfter",
-    "expected_error_message": "After 'search field', please add one of: 'is', 'equals', 'contains', 'has', 'starts with', 'ends with'",
+    "expected_error_message": "After 'search field', please add one of: 'is', 'equals', 'contains', 'has', 'starts with', 'ends with', '=', '!='",
     "expected_problematic_tokens": []
   },
   {

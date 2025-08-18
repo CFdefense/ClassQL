@@ -1,0 +1,398 @@
+[
+  {
+    "test_name": "day_abbreviations_comprehensive", 
+    "description": "Test all day abbreviations from grammar.md",
+    "queries": [
+      {
+        "input": "monday is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "monda is yes", 
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "mond is yes",
+        "expected_result": "success", 
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "mon is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "mo is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "m is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "tuesday is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "tuesda is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "tuesd is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "tues is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "tue is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "tu is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "wednesday is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "wednesda is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "wednesd is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "wednes is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "wedne is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "wedn is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "wed is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "we is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "w is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "thursday is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "thursda is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "thurs is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "thur is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "thu is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "th is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "friday is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "frida is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "frid is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "fri is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "fr is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "f is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "saturday is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "saturda is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "saturd is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "satur is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "satu is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "sat is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "sa is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "sunday is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "sunda is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "sund is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "sun is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "su is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "subject_variations",
+    "description": "Test subject vs sub keyword variations",
+    "queries": [
+      {
+        "input": "subject is CS",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "sub is MATH",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "course subject is ENG",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "course sub is PHY",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "section subject is BIO",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "section sub is CHEM",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "meeting_type_variations",
+    "description": "Test meeting type vs type keyword variations",
+    "queries": [
+      {
+        "input": "meeting type is Lecture",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "type is Lab",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "meeting type contains Discussion",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "type equals Seminar",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "professor_variations", 
+    "description": "Test prof vs professor keyword variations",
+    "queries": [
+      {
+        "input": "prof is Smith",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "professor is Johnson",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof contains Dr",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "professor starts with Prof",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "enrollment_keyword_variations",
+    "description": "Test enrollment, size, cap variations",
+    "queries": [
+      {
+        "input": "enrollment > 50",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "size < 100",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "cap = 75",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "enrollment cap >= 25",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "section enrollment != 0",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "section size <= 200",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "section cap > 30",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "time_keyword_variations",
+    "description": "Test start vs end time keywords",
+    "queries": [
+      {
+        "input": "start > 9:00",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "end < 17:00",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "start = 8:30am",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "end >= 6:00pm",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "start 9:00 to 12:00",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "end 13:00 to 16:00",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  }
+] 

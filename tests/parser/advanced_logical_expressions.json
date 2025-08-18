@@ -1,0 +1,115 @@
+[
+  {
+    "test_name": "operator_precedence",
+    "description": "Test operator precedence (AND has higher precedence than OR)",
+    "queries": [
+      {
+        "input": "prof is John or prof is Jane and subject is CS",
+        "expected_result": "success",
+        "expected_ast_type": "Query",
+        "description": "Should be parsed as: prof is John OR (prof is Jane AND subject is CS)"
+      },
+      {
+        "input": "subject is MATH and prof is Smith or title contains calculus",
+        "expected_result": "success", 
+        "expected_ast_type": "Query",
+        "description": "Should be parsed as: (subject is MATH AND prof is Smith) OR title contains calculus"
+      }
+    ]
+  },
+  {
+    "test_name": "nested_parentheses",
+    "description": "Test deeply nested parenthetical expressions",
+    "queries": [
+      {
+        "input": "((prof is John))",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "((prof is John and subject is CS) or (prof is Jane and subject is MATH))",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "(prof is John and (subject is CS or subject is MATH)) and credit hours > 3",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "not_operator_precedence",
+    "description": "Test NOT operator precedence and placement",
+    "queries": [
+      {
+        "input": "not prof is John and subject is CS",
+        "expected_result": "success",
+        "expected_ast_type": "Query",
+        "description": "Should be parsed as: (NOT prof is John) AND subject is CS"
+      },
+      {
+        "input": "prof is John and not subject is CS",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "not (prof is John and subject is CS)",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "not not prof is John",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "malformed_parentheses",
+    "description": "Test error cases with malformed parentheses",
+    "queries": [
+      {
+        "input": "(prof is John",
+        "expected_result": "error",
+        "expected_error_type": "UnclosedParenthesis"
+      },
+      {
+        "input": "prof is John)",
+        "expected_result": "error",
+        "expected_error_type": "InvalidContext"
+      },
+      {
+        "input": "((prof is John)",
+        "expected_result": "error",
+        "expected_error_type": "UnclosedParenthesis"
+      },
+      {
+        "input": "(prof is John))",
+        "expected_result": "error",
+        "expected_error_type": "InvalidContext"
+      }
+    ]
+  },
+  {
+    "test_name": "complex_logical_chains",
+    "description": "Test long chains of logical operators",
+    "queries": [
+      {
+        "input": "prof is A and prof is B and prof is C and prof is D",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof is A or prof is B or prof is C or prof is D",
+        "expected_result": "success", 
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof is A and prof is B or prof is C and prof is D",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  }
+] 

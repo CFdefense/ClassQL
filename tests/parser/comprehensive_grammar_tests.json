@@ -1,0 +1,539 @@
+[
+  {
+    "test_name": "professor_basic_queries",
+    "description": "Test all professor query variations from grammar",
+    "queries": [
+      {
+        "input": "prof is John",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof equals Smith",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof contains doe",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof has phd",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof starts with j",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof ends with son",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "professor is Jane",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "course_all_subqueries",
+    "description": "Test all course subquery types from grammar",
+    "queries": [
+      {
+        "input": "course subject is CS",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "course number is 101",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "course title contains Programming",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "course description has algorithms",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "course credit hours = 3",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "course prereqs CS100",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "course corereqs MATH101",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "course contains CS",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "subject_query_variations",
+    "description": "Test subject queries with both 'subject' and 'sub' keywords",
+    "queries": [
+      {
+        "input": "subject is CS",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "sub equals MATH",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "subject contains Engineering",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "sub starts with PHY",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "section_all_subqueries",
+    "description": "Test all section subquery types from grammar",
+    "queries": [
+      {
+        "input": "section subject is CS",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "section course contains Programming",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "section cap > 20",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "section enrollment < 50",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "section size >= 10",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "section campus is Main",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "section full is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "enrollment_variations",
+    "description": "Test enrollment queries with different keywords",
+    "queries": [
+      {
+        "input": "enrollment > 30",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "size < 100",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "cap = 50",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "enrollment cap <= 75",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "meeting_type_queries",
+    "description": "Test meeting type queries with both forms",
+    "queries": [
+      {
+        "input": "meeting type is Lecture",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "type contains Lab",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "meeting type equals Discussion",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "time_queries_comprehensive",
+    "description": "Test time queries with binop and time ranges",
+    "queries": [
+      {
+        "input": "start > 9:00",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "end < 17:00",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "start = 8:30am",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "end >= 6:00pm",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "start 9:00 to 17:00",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "end 14:30 to 16:00",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "day_queries_all_variations",
+    "description": "Test all day queries with different abbreviations",
+    "queries": [
+      {
+        "input": "monday is yes",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "tue contains class",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "wed is available",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "thursday equals free",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "fri has lecture",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "sat is weekend",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "sunday contains rest",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "logical_operators_comprehensive",
+    "description": "Test all logical operators and combinations",
+    "queries": [
+      {
+        "input": "prof is John and course contains CS",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "subject is MATH or title has calculus",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "not prof contains Smith",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof is Jane and course subject is CS and credit hours > 3",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof contains John or prof contains Jane or prof contains Bob",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "parenthesized_expressions",
+    "description": "Test parenthesized logical expressions",
+    "queries": [
+      {
+        "input": "(prof is John)",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "(prof is John and course contains CS)",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "(prof is John or prof is Jane) and subject is CS",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof is John and (subject is CS or subject is MATH)",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "not (prof is John and subject is CS)",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "binary_operators_comprehensive",
+    "description": "Test all binary operators from grammar",
+    "queries": [
+      {
+        "input": "credit hours = 3",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "enrollment != 0",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "size < 50",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "cap > 20",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "credit hours <= 4",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "enrollment >= 10",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "credit hours equals 3",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "size is 25",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "string_conditions_comprehensive",
+    "description": "Test all string condition operators",
+    "queries": [
+      {
+        "input": "prof = John",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "title != Programming",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "subject contains Computer",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "description has algorithm",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof starts with Dr",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "title ends with I",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prof is Johnson",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "subject equals MATH",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "string_lists",
+    "description": "Test string list syntax for prereqs and corereqs",
+    "queries": [
+      {
+        "input": "prereqs CS100",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "corereqs MATH101",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "invalid_grammar_violations",
+    "description": "Test cases that should fail due to grammar violations",
+    "queries": [
+      {
+        "input": "hours is 3",
+        "expected_result": "error",
+        "expected_error_type": "InvalidContext",
+        "expected_error_message": "Invalid token 'T_HOURS ('hours')' in context 'query start'. Try: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'."
+      },
+      {
+        "input": "credit = 3",
+        "expected_result": "error",
+        "expected_error_type": "ExpectedAfter",
+        "expected_error_message": "Expected 'hours' after 'credit'."
+      },
+      {
+        "input": "meeting = lab",
+        "expected_result": "error",
+        "expected_error_type": "ExpectedAfter",
+        "expected_error_message": "Expected 'type' after 'meeting'."
+      },
+      {
+        "input": "prof starts",
+        "expected_result": "error",
+        "expected_error_type": "MissingToken",
+        "expected_error_message": "Expected 'with' after 'starts'"
+      },
+      {
+        "input": "prof ends",
+        "expected_result": "error",
+        "expected_error_type": "MissingToken",
+        "expected_error_message": "Expected 'with' after 'ends'"
+      },
+      {
+        "input": "prof with something",
+        "expected_result": "error",
+        "expected_error_type": "InvalidContext",
+        "expected_error_message": "Invalid token 'with' in context 'string condition'. Try: 'is', 'equals', 'contains', 'has', 'starts with', 'ends with'."
+      }
+    ]
+  },
+  {
+    "test_name": "edge_case_numbers",
+    "description": "Test edge cases with numeric values",
+    "queries": [
+      {
+        "input": "credit hours = 0",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "enrollment > 999",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "size < 1",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  },
+  {
+    "test_name": "time_formats",
+    "description": "Test different time formats from grammar",
+    "queries": [
+      {
+        "input": "start > 9:00",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "end < 17:30",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "start = 8:00am",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "end >= 6:00pm",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      }
+    ]
+  }
+] 
