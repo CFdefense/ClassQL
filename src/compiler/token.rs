@@ -172,7 +172,7 @@ impl TokenType {
             (TokenType::Hours, r"(?i)\bhours\b"),
             (TokenType::Title, r"(?i)\btitle\b"),
             (TokenType::Term, r"(?i)\bterm\b"),
-            (TokenType::Prof, r"(?i)\bprof\b"),
+            (TokenType::Prof, r"(?i)\b(?:prof|professor)\b"),
             (TokenType::Section, r"(?i)\bsection\b"),
             (TokenType::Number, r"(?i)\bnumber\b"),
             (TokenType::Description, r"(?i)\bdescription\b"),

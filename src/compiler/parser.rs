@@ -121,6 +121,14 @@ impl Parser {
                         // Provide generic suggestions based on current context
                         self.get_context_suggestions(tokens)
                     }
+                    SyntaxError::EmptyQuery => {
+                        // Empty query - suggest starting entities
+                        vec!["professor".to_string(), "course".to_string(), "subject".to_string(), 
+                             "title".to_string(), "section".to_string(), "number".to_string(),
+                             "description".to_string(), "credit".to_string(), "prerequisites".to_string(),
+                             "corequisites".to_string(), "enrollment".to_string(), "campus".to_string(), 
+                             "meeting".to_string()]
+                    }
                     _ => vec![]
                 }
             }
@@ -495,14 +503,35 @@ impl Parser {
         
         let next_token = &tokens[self.token_pointer];
         let next_query = match *next_token.get_token_type() {
-            // Sub-queries
-            TokenType::Subject => self.parse_subject_query(tokens)?,
-            TokenType::Number => self.parse_number_query(tokens)?,
-            TokenType::Title => self.parse_title_query(tokens)?,
-            TokenType::Description => self.parse_description_query(tokens)?,
-            TokenType::Credit => self.parse_credit_hours_query(tokens)?,
-            TokenType::Prereqs => self.parse_prereqs_query(tokens)?,
-            TokenType::Corereqs => self.parse_coreqs_query(tokens)?,
+            // Sub-queries  
+            TokenType::Subject => {
+                self.token_pointer += 1; // consume the subject token
+                self.parse_subject_query(tokens)?
+            },
+            TokenType::Number => {
+                self.token_pointer += 1; // consume the number token
+                self.parse_number_query(tokens)?
+            },
+            TokenType::Title => {
+                self.token_pointer += 1; // consume the title token
+                self.parse_title_query(tokens)?
+            },
+            TokenType::Description => {
+                self.token_pointer += 1; // consume the description token
+                self.parse_description_query(tokens)?
+            },
+            TokenType::Credit => {
+                self.token_pointer += 1; // consume the credit token
+                self.parse_credit_hours_query(tokens)?
+            },
+            TokenType::Prereqs => {
+                self.token_pointer += 1; // consume the prereqs token
+                self.parse_prereqs_query(tokens)?
+            },
+            TokenType::Corereqs => {
+                self.token_pointer += 1; // consume the corereqs token
+                self.parse_coreqs_query(tokens)?
+            },
             // Direct condition (like "course contains CS")
             TokenType::Equals | TokenType::NotEquals | TokenType::Contains | 
             TokenType::Has | TokenType::Starts | TokenType::With | TokenType::Ends | 
@@ -1108,7 +1137,8 @@ impl Parser {
             (
                 SyntaxError::ExpectedAfter {
                     expected: vec!["is".to_string(), "equals".to_string(), "contains".to_string(), 
-                                  "has".to_string(), "starts".to_string(), "ends".to_string()],
+                                  "has".to_string(), "starts".to_string(), "ends".to_string(),
+                                  "=".to_string(), "!=".to_string()],
                     after: "entity keyword".to_string(),
                     position: self.token_pointer,
                 },
