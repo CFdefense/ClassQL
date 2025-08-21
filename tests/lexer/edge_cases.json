@@ -109,22 +109,16 @@
         "test_name": "Mixed Valid and Invalid Characters",
         "description": "Test mixing valid tokens with unrecognized characters",
         "code": "subject#course",
-        "result": [
-            {"type": "T_UNRECOGNIZED", "content": "#"}
-        ]
+        "should_succeed": false,
+        "expected_error": "Unrecognized character",
+        "result": []
     },
     {
         "test_name": "Special Characters Galore",
-        "description": "Test lots of special characters that should be ignored",
+        "description": "Test lots of special characters that should cause lexer error",
         "code": "@#$%^&*()subject!=course",
-        "result": [
-            {"type": "T_UNRECOGNIZED", "content": "@"},
-            {"type": "T_UNRECOGNIZED", "content": "#"},
-            {"type": "T_UNRECOGNIZED", "content": "$"},
-            {"type": "T_UNRECOGNIZED", "content": "%"},
-            {"type": "T_UNRECOGNIZED", "content": "^"},
-            {"type": "T_UNRECOGNIZED", "content": "&"},
-            {"type": "T_UNRECOGNIZED", "content": "*"}
-        ]
+        "should_succeed": false,
+        "expected_error": "Unrecognized characters",
+        "result": []
     }
 ] 

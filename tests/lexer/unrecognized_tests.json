@@ -1,70 +1,51 @@
 [
     {
         "test_name": "Single Unrecognized Character",
-        "description": "Test single invalid character returns error token",
+        "description": "Test single invalid character causes lexer error",
         "code": "@",
-        "result": [
-            {"type": "T_UNRECOGNIZED", "content": "@"}
-        ]
+        "should_succeed": false,
+        "expected_error": "Unrecognized character",
+        "result": []
     },
     {
         "test_name": "Multiple Unrecognized Characters",
-        "description": "Test multiple invalid characters return error tokens",
+        "description": "Test multiple invalid characters cause lexer error",
         "code": "@#$%",
-        "result": [
-            {"type": "T_UNRECOGNIZED", "content": "@"},
-            {"type": "T_UNRECOGNIZED", "content": "#"},
-            {"type": "T_UNRECOGNIZED", "content": "$"},
-            {"type": "T_UNRECOGNIZED", "content": "%"}
-        ]
+        "should_succeed": false,
+        "expected_error": "Unrecognized characters",
+        "result": []
     },
     {
         "test_name": "Mixed Valid and Invalid Characters",
         "description": "Test mixing valid tokens with unrecognized characters",
         "code": "subject#course",
-        "result": [
-            {"type": "T_UNRECOGNIZED", "content": "#"}
-        ]
+        "should_succeed": false,
+        "expected_error": "Unrecognized character",
+        "result": []
     },
     {
         "test_name": "Invalid Characters with Spaces",
-        "description": "Test invalid characters separated by spaces",
+        "description": "Test invalid characters separated by spaces cause lexer error",
         "code": "@ # $ %",
-        "result": [
-            {"type": "T_UNRECOGNIZED", "content": "@"},
-            {"type": "T_UNRECOGNIZED", "content": "#"},
-            {"type": "T_UNRECOGNIZED", "content": "$"},
-            {"type": "T_UNRECOGNIZED", "content": "%"}
-        ]
+        "should_succeed": false,
+        "expected_error": "Unrecognized characters",
+        "result": []
     },
     {
         "test_name": "Unicode Invalid Characters",
-        "description": "Test unicode characters that are not supported",
+        "description": "Test unicode characters that cause lexer error",
         "code": "★☆♠♣",
-        "result": [
-            {"type": "T_UNRECOGNIZED", "content": "★"},
-            {"type": "T_UNRECOGNIZED", "content": "☆"},
-            {"type": "T_UNRECOGNIZED", "content": "♠"},
-            {"type": "T_UNRECOGNIZED", "content": "♣"}
-        ]
+        "should_succeed": false,
+        "expected_error": "Unrecognized characters",
+        "result": []
     },
     {
         "test_name": "Punctuation Overload", 
-        "description": "Test excessive punctuation marks",
+        "description": "Test excessive punctuation marks cause lexer error",
         "code": "~`^&*()[]{}|\\",
-        "result": [
-            {"type": "T_UNRECOGNIZED", "content": "~"},
-            {"type": "T_UNRECOGNIZED", "content": "`"},
-            {"type": "T_UNRECOGNIZED", "content": "^"},
-            {"type": "T_UNRECOGNIZED", "content": "&"},
-            {"type": "T_UNRECOGNIZED", "content": "*"},
-            {"type": "T_UNRECOGNIZED", "content": "["},
-            {"type": "T_UNRECOGNIZED", "content": "]"},
-            {"type": "T_UNRECOGNIZED", "content": "{"},
-            {"type": "T_UNRECOGNIZED", "content": "}"},
-            {"type": "T_UNRECOGNIZED", "content": "|"},
-            {"type": "T_UNRECOGNIZED", "content": "\\"}
-        ]
+        "should_succeed": false,
+        "expected_error": "Unrecognized characters",
+        "result": []
     },
     {
         "test_name": "Invalid Operator Combination",
@@ -78,18 +59,18 @@
     },
     {
         "test_name": "Single Invalid in Valid Context",
-        "description": "Test single invalid character among valid tokens",
+        "description": "Test single invalid character among valid tokens causes lexer error",
         "code": "subject = @ course = \"CS\"",
-        "result": [
-            {"type": "T_UNRECOGNIZED", "content": "@"}
-        ]
+        "should_succeed": false,
+        "expected_error": "Unrecognized character",
+        "result": []
     },
     {
         "test_name": "Valid Parentheses with Invalid Characters",
-        "description": "Test valid parentheses mixed with invalid characters",
+        "description": "Test valid parentheses mixed with invalid characters cause lexer error",
         "code": "(prof is Alan) @ (course contains CS)",
-        "result": [
-            {"type": "T_UNRECOGNIZED", "content": "@"}
-        ]
+        "should_succeed": false,
+        "expected_error": "Unrecognized character",
+        "result": []
     }
 ] 

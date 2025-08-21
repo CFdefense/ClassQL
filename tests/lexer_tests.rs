@@ -8,6 +8,10 @@ struct TestCase {
     test_name: String,
     description: String,
     code: String,
+    #[serde(default)]
+    should_succeed: Option<bool>,
+    #[serde(default)]
+    expected_error: Option<String>,
     result: Vec<ExpectedToken>,
 }
 
@@ -42,81 +46,104 @@ impl TestHelper {
         self.lexer.clear();
         
         // Tokenize the input
-        let tokens = match self.lexer.lexical_analysis(test_case.code.clone()) {
-            Ok(tokens) => tokens,
-            Err(e) => panic!("Lexer error in test '{}': {:?}", test_case.test_name, e),
-        };
-        
-        // Print actual tokens
-        println!("Expected {} tokens, got {} tokens", test_case.result.len(), tokens.len());
-        
-        if tokens.len() != test_case.result.len() {
-            println!("\n=== TOKEN COUNT MISMATCH ===");
-            println!("Expected tokens:");
-            for (i, expected) in test_case.result.iter().enumerate() {
-                println!("  [{}] {} = '{}'", i, expected.token_type, expected.content);
-            }
-            println!("Actual tokens:");
-            for (i, actual) in tokens.iter().enumerate() {
-                println!("  [{}] {} = '{}'", i, actual.get_token_type().to_string(), actual.get_lexeme());
-            }
-            println!("========================\n");
-        }
-        
-        // Compare results
-        assert_eq!(
-            tokens.len(),
-            test_case.result.len(),
-            "Token count mismatch in test '{}'. Expected: {}, Got: {}",
-            test_case.test_name,
-            test_case.result.len(),
-            tokens.len()
-        );
+        match self.lexer.lexical_analysis(test_case.code.clone()) {
+            Ok(tokens) => {
+                // Default to expecting success unless explicitly marked as false
+                if test_case.should_succeed == Some(false) {
+                    panic!("Test '{}' expected to fail but succeeded with {} tokens", 
+                           test_case.test_name, tokens.len());
+                }
+                
+                // Print actual tokens
+                println!("Expected {} tokens, got {} tokens", test_case.result.len(), tokens.len());
+                
+                if tokens.len() != test_case.result.len() {
+                    println!("\n=== TOKEN COUNT MISMATCH ===");
+                    println!("Expected tokens:");
+                    for (i, expected) in test_case.result.iter().enumerate() {
+                        println!("  [{}] {} = '{}'", i, expected.token_type, expected.content);
+                    }
+                    println!("Actual tokens:");
+                    for (i, actual) in tokens.iter().enumerate() {
+                        println!("  [{}] {} = '{}'", i, actual.get_token_type().to_string(), actual.get_lexeme());
+                    }
+                    println!("========================\n");
+                }
+                
+                // Compare results
+                assert_eq!(
+                    tokens.len(),
+                    test_case.result.len(),
+                    "Token count mismatch in test '{}'. Expected: {}, Got: {}",
+                    test_case.test_name,
+                    test_case.result.len(),
+                    tokens.len()
+                );
 
-        let mut has_diff = false;
-        for (i, (actual, expected)) in tokens.iter().zip(test_case.result.iter()).enumerate() {
-            let type_match = actual.get_token_type().to_string() == expected.token_type;
-            let content_match = actual.get_lexeme() == expected.content;
-            
-            if !type_match || !content_match {
-                if !has_diff {
-                    println!("\n=== TOKEN DIFFERENCES ===");
-                    has_diff = true;
+                let mut has_diff = false;
+                for (i, (actual, expected)) in tokens.iter().zip(test_case.result.iter()).enumerate() {
+                    let type_match = actual.get_token_type().to_string() == expected.token_type;
+                    let content_match = actual.get_lexeme() == expected.content;
+                    
+                    if !type_match || !content_match {
+                        if !has_diff {
+                            println!("\n=== TOKEN DIFFERENCES ===");
+                            has_diff = true;
+                        }
+                        println!("Position [{}]:", i);
+                        if !type_match {
+                            println!("  Type:    Expected '{}' but got '{}'", expected.token_type, actual.get_token_type().to_string());
+                        }
+                        if !content_match {
+                            println!("  Content: Expected '{}' but got '{}'", expected.content, actual.get_lexeme());
+                        }
+                    }
+                    
+                    assert_eq!(
+                        actual.get_token_type().to_string(),
+                        expected.token_type,
+                        "Token type mismatch at position {} in test '{}'. Expected: {}, Got: {}",
+                        i,
+                        test_case.test_name,
+                        expected.token_type,
+                        actual.get_token_type().to_string()
+                    );
+                    
+                    assert_eq!(
+                        actual.get_lexeme(),
+                        expected.content,
+                        "Token content mismatch at position {} in test '{}'. Expected: {}, Got: {}",
+                        i,
+                        test_case.test_name,
+                        expected.content,
+                        actual.get_lexeme()
+                    );
                 }
-                println!("Position [{}]:", i);
-                if !type_match {
-                    println!("  Type:    Expected '{}' but got '{}'", expected.token_type, actual.get_token_type().to_string());
+                
+                if has_diff {
+                    println!("========================\n");
+                } else {
+                    println!("All tokens match!\n");
                 }
-                if !content_match {
-                    println!("  Content: Expected '{}' but got '{}'", expected.content, actual.get_lexeme());
+            },
+            Err(e) => {
+                // Default to expecting success unless explicitly marked as false
+                if test_case.should_succeed == Some(false) {
+                    // Check if we expected a specific error
+                    if let Some(expected_error) = &test_case.expected_error {
+                        let error_str = format!("{:?}", e);
+                        if !error_str.contains(expected_error) {
+                            panic!("Test '{}' expected error containing '{}' but got: {:?}", 
+                                   test_case.test_name, expected_error, e);
+                        }
+                    }
+                    
+                    println!("Test failed as expected with error: {:?}\n", e);
+                } else {
+                    panic!("Test '{}' expected to succeed but failed with error: {:?}", 
+                           test_case.test_name, e);
                 }
             }
-            
-            assert_eq!(
-                actual.get_token_type().to_string(),
-                expected.token_type,
-                "Token type mismatch at position {} in test '{}'. Expected: {}, Got: {}",
-                i,
-                test_case.test_name,
-                expected.token_type,
-                actual.get_token_type().to_string()
-            );
-            
-            assert_eq!(
-                actual.get_lexeme(),
-                expected.content,
-                "Token content mismatch at position {} in test '{}'. Expected: {}, Got: {}",
-                i,
-                test_case.test_name,
-                expected.content,
-                actual.get_lexeme()
-            );
-        }
-        
-        if has_diff {
-            println!("========================\n");
-        } else {
-            println!("All tokens match!\n");
         }
     }
 }

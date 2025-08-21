@@ -201,8 +201,8 @@ impl Parser {
             return Err((
                 SyntaxError::InvalidContext {
                     token: format!("{} ('{}')", 
-                        tokens[self.token_pointer].get_token_type().to_string(),
-                        tokens[self.token_pointer].get_lexeme()
+                    tokens[self.token_pointer].get_token_type().to_string(),
+                    tokens[self.token_pointer].get_lexeme()
                     ),
                     context: "end of query".to_string(),
                     suggestions: vec!["and".to_string(), "or".to_string(), "remove extra text".to_string()],
@@ -422,7 +422,7 @@ impl Parser {
                             vec![],
                         )
                     })?;
-                    self.parse_meeting_type_query(tokens)?
+                self.parse_meeting_type_query(tokens)?
                 } else {
                     // "meeting" must be followed by "type" according to grammar
                     return Err((
@@ -503,7 +503,7 @@ impl Parser {
         
         let next_token = &tokens[self.token_pointer];
         let next_query = match *next_token.get_token_type() {
-            // Sub-queries  
+            // Sub-queries
             TokenType::Subject => {
                 self.token_pointer += 1; // consume the subject token
                 self.parse_subject_query(tokens)?
@@ -615,8 +615,8 @@ impl Parser {
                 return Err((
                     SyntaxError::InvalidContext {
                         token: format!("{} ('{}')", 
-                            tokens[self.token_pointer].get_token_type().to_string(),
-                            tokens[self.token_pointer].get_lexeme()
+                        tokens[self.token_pointer].get_token_type().to_string(),
+                        tokens[self.token_pointer].get_lexeme()
                         ),
                         context: "after 'section'".to_string(),
                         suggestions: vec!["subject".to_string(), "course".to_string(), "enrollment".to_string(), 
@@ -902,8 +902,8 @@ impl Parser {
             return Err((
                 SyntaxError::InvalidContext {
                     token: format!("{} ('{}')", 
-                        time_type_token.get_token_type().to_string(),
-                        time_type_token.get_lexeme()
+                    time_type_token.get_token_type().to_string(),
+                    time_type_token.get_lexeme()
                     ),
                     context: "time query".to_string(),
                     suggestions: vec!["start".to_string(), "end".to_string()],
@@ -1006,8 +1006,8 @@ impl Parser {
                 return Err((
                     SyntaxError::InvalidContext {
                         token: format!("{} ('{}')", 
-                            day_token.get_token_type().to_string(),
-                            day_token.get_lexeme()
+                        day_token.get_token_type().to_string(),
+                        day_token.get_lexeme()
                         ),
                         context: "day name".to_string(),
                         suggestions: vec!["monday".to_string(), "tuesday".to_string(), "wednesday".to_string(), 

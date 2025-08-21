@@ -44,42 +44,35 @@
   },
   {
     "test_name": "Invalid Time Formats - Extra Characters",
-    "description": "Test that times with extra characters are not tokenized as T_TIME",
+    "description": "Test that times with extra characters cause lexer error",
     "code": "9:00am! 2:30pm? 8:15am#",
-    "result": [
-      {"type": "T_UNRECOGNIZED", "content": "?"},
-      {"type": "T_UNRECOGNIZED", "content": "#"}
-    ]
+    "should_succeed": false,
+    "expected_error": "Unrecognized characters",
+    "result": []
   },
   {
     "test_name": "Invalid Time Formats - Decimal Hours",
-    "description": "Test that decimal hours are not tokenized as T_TIME",
+    "description": "Test that decimal hours cause lexer error",
     "code": "9.5:00 2.75:30 8.25am",
-    "result": [
-      {"type": "T_UNRECOGNIZED", "content": "."},
-      {"type": "T_UNRECOGNIZED", "content": "."},
-      {"type": "T_UNRECOGNIZED", "content": "."}
-    ]
+    "should_succeed": false,
+    "expected_error": "Unrecognized characters",
+    "result": []
   },
   {
     "test_name": "Invalid Time Formats - Negative Times",
-    "description": "Test that negative times are not tokenized as T_TIME",
+    "description": "Test that negative times cause lexer error",
     "code": "-9:00 -2:30pm -8am",
-    "result": [
-      {"type": "T_UNRECOGNIZED", "content": "-"},
-      {"type": "T_UNRECOGNIZED", "content": "-"},
-      {"type": "T_UNRECOGNIZED", "content": "-"}
-    ]
+    "should_succeed": false,
+    "expected_error": "Unrecognized characters",
+    "result": []
   },
   {
     "test_name": "Invalid Time Formats - Mixed Separators",
-    "description": "Test that times with mixed separators are not tokenized as T_TIME",
+    "description": "Test that times with mixed separators cause lexer error",
     "code": "9-00 2.30 8/15",
-    "result": [
-      {"type": "T_UNRECOGNIZED", "content": "-"},
-      {"type": "T_UNRECOGNIZED", "content": "."},
-      {"type": "T_UNRECOGNIZED", "content": "/"}
-    ]
+    "should_succeed": false,
+    "expected_error": "Unrecognized characters",
+    "result": []
   },
   {
     "test_name": "Invalid Time Formats - Leading Zeros",

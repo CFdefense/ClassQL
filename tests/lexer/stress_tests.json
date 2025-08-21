@@ -31,10 +31,9 @@
         "test_name": "Mixed Symbols and Keywords",
         "description": "Test mixed valid and invalid symbols",
         "code": "prof@email.com<>campus",
-        "result": [
-            {"type": "T_UNRECOGNIZED", "content": "@"},
-            {"type": "T_UNRECOGNIZED", "content": "."}
-        ]
+        "should_succeed": false,
+        "expected_error": "Unrecognized characters",
+        "result": []
     },
     {
         "test_name": "All Day Abbreviations Smashed",
