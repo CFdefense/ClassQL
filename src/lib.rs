@@ -1,3 +1,3 @@
 pub mod compiler;
-pub mod sql;
+pub mod data;
 pub mod tui;

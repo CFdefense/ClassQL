@@ -79,21 +79,19 @@ impl Display for SyntaxError {
                             user_friendly_expected.join(", ")
                         )
                     }
+                } else if user_friendly_expected.len() == 1 {
+                    write!(
+                        f,
+                        "After '{}', please add: {}",
+                        user_friendly_after, user_friendly_expected[0]
+                    )
                 } else {
-                    if user_friendly_expected.len() == 1 {
-                        write!(
-                            f,
-                            "After '{}', please add: {}",
-                            user_friendly_after, user_friendly_expected[0]
-                        )
-                    } else {
-                        write!(
-                            f,
-                            "After '{}', please add one of: {}",
-                            user_friendly_after,
-                            user_friendly_expected.join(", ")
-                        )
-                    }
+                    write!(
+                        f,
+                        "After '{}', please add one of: {}",
+                        user_friendly_after,
+                        user_friendly_expected.join(", ")
+                    )
                 }
             }
             SyntaxError::InvalidContext {
@@ -137,9 +135,8 @@ fn extract_user_text(token: &str) -> String {
     }
 
     // Handle patterns like "T_CONTAINS" -> "contains"
-    if token.starts_with("T_") {
+    if let Some(token_name) = token.strip_prefix("T_") {
         // Extract the token name and convert to user-friendly format
-        let token_name = &token[2..]; // Remove "T_" prefix
         return token_name.to_lowercase().replace("_", " ");
     }
 

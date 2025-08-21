@@ -1,5 +1,5 @@
 use super::lexer::Lexer;
-use super::parser::{Parser, AST};
+use super::parser::{Ast, Parser};
 use crate::tui::errors::AppError;
 
 pub struct Compiler {
@@ -93,7 +93,7 @@ impl Default for Compiler {
 pub enum CompilerResult {
     Success {
         message: String,
-        ast: AST,
+        ast: Ast,
     },
     LexerError {
         message: String,
@@ -104,4 +104,3 @@ pub enum CompilerResult {
         problematic_tokens: Vec<(usize, usize)>,
     },
 }
-

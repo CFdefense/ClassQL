@@ -12,7 +12,7 @@
     6. Look Aesthetic
 */
 
-use crate::compiler::compiler::{Compiler, CompilerResult};
+use crate::compiler::driver::{Compiler, CompilerResult};
 use crate::tui::errors::TUIError;
 use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
@@ -54,7 +54,7 @@ impl<'a> Tui<'a> {
         let terminal = ratatui::init();
 
         // initialize and return our tui instance
-        return Ok(Tui {
+        Ok(Tui {
             terminal,
             input: String::new(),
             user_query: String::new(),
@@ -66,7 +66,7 @@ impl<'a> Tui<'a> {
             completions: Vec::new(),
             completion_index: None,
             show_completions: false,
-        });
+        })
     }
 
     // function to run the tui event loop
@@ -235,7 +235,8 @@ impl<'a> Tui<'a> {
     pub fn terminate(&self) -> Result<(), TUIError> {
         disable_raw_mode()
             .map_err(|_| TUIError::TerminalError(String::from("FAILED TO DISABLE RAW MODE")))?;
-        Ok(ratatui::restore())
+        ratatui::restore();
+        Ok(())
     }
 
     fn update_toast(&mut self) {
@@ -256,13 +257,14 @@ impl<'a> Tui<'a> {
 }
 
 // Standalone render function to avoid borrow checker conflicts
+#[allow(clippy::too_many_arguments)]
 fn render_frame(
     frame: &mut Frame,
     input: &str,
     problematic_tokens: &[(usize, usize)],
     toast_message: &Option<String>,
     error_type: &Option<ErrorType>,
-    completions: &Vec<String>,
+    completions: &[String],
     completion_index: Option<usize>,
     show_completions: bool,
 ) {
@@ -391,9 +393,15 @@ fn render_search_helpers_with_data(frame: &mut Frame, input: &str, toast_message
     frame.render_widget(help_paragraph, help_area);
 }
 
-fn render_query_results(frame: &mut Frame) {}
+fn render_query_results(frame: &mut Frame) {
+    let _ = frame;
+    todo!()
+}
 
-fn render_syntax_highlighting(frame: &mut Frame) {}
+fn render_syntax_highlighting(frame: &mut Frame) {
+    let _ = frame;
+    todo!()
+}
 
 fn render_toast_with_data(
     frame: &mut Frame,
@@ -407,14 +415,14 @@ fn render_toast_with_data(
         // Calculate toast dimensions based on error type
         let (toast_width, max_toast_height) = if is_parser_error {
             // Parser errors need more space for context and suggestions
-            (80, 15)
+            (80_u16, 15)
         } else {
             // Lexer errors are typically shorter
             (60, 8)
         };
 
         // Wrap text to fit within the toast width (account for borders and padding)
-        let content_width = (toast_width as u16).saturating_sub(4) as usize; // -4 for borders and padding
+        let content_width = toast_width.saturating_sub(4) as usize; // -4 for borders and padding
         let mut wrapped_lines = Vec::new();
 
         for line in message.lines() {
@@ -437,7 +445,7 @@ fn render_toast_with_data(
                         }
 
                         wrapped_lines.push(remaining[..break_point].to_string());
-                        remaining = &remaining[break_point..].trim_start();
+                        remaining = remaining[break_point..].trim_start();
                     }
                 }
             }
@@ -473,7 +481,7 @@ fn render_toast_with_data(
 
 fn render_completion_dropdown(
     frame: &mut Frame,
-    completions: &Vec<String>,
+    completions: &[String],
     completion_index: Option<usize>,
     show_completions: bool,
 ) {

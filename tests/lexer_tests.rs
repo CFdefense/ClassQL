@@ -1,7 +1,6 @@
-use std::fs;
-use serde::{Deserialize, Serialize};
-use serde_json;
 use classql::compiler::lexer::Lexer;
+use serde::{Deserialize, Serialize};
+use std::fs;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct TestCase {
@@ -41,22 +40,29 @@ impl TestHelper {
         println!("Running test: {}", test_case.test_name);
         println!("Description: {}", test_case.description);
         println!("Input: '{}'", test_case.code);
-        
+
         // Clear lexer state before each test
         self.lexer.clear();
-        
+
         // Tokenize the input
         match self.lexer.lexical_analysis(test_case.code.clone()) {
             Ok(tokens) => {
                 // Default to expecting success unless explicitly marked as false
                 if test_case.should_succeed == Some(false) {
-                    panic!("Test '{}' expected to fail but succeeded with {} tokens", 
-                           test_case.test_name, tokens.len());
+                    panic!(
+                        "Test '{}' expected to fail but succeeded with {} tokens",
+                        test_case.test_name,
+                        tokens.len()
+                    );
                 }
-                
+
                 // Print actual tokens
-                println!("Expected {} tokens, got {} tokens", test_case.result.len(), tokens.len());
-                
+                println!(
+                    "Expected {} tokens, got {} tokens",
+                    test_case.result.len(),
+                    tokens.len()
+                );
+
                 if tokens.len() != test_case.result.len() {
                     println!("\n=== TOKEN COUNT MISMATCH ===");
                     println!("Expected tokens:");
@@ -65,11 +71,16 @@ impl TestHelper {
                     }
                     println!("Actual tokens:");
                     for (i, actual) in tokens.iter().enumerate() {
-                        println!("  [{}] {} = '{}'", i, actual.get_token_type().to_string(), actual.get_lexeme());
+                        println!(
+                            "  [{}] {} = '{}'",
+                            i,
+                            actual.get_token_type(),
+                            actual.get_lexeme()
+                        );
                     }
                     println!("========================\n");
                 }
-                
+
                 // Compare results
                 assert_eq!(
                     tokens.len(),
@@ -81,10 +92,12 @@ impl TestHelper {
                 );
 
                 let mut has_diff = false;
-                for (i, (actual, expected)) in tokens.iter().zip(test_case.result.iter()).enumerate() {
+                for (i, (actual, expected)) in
+                    tokens.iter().zip(test_case.result.iter()).enumerate()
+                {
                     let type_match = actual.get_token_type().to_string() == expected.token_type;
                     let content_match = actual.get_lexeme() == expected.content;
-                    
+
                     if !type_match || !content_match {
                         if !has_diff {
                             println!("\n=== TOKEN DIFFERENCES ===");
@@ -92,13 +105,21 @@ impl TestHelper {
                         }
                         println!("Position [{}]:", i);
                         if !type_match {
-                            println!("  Type:    Expected '{}' but got '{}'", expected.token_type, actual.get_token_type().to_string());
+                            println!(
+                                "  Type:    Expected '{}' but got '{}'",
+                                expected.token_type,
+                                actual.get_token_type()
+                            );
                         }
                         if !content_match {
-                            println!("  Content: Expected '{}' but got '{}'", expected.content, actual.get_lexeme());
+                            println!(
+                                "  Content: Expected '{}' but got '{}'",
+                                expected.content,
+                                actual.get_lexeme()
+                            );
                         }
                     }
-                    
+
                     assert_eq!(
                         actual.get_token_type().to_string(),
                         expected.token_type,
@@ -106,9 +127,9 @@ impl TestHelper {
                         i,
                         test_case.test_name,
                         expected.token_type,
-                        actual.get_token_type().to_string()
+                        actual.get_token_type()
                     );
-                    
+
                     assert_eq!(
                         actual.get_lexeme(),
                         expected.content,
@@ -119,13 +140,13 @@ impl TestHelper {
                         actual.get_lexeme()
                     );
                 }
-                
+
                 if has_diff {
                     println!("========================\n");
                 } else {
                     println!("All tokens match!\n");
                 }
-            },
+            }
             Err(e) => {
                 // Default to expecting success unless explicitly marked as false
                 if test_case.should_succeed == Some(false) {
@@ -133,15 +154,19 @@ impl TestHelper {
                     if let Some(expected_error) = &test_case.expected_error {
                         let error_str = format!("{:?}", e);
                         if !error_str.contains(expected_error) {
-                            panic!("Test '{}' expected error containing '{}' but got: {:?}", 
-                                   test_case.test_name, expected_error, e);
+                            panic!(
+                                "Test '{}' expected error containing '{}' but got: {:?}",
+                                test_case.test_name, expected_error, e
+                            );
                         }
                     }
-                    
+
                     println!("Test failed as expected with error: {:?}\n", e);
                 } else {
-                    panic!("Test '{}' expected to succeed but failed with error: {:?}", 
-                           test_case.test_name, e);
+                    panic!(
+                        "Test '{}' expected to succeed but failed with error: {:?}",
+                        test_case.test_name, e
+                    );
                 }
             }
         }
@@ -150,15 +175,14 @@ impl TestHelper {
 
 fn load_test_file(filename: &str) -> String {
     let path = format!("tests/lexer/{}", filename);
-    fs::read_to_string(&path)
-        .unwrap_or_else(|_| panic!("Failed to read test file: {}", path))
+    fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read test file: {}", path))
 }
 
 fn run_test_file(filename: &str) {
     let mut helper = TestHelper::new();
     let content = load_test_file(filename);
     let test_cases = helper.parse_json_tests(&content);
-    
+
     for test_case in test_cases {
         helper.run_test(&test_case);
     }
@@ -247,4 +271,5 @@ fn test_time_queries() {
 #[test]
 fn test_time_edge_cases() {
     run_test_file("time_edge_cases.json");
-} 
+}
+
