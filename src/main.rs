@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use compiler::compiler::Compiler;
 use tui::tui::Tui;
 

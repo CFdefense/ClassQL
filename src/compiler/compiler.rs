@@ -18,7 +18,7 @@ impl Compiler {
     pub fn run(&mut self, input: &str) -> CompilerResult {
         // Clear previous state
         self.lexer.clear();
-        
+
         // Perform lexical analysis
         let tokens = match self.lexer.lexical_analysis(input.to_string()) {
             Ok(tokens) => tokens,
@@ -51,7 +51,10 @@ impl Compiler {
                 };
             }
         };
-        CompilerResult::Success { message: "Success".to_string(), ast }
+        CompilerResult::Success {
+            message: "Success".to_string(),
+            ast,
+        }
     }
 
     /// Get tab completion suggestions for the current input
@@ -65,13 +68,24 @@ impl Compiler {
             Err(_) => {
                 // Lexing failed, provide basic suggestions
                 if input.trim().is_empty() {
-                    vec!["professor".to_string(), "course".to_string(), "subject".to_string(), 
-                         "title".to_string(), "section".to_string()]
+                    vec![
+                        "professor".to_string(),
+                        "course".to_string(),
+                        "subject".to_string(),
+                        "title".to_string(),
+                        "section".to_string(),
+                    ]
                 } else {
                     vec![] // Can't provide suggestions for invalid tokens
                 }
             }
         }
+    }
+}
+
+impl Default for Compiler {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -89,4 +103,5 @@ pub enum CompilerResult {
         message: String,
         problematic_tokens: Vec<(usize, usize)>,
     },
-} 
+}
+
