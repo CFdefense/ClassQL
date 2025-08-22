@@ -1,6 +1,6 @@
+use classql::compiler::lexer::Lexer;
 use classql::compiler::parser::Parser;
 use classql::compiler::token::Token;
-use classql::compiler::lexer::Lexer;
 use classql::tui::errors::SyntaxError;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -23,22 +23,19 @@ struct ExpectedToken {
     end: usize,
 }
 
-struct ParserTestHelper {
-    parser: Parser,
-    lexer: Lexer,
-}
+#[derive(Default)]
+struct ParserTestHelper {}
 
 impl ParserTestHelper {
     fn new() -> Self {
         Self {
-            parser: Parser::new(),
-            lexer: Lexer::new(),
+            // ..Default::default()
         }
     }
 
     fn create_tokens(&mut self, input: &str) -> Vec<Token> {
-        self.lexer.clear();
-        match self.lexer.lexical_analysis(input.to_string()) {
+        let mut lexer = Lexer::new(input.to_string());
+        match lexer.analyze() {
             Ok(tokens) => tokens,
             Err(_) => panic!("Failed to tokenize input: {}", input),
         }
@@ -49,12 +46,13 @@ impl ParserTestHelper {
         println!("Description: {}", test_case.description);
         println!("Input: '{}'", test_case.input);
         println!("Expected to succeed: {}", test_case.should_succeed);
-        
+
         let tokens = self.create_tokens(&test_case.input);
         println!("Generated {} tokens", tokens.len());
-        
-        let result = self.parser.parse(&tokens);
-        
+
+        let mut parser = Parser::new(test_case.input.to_string());
+        let result = parser.parse(&tokens);
+
         match result {
             Ok(_) => {
                 if test_case.should_succeed {
@@ -70,77 +68,95 @@ impl ParserTestHelper {
                 } else {
                     println!("Parse failed as expected with error: {:?}", error);
                     println!("Problematic tokens: {:?}", problematic_tokens);
-                    
+
                     // Validate that problematic tokens have valid positions
                     for token in &problematic_tokens {
-                        assert!(token.get_start() >= 0, "Token start position should be non-negative");
-                        assert!(token.get_end() > token.get_start(), "Token end should be greater than start");
-                        assert!(token.get_end() <= test_case.input.len() as i32, "Token end should not exceed input length");
+                        assert!(
+                            token.get_end() > token.get_start(),
+                            "Token end should be greater than start"
+                        );
+                        assert!(
+                            token.get_end() <= test_case.input.len(),
+                            "Token end should not exceed input length"
+                        );
                     }
-                    
+
                     // Validate specific error type if expected
                     if let Some(expected_error_type) = &test_case.expected_error_type {
                         self.validate_error_type(&error, expected_error_type);
                     }
-                    
+
                     // Validate specific error message if expected
                     if let Some(expected_error_message) = &test_case.expected_error_message {
                         self.validate_error_message(&error, expected_error_message);
                     }
-                    
+
                     // If we have expected problematic tokens, validate them
                     if let Some(expected_tokens) = &test_case.expected_problematic_tokens {
-                        self.validate_problematic_tokens(&problematic_tokens, expected_tokens, &test_case.input);
+                        self.validate_problematic_tokens(
+                            &problematic_tokens,
+                            expected_tokens,
+                            &test_case.input,
+                        );
                     }
                 }
             }
         }
         println!();
     }
-    
-    fn validate_problematic_tokens(&self, actual: &[Token], expected: &[ExpectedToken], input: &str) {
+
+    fn validate_problematic_tokens(
+        &self,
+        actual: &[Token],
+        expected: &[ExpectedToken],
+        input: &str,
+    ) {
         assert_eq!(
-            actual.len(), 
-            expected.len(), 
-            "Expected {} problematic tokens, but got {}", 
-            expected.len(), 
+            actual.len(),
+            expected.len(),
+            "Expected {} problematic tokens, but got {}",
+            expected.len(),
             actual.len()
         );
-        
+
         for (i, (actual_token, expected_token)) in actual.iter().zip(expected.iter()).enumerate() {
             assert_eq!(
-                actual_token.get_lexeme(), 
+                &input[actual_token.get_start()..actual_token.get_end()],
                 expected_token.lexeme,
-                "Token {} lexeme mismatch: expected '{}', got '{}'", 
-                i, 
-                expected_token.lexeme, 
-                actual_token.get_lexeme()
+                "Token {} lexeme mismatch: expected '{}', got '{}'",
+                i,
+                expected_token.lexeme,
+                &input[actual_token.get_start()..actual_token.get_end()]
             );
-            
+
             assert_eq!(
-                actual_token.get_start() as usize, 
+                actual_token.get_start(),
                 expected_token.start,
-                "Token {} start position mismatch: expected {}, got {}", 
-                i, 
-                expected_token.start, 
+                "Token {} start position mismatch: expected {}, got {}",
+                i,
+                expected_token.start,
                 actual_token.get_start()
             );
-            
+
             assert_eq!(
-                actual_token.get_end() as usize, 
+                actual_token.get_end(),
                 expected_token.end,
-                "Token {} end position mismatch: expected {}, got {}", 
-                i, 
-                expected_token.end, 
+                "Token {} end position mismatch: expected {}, got {}",
+                i,
+                expected_token.end,
                 actual_token.get_end()
             );
-            
+
             // Verify the token content matches the input at those positions
             let token_content = &input[expected_token.start..expected_token.end];
-            assert_eq!(token_content, expected_token.lexeme, "Token content mismatch for token {}", i);
+            assert_eq!(
+                token_content, expected_token.lexeme,
+                "Token content mismatch for token {}",
+                i
+            );
         }
     }
-    
+
     fn validate_error_type(&self, actual_error: &SyntaxError, expected_error_type: &str) {
         let actual_error_type = match actual_error {
             SyntaxError::MissingToken(_) => "MissingToken",
@@ -149,41 +165,36 @@ impl ParserTestHelper {
             SyntaxError::ExpectedAfter { .. } => "ExpectedAfter",
             SyntaxError::InvalidContext { .. } => "InvalidContext",
         };
-        
+
         assert_eq!(
-            actual_error_type, 
-            expected_error_type,
-            "Expected error type '{}', but got '{}'", 
-            expected_error_type, 
-            actual_error_type
+            actual_error_type, expected_error_type,
+            "Expected error type '{}', but got '{}'",
+            expected_error_type, actual_error_type
         );
     }
-    
+
     fn validate_error_message(&self, actual_error: &SyntaxError, expected_message: &str) {
         let actual_message = actual_error.to_string();
-        
+
         assert_eq!(
-            actual_message, 
-            expected_message,
-            "Expected error message '{}', but got '{}'", 
-            expected_message, 
-            actual_message
+            actual_message, expected_message,
+            "Expected error message '{}', but got '{}'",
+            expected_message, actual_message
         );
     }
 }
 
 fn load_test_file(filename: &str) -> String {
-    let path = format!("tests/parser/{}", filename);
-    fs::read_to_string(&path)
-        .unwrap_or_else(|_| panic!("Failed to read test file: {}", path))
+    let path = format!("tests/parser/{filename}",);
+    fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read test file: {path}"))
 }
 
 fn run_test_file(filename: &str) {
     let mut helper = ParserTestHelper::new();
     let content = load_test_file(filename);
-    let test_cases: Vec<ParserTestCase> = serde_json::from_str(&content)
-        .expect("Failed to parse JSON test file");
-    
+    let test_cases: Vec<ParserTestCase> =
+        serde_json::from_str(&content).expect("Failed to parse JSON test file");
+
     for test_case in test_cases {
         helper.test_parse(&test_case);
     }
@@ -272,4 +283,4 @@ fn test_ast_structure() {
 #[test]
 fn test_edge_cases() {
     run_test_file("edge_cases.json");
-} 
+}

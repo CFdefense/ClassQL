@@ -7,15 +7,14 @@
     1. Render a search bar to type in
     2. Send typed string to query
     3. Show Nicely Formatted Query Results
-    4. Allow users to scross Query Results
+    4. Allow users to scroll Query Results
     5. Provide Syntax Highlighting
     6. Look Aesthetic
 */
 
-use crate::compiler::compiler::{Compiler, CompilerResult};
+use crate::compiler::driver::{Compiler, CompilerResult};
 use crate::tui::errors::TUIError;
 use crossterm::event::{self, Event, KeyCode};
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
@@ -29,7 +28,7 @@ pub enum ErrorType {
     Parser,
 }
 
-pub struct Tui<'a> {
+pub struct Tui {
     terminal: DefaultTerminal,
     input: String,
     user_query: String,
@@ -37,24 +36,20 @@ pub struct Tui<'a> {
     toast_start_time: Option<Instant>,
     error_type: Option<ErrorType>,
     problematic_tokens: Vec<(usize, usize)>,
-    compiler: &'a mut Compiler,
+    compiler: Compiler,
     // Tab completion state
     completions: Vec<String>,
     completion_index: Option<usize>,
     show_completions: bool,
 }
 
-impl<'a> Tui<'a> {
-    pub fn new(compiler: &'a mut Compiler) -> Result<Self, TUIError> {
-        // allows for direct terminal input access
-        enable_raw_mode()
-            .map_err(|_| TUIError::TerminalError(String::from("FAILED TO ENABLE RAW MODE")))?;
-
+impl Tui {
+    pub fn new(compiler: Compiler) -> Result<Self, TUIError> {
         // initialize the terminal instance
         let terminal = ratatui::init();
 
         // initialize and return our tui instance
-        return Ok(Tui {
+        Ok(Tui {
             terminal,
             input: String::new(),
             user_query: String::new(),
@@ -66,7 +61,7 @@ impl<'a> Tui<'a> {
             completions: Vec::new(),
             completion_index: None,
             show_completions: false,
-        });
+        })
     }
 
     // function to run the tui event loop
@@ -87,7 +82,16 @@ impl<'a> Tui<'a> {
             // Draw the current state
             let terminal = &mut self.terminal;
             terminal.draw(|f| {
-                render_frame(f, &input, &problematic_tokens, &toast_message, &error_type, &completions, completion_index, show_completions);
+                render_frame(
+                    f,
+                    &input,
+                    &problematic_tokens,
+                    &toast_message,
+                    &error_type,
+                    &completions,
+                    completion_index,
+                    show_completions,
+                );
             })?;
 
             // Handle input events
@@ -124,7 +128,8 @@ impl<'a> Tui<'a> {
                                             self.input.push(' ');
                                         }
                                         self.input.push_str(completion);
-                                        if !completion.starts_with('"') { // Don't add space after quoted strings
+                                        if !completion.starts_with('"') {
+                                            // Don't add space after quoted strings
                                             self.input.push(' ');
                                         }
                                     }
@@ -151,7 +156,7 @@ impl<'a> Tui<'a> {
                     KeyCode::Enter => {
                         // Process the query here
                         self.user_query = self.input.clone();
-                        
+
                         // Run the compiler and handle the result
                         match self.compiler.run(&self.input) {
                             CompilerResult::Success { message, ast } => {
@@ -166,12 +171,18 @@ impl<'a> Tui<'a> {
                                 // TODO: Process successful AST for semantic analysis or query execution
                                 println!("Parsed AST: {:?}", ast); // Debug output for now
                             }
-                            CompilerResult::LexerError { message, problematic_tokens } => {
+                            CompilerResult::LexerError {
+                                message,
+                                problematic_tokens,
+                            } => {
                                 // Show error and highlight problematic tokens
                                 self.show_toast(message, ErrorType::Lexer);
                                 self.problematic_tokens = problematic_tokens;
                             }
-                            CompilerResult::ParserError { message, problematic_tokens } => {
+                            CompilerResult::ParserError {
+                                message,
+                                problematic_tokens,
+                            } => {
                                 // Show error and highlight problematic tokens
                                 self.show_toast(message, ErrorType::Parser);
                                 self.problematic_tokens = problematic_tokens;
@@ -208,7 +219,7 @@ impl<'a> Tui<'a> {
     fn handle_tab_completion(&mut self) {
         // Get completion suggestions from compiler
         self.completions = self.compiler.get_tab_completion(self.input.clone());
-        
+
         if !self.completions.is_empty() {
             self.show_completions = true;
             self.completion_index = Some(0);
@@ -217,9 +228,8 @@ impl<'a> Tui<'a> {
 
     // function to terminate the tui gracefully
     pub fn terminate(&self) -> Result<(), TUIError> {
-        disable_raw_mode()
-            .map_err(|_| TUIError::TerminalError(String::from("FAILED TO DISABLE RAW MODE")))?;
-        Ok(ratatui::restore())
+        ratatui::restore();
+        Ok(())
     }
 
     fn update_toast(&mut self) {
@@ -240,7 +250,17 @@ impl<'a> Tui<'a> {
 }
 
 // Standalone render function to avoid borrow checker conflicts
-fn render_frame(frame: &mut Frame, input: &str, problematic_tokens: &[(usize, usize)], toast_message: &Option<String>, error_type: &Option<ErrorType>, completions: &Vec<String>, completion_index: Option<usize>, show_completions: bool) {
+#[allow(clippy::too_many_arguments)]
+fn render_frame(
+    frame: &mut Frame,
+    input: &str,
+    problematic_tokens: &[(usize, usize)],
+    toast_message: &Option<String>,
+    error_type: &Option<ErrorType>,
+    completions: &[String],
+    completion_index: Option<usize>,
+    show_completions: bool,
+) {
     render_logo(frame);
     render_search_bar_with_data(frame, input, problematic_tokens);
     render_query_results(frame);
@@ -273,7 +293,10 @@ fn render_logo(frame: &mut Frame) {
 
     let logo_area = Rect {
         x: frame.area().width.saturating_sub(75) / 2,
-        y: frame.area().height.saturating_sub(ascii_art.len() as u16 + 1),
+        y: frame
+            .area()
+            .height
+            .saturating_sub(ascii_art.len() as u16 + 1),
         width: 80,
         height: ascii_art.len() as u16,
     };
@@ -282,13 +305,17 @@ fn render_logo(frame: &mut Frame) {
     frame.render_widget(logo_paragraph, logo_area);
 }
 
-fn render_search_bar_with_data(frame: &mut Frame, input: &str, problematic_tokens: &[(usize, usize)]) {
+fn render_search_bar_with_data(
+    frame: &mut Frame,
+    input: &str,
+    problematic_tokens: &[(usize, usize)],
+) {
     let search_width = 50;
-    
+
     // Position search bar directly below the logo
     let logo_height = 7; // Height of the ASCII art logo
     let search_y = logo_height + 2; // 2 lines below the logo
-    
+
     let search_area = Rect {
         x: frame.area().width.saturating_sub(search_width) / 2,
         y: search_y,
@@ -359,28 +386,36 @@ fn render_search_helpers_with_data(frame: &mut Frame, input: &str, toast_message
     frame.render_widget(help_paragraph, help_area);
 }
 
-fn render_query_results(frame: &mut Frame) {}
+fn render_query_results(frame: &mut Frame) {
+    let _ = frame;
+}
 
-fn render_syntax_highlighting(frame: &mut Frame) {}
+fn render_syntax_highlighting(frame: &mut Frame) {
+    let _ = frame;
+}
 
-fn render_toast_with_data(frame: &mut Frame, toast_message: &Option<String>, error_type: &Option<ErrorType>) {
+fn render_toast_with_data(
+    frame: &mut Frame,
+    toast_message: &Option<String>,
+    error_type: &Option<ErrorType>,
+) {
     if let Some(message) = toast_message {
         // Use the passed error type to determine toast dimensions
         let is_parser_error = matches!(error_type, Some(ErrorType::Parser));
-        
+
         // Calculate toast dimensions based on error type
         let (toast_width, max_toast_height) = if is_parser_error {
             // Parser errors need more space for context and suggestions
-            (80, 15)
+            (80_u16, 15)
         } else {
             // Lexer errors are typically shorter
             (60, 8)
         };
-        
+
         // Wrap text to fit within the toast width (account for borders and padding)
-        let content_width = (toast_width as u16).saturating_sub(4) as usize; // -4 for borders and padding
+        let content_width = toast_width.saturating_sub(4) as usize; // -4 for borders and padding
         let mut wrapped_lines = Vec::new();
-        
+
         for line in message.lines() {
             if line.len() <= content_width {
                 wrapped_lines.push(line.to_string());
@@ -399,14 +434,14 @@ fn render_toast_with_data(frame: &mut Frame, toast_message: &Option<String>, err
                         } else if let Some(comma_pos) = remaining[..content_width].rfind(',') {
                             break_point = comma_pos + 1; // Include the comma
                         }
-                        
+
                         wrapped_lines.push(remaining[..break_point].to_string());
-                        remaining = &remaining[break_point..].trim_start();
+                        remaining = remaining[break_point..].trim_start();
                     }
                 }
             }
         }
-        
+
         let toast_height = (wrapped_lines.len() as u16 + 2).min(max_toast_height);
 
         let toast_area = Rect {
@@ -435,14 +470,19 @@ fn render_toast_with_data(frame: &mut Frame, toast_message: &Option<String>, err
     }
 }
 
-fn render_completion_dropdown(frame: &mut Frame, completions: &Vec<String>, completion_index: Option<usize>, show_completions: bool) {
+fn render_completion_dropdown(
+    frame: &mut Frame,
+    completions: &[String],
+    completion_index: Option<usize>,
+    show_completions: bool,
+) {
     if !show_completions {
         return;
     }
 
     let dropdown_width = 50;
     let dropdown_height = (completions.len() as u16).min(8) + 2; // Dynamic height based on completions, max 8 items + borders
-    
+
     // Position below the search bar
     let logo_height = 7; // Height of the ASCII art logo
     let search_y = logo_height + 2; // Search bar position
@@ -473,7 +513,7 @@ fn render_completion_dropdown(frame: &mut Frame, completions: &Vec<String>, comp
                 .borders(Borders::ALL)
                 .title("Suggestions (↑↓ to navigate, Enter to select)")
                 .title_style(Style::default().fg(Color::Yellow))
-                .border_style(Style::default().fg(Color::Yellow))
+                .border_style(Style::default().fg(Color::Yellow)),
         );
 
     frame.render_widget(dropdown_paragraph, dropdown_area);

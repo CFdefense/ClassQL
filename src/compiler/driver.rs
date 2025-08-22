@@ -1,26 +1,23 @@
 use super::lexer::Lexer;
-use super::parser::{Parser, AST};
+use super::parser::{Ast, Parser};
 use crate::tui::errors::AppError;
 
-pub struct Compiler {
-    lexer: Lexer,
-    parser: Parser,
-}
+// eventually there might be more state
+pub struct Compiler {}
 
 impl Compiler {
     pub fn new() -> Self {
         Compiler {
-            lexer: Lexer::new(),
-            parser: Parser::new(),
+            // ..Default::default()
         }
     }
 
     pub fn run(&mut self, input: &str) -> CompilerResult {
-        // Clear previous state
-        self.lexer.clear();
-        
+        // refresh state
+        let mut lexer = Lexer::new(input.to_string());
+
         // Perform lexical analysis
-        let tokens = match self.lexer.lexical_analysis(input.to_string()) {
+        let tokens = match lexer.analyze() {
             Ok(tokens) => tokens,
             Err(AppError::UnrecognizedTokens(error_msg, problematic_tokens)) => {
                 return CompilerResult::LexerError {
@@ -37,13 +34,15 @@ impl Compiler {
         };
 
         // Parse the tokens
-        let ast = match self.parser.parse(&tokens) {
+        let mut parser = Parser::new(input.to_string());
+
+        let ast = match parser.parse(&tokens) {
             Ok(ast) => ast,
             Err(error_tuple) => {
                 let (e, problematic_tokens) = error_tuple;
                 let problematic_positions: Vec<(usize, usize)> = problematic_tokens
                     .iter()
-                    .map(|token| (token.get_start() as usize, token.get_end() as usize))
+                    .map(|token| (token.get_start(), token.get_end()))
                     .collect();
                 return CompilerResult::ParserError {
                     message: e.to_string(),
@@ -51,22 +50,34 @@ impl Compiler {
                 };
             }
         };
-        CompilerResult::Success { message: "Success".to_string(), ast }
+        CompilerResult::Success {
+            message: "Success".to_string(),
+            ast,
+        }
     }
 
     /// Get tab completion suggestions for the current input
     pub fn get_tab_completion(&mut self, input: String) -> Vec<String> {
+        // refresh state
+        let mut lexer = Lexer::new(input.to_string());
+        let mut parser = Parser::new(input.to_string());
+
         // First, try to lex the input
-        match self.lexer.lexical_analysis(input.clone()) {
+        match lexer.analyze() {
             Ok(tokens) => {
                 // Lexing succeeded, now try to get completion suggestions from parser
-                self.parser.get_completion_suggestions(&tokens)
+                parser.get_completion_suggestions(&tokens)
             }
             Err(_) => {
                 // Lexing failed, provide basic suggestions
                 if input.trim().is_empty() {
-                    vec!["professor".to_string(), "course".to_string(), "subject".to_string(), 
-                         "title".to_string(), "section".to_string()]
+                    vec![
+                        "professor".to_string(),
+                        "course".to_string(),
+                        "subject".to_string(),
+                        "title".to_string(),
+                        "section".to_string(),
+                    ]
                 } else {
                     vec![] // Can't provide suggestions for invalid tokens
                 }
@@ -75,11 +86,17 @@ impl Compiler {
     }
 }
 
+impl Default for Compiler {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug)]
 pub enum CompilerResult {
     Success {
         message: String,
-        ast: AST,
+        ast: Ast,
     },
     LexerError {
         message: String,
@@ -89,4 +106,4 @@ pub enum CompilerResult {
         message: String,
         problematic_tokens: Vec<(usize, usize)>,
     },
-} 
+}

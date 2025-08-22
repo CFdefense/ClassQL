@@ -1,13 +1,14 @@
-use compiler::compiler::Compiler;
-use tui::tui::Tui;
+#![allow(dead_code)]
+use compiler::driver::Compiler;
+use tui::render::Tui;
 
 mod compiler;
-mod sql;
+mod data;
 mod tui;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut compiler = Compiler::new();
-    let mut tui = Tui::new(&mut compiler)?;
+    let compiler = Compiler::new();
+    let mut tui = Tui::new(compiler)?;
 
     tui.run()?;
     tui.terminate()?;

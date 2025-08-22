@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub enum TokenType {
     // Keywords
     Term,
@@ -14,7 +14,7 @@ pub enum TokenType {
     Prereqs,
     Corereqs,
     Email,
-    
+
     // New tokens for parser support
     Section,
     Number,
@@ -28,7 +28,7 @@ pub enum TokenType {
     Full,
     Start,
     End,
-    
+
     // Days
     Monday,
     Tuesday,
@@ -37,7 +37,7 @@ pub enum TokenType {
     Friday,
     Saturday,
     Sunday,
-    
+
     // Operators
     Equals,
     NotEquals,
@@ -45,12 +45,12 @@ pub enum TokenType {
     GreaterThan,
     LessEqual,
     GreaterEqual,
-    
+
     // Logical
     And,
     Or,
     Not,
-    
+
     // Conditions
     Has,
     Is,
@@ -60,7 +60,7 @@ pub enum TokenType {
     Does,
     Equal,
     EqualsWord,
-    
+
     // Binary operators
     Less,
     Than,
@@ -71,64 +71,56 @@ pub enum TokenType {
     More,
     Fewer,
     To,
-    
+
     // Grouping
     LeftParen,
     RightParen,
-    
+
     // Literals
     String,
     Integer,
     Time,
     Identifier,
-    
+
     // Special
     Exclamation,
     Unrecognized,
 }
 
-impl TokenType {
-    pub fn to_string(&self) -> String {
-        format!("T_{}", format!("{:?}", self).to_uppercase())
+impl std::fmt::Display for TokenType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "T_{}", format!("{:?}", self).to_uppercase())
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Token {
     token_type: TokenType,
-    lexeme: String,
-    start: i32,
-    end: i32,
+    start: usize,
+    end: usize,
 }
 
 impl Token {
-    pub fn new(token_type: TokenType, lexeme: String, start: i32, end: i32) -> Self {
+    pub fn new(token_type: TokenType, start: usize, end: usize) -> Self {
         Token {
             token_type,
-            lexeme,
             start,
             end,
         }
-    }
-
-
-    #[allow(dead_code)]
-    pub fn get_lexeme(&self) -> &str {
-        &self.lexeme
     }
 
     pub fn get_token_type(&self) -> &TokenType {
         &self.token_type
     }
 
-    pub fn get_start(&self) -> i32 {
+    pub fn get_start(&self) -> usize {
         self.start
     }
 
-    pub fn get_end(&self) -> i32 {
+    pub fn get_end(&self) -> usize {
         self.end
     }
-} 
+}
 
 impl TokenType {
     // Get all token patterns in lexing order (longest/most specific first)
@@ -150,16 +142,26 @@ impl TokenType {
             (TokenType::More, r"(?i)\bmore\b"),
             (TokenType::Fewer, r"(?i)\bfewer\b"),
             (TokenType::To, r"(?i)\bto\b"),
-            
-            // Days 
-            (TokenType::Wednesday, r"(?i)\b(wednesday|wednesda|wednesd|wednes|wedne|wedn|wed|we|w)\b"),
-            (TokenType::Thursday, r"(?i)\b(thursday|thursda|thurs|thur|thu|th)\b"),
-            (TokenType::Saturday, r"(?i)\b(saturday|saturda|saturd|satur|satu|sat|sa)\b"),
-            (TokenType::Tuesday, r"(?i)\b(tuesday|tuesda|tuesd|tues|tue|tu)\b"),
+            // Days
+            (
+                TokenType::Wednesday,
+                r"(?i)\b(wednesday|wednesda|wednesd|wednes|wedne|wedn|wed|we|w)\b",
+            ),
+            (
+                TokenType::Thursday,
+                r"(?i)\b(thursday|thursda|thurs|thur|thu|th)\b",
+            ),
+            (
+                TokenType::Saturday,
+                r"(?i)\b(saturday|saturda|saturd|satur|satu|sat|sa)\b",
+            ),
+            (
+                TokenType::Tuesday,
+                r"(?i)\b(tuesday|tuesda|tuesd|tues|tue|tu)\b",
+            ),
             (TokenType::Monday, r"(?i)\b(monday|monda|mond|mon|mo|m)\b"),
             (TokenType::Friday, r"(?i)\b(friday|frida|frid|fri|fr|f)\b"),
             (TokenType::Sunday, r"(?i)\b(sunday|sunda|sund|sun|su)\b"),
-            
             // Keywords - these must come before the general identifier pattern
             (TokenType::Contains, r"(?i)\bcontains\b"),
             (TokenType::Prereqs, r"(?i)\bprereqs\b"),
@@ -186,16 +188,13 @@ impl TokenType {
             (TokenType::Start, r"(?i)\bstart\b"),
             (TokenType::End, r"(?i)\bend\b"),
             (TokenType::Email, r"(?i)\bemail\b"),
-            
             // Logical
             (TokenType::And, r"(?i)\band\b"),
             (TokenType::Or, r"(?i)\bor\b"),
             (TokenType::Not, r"(?i)\bnot\b"),
-            
             // Conditions
             (TokenType::Has, r"(?i)\bhas\b"),
             (TokenType::Is, r"(?i)\bis\b"),
-            
             // Operators
             (TokenType::NotEquals, r"!="),
             (TokenType::LessEqual, r"<="),
@@ -206,17 +205,17 @@ impl TokenType {
             (TokenType::Exclamation, r"!"),
             (TokenType::LeftParen, r"\("),
             (TokenType::RightParen, r"\)"),
-            
             // Literals
             (TokenType::String, r#""[^"]*"?"#),
-            (TokenType::Time, r"[0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)"),
+            (
+                TokenType::Time,
+                r"[0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)",
+            ),
             (TokenType::Integer, r"[0-9]+"),
-            
             // General identifier pattern - must come last
             (TokenType::Identifier, r"[a-zA-Z_][a-zA-Z0-9_]*"),
-            
             // Unrecognized characters - must come last to catch anything else
             (TokenType::Unrecognized, r"[^\s]"),
         ]
     }
-} 
+}

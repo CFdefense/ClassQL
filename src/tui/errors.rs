@@ -11,14 +11,14 @@ pub enum TUIError {
 impl Display for TUIError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            TUIError::TerminalError(msg) => write!(f, "Terminal error: {}", msg),
+            TUIError::TerminalError(msg) => write!(f, "Terminal error: {msg}"),
         }
     }
 }
 
 #[derive(Debug, PartialEq)]
 pub enum AppError {
-    NONE,
+    Empty,
     SyntaxError(SyntaxError),
     UnrecognizedTokens(String, Vec<(usize, usize)>),
 }
@@ -26,7 +26,7 @@ pub enum AppError {
 impl Display for AppError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            AppError::NONE => write!(f, "No error"),
+            AppError::Empty => write!(f, "No error"),
             AppError::SyntaxError(msg) => write!(f, "Syntax error: {}", msg),
             AppError::UnrecognizedTokens(msg, _) => write!(f, "Unrecognized tokens: {}", msg),
         }
@@ -56,43 +56,71 @@ impl Display for SyntaxError {
             SyntaxError::MissingToken(token) => write!(f, "Missing: {}", token),
             SyntaxError::UnclosedParenthesis => write!(f, "Missing closing parenthesis ')'"),
             SyntaxError::EmptyQuery => write!(f, "Please enter a query to search"),
-            SyntaxError::ExpectedAfter { expected, after, position: _ } => {
+            SyntaxError::ExpectedAfter {
+                expected,
+                after,
+                position: _,
+            } => {
                 let user_friendly_expected: Vec<String> = expected
                     .iter()
                     .map(|s| format!("'{}'", make_user_friendly(s)))
                     .collect();
-                
+
                 let user_friendly_after = make_user_friendly(after);
-                
+
                 // Special case for start of query - use "Please start with" instead of "After..."
                 if after == "start of query" {
                     if user_friendly_expected.len() == 1 {
                         write!(f, "Please start with: {}", user_friendly_expected[0])
                     } else {
-                        write!(f, "Please start with one of: {}", user_friendly_expected.join(", "))
+                        write!(
+                            f,
+                            "Please start with one of: {}",
+                            user_friendly_expected.join(", ")
+                        )
                     }
+                } else if user_friendly_expected.len() == 1 {
+                    write!(
+                        f,
+                        "After '{}', please add: {}",
+                        user_friendly_after, user_friendly_expected[0]
+                    )
                 } else {
-                    if user_friendly_expected.len() == 1 {
-                        write!(f, "After '{}', please add: {}", user_friendly_after, user_friendly_expected[0])
-                    } else {
-                        write!(f, "After '{}', please add one of: {}", user_friendly_after, user_friendly_expected.join(", "))
-                    }
+                    write!(
+                        f,
+                        "After '{}', please add one of: {}",
+                        user_friendly_after,
+                        user_friendly_expected.join(", ")
+                    )
                 }
-            },
-            SyntaxError::InvalidContext { token, context, suggestions } => {
+            }
+            SyntaxError::InvalidContext {
+                token,
+                context,
+                suggestions,
+            } => {
                 let clean_token = extract_user_text(token);
                 let user_friendly_context = make_user_friendly(context);
-                
+
                 if suggestions.is_empty() {
-                    write!(f, "'{}' is not valid here ({})", clean_token, user_friendly_context)
+                    write!(
+                        f,
+                        "'{}' is not valid here ({})",
+                        clean_token, user_friendly_context
+                    )
                 } else {
                     let user_friendly_suggestions: Vec<String> = suggestions
                         .iter()
                         .map(|s| format!("'{}'", make_user_friendly(s)))
                         .collect();
-                    write!(f, "'{}' is not valid here. Try: {}", clean_token, user_friendly_suggestions.join(", "))
+                    write!(
+                        f,
+                        "'{}' is not valid here. Try: {}",
+                        clean_token,
+                        user_friendly_suggestions.join(", ")
+                    )
                 }
-            },
+            }
         }
     }
 }
@@ -105,14 +133,13 @@ fn extract_user_text(token: &str) -> String {
             return token[start + 2..end].to_string();
         }
     }
-    
-    // Handle patterns like "T_CONTAINS" -> "contains" 
-    if token.starts_with("T_") {
+
+    // Handle patterns like "T_CONTAINS" -> "contains"
+    if let Some(token_name) = token.strip_prefix("T_") {
         // Extract the token name and convert to user-friendly format
-        let token_name = &token[2..]; // Remove "T_" prefix
         return token_name.to_lowercase().replace("_", " ");
     }
-    
+
     // Otherwise return the token as-is
     token.to_string()
 }

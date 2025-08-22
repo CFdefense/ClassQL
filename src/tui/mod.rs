@@ -6,4 +6,4 @@
 */
 
 pub mod errors;
-pub mod tui;
+pub mod render;
