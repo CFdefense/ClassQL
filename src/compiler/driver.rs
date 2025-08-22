@@ -2,6 +2,7 @@ use super::lexer::Lexer;
 use super::parser::{Ast, Parser};
 use crate::tui::errors::AppError;
 
+// eventually there might be more state
 pub struct Compiler {}
 
 impl Compiler {

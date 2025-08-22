@@ -15,7 +15,6 @@
 use crate::compiler::driver::{Compiler, CompilerResult};
 use crate::tui::errors::TUIError;
 use crossterm::event::{self, Event, KeyCode};
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
@@ -46,10 +45,6 @@ pub struct Tui {
 
 impl Tui {
     pub fn new(compiler: Compiler) -> Result<Self, TUIError> {
-        // allows for direct terminal input access
-        enable_raw_mode()
-            .map_err(|_| TUIError::TerminalError(String::from("FAILED TO ENABLE RAW MODE")))?;
-
         // initialize the terminal instance
         let terminal = ratatui::init();
 
@@ -233,8 +228,6 @@ impl Tui {
 
     // function to terminate the tui gracefully
     pub fn terminate(&self) -> Result<(), TUIError> {
-        disable_raw_mode()
-            .map_err(|_| TUIError::TerminalError(String::from("FAILED TO DISABLE RAW MODE")))?;
         ratatui::restore();
         Ok(())
     }
@@ -395,12 +388,10 @@ fn render_search_helpers_with_data(frame: &mut Frame, input: &str, toast_message
 
 fn render_query_results(frame: &mut Frame) {
     let _ = frame;
-    todo!()
 }
 
 fn render_syntax_highlighting(frame: &mut Frame) {
     let _ = frame;
-    todo!()
 }
 
 fn render_toast_with_data(
