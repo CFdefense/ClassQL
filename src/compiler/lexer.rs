@@ -15,44 +15,19 @@ use crate::tui::errors::AppError;
 use regex::Regex;
 
 pub struct Lexer {
-    input: String,
-    chars: Vec<char>,
-    position: usize,
-    current_char: char,
-    unrecognized_chars: Vec<char>,
+    input_string: String,
 }
 
 impl Lexer {
-    pub fn new() -> Self {
-        Lexer {
-            input: String::new(),
-            chars: Vec::new(),
-            position: 0,
-            current_char: ' ',
-            unrecognized_chars: Vec::new(),
-        }
+    pub fn new(input_string: String) -> Self {
+        Lexer { input_string }
     }
 
-    #[allow(dead_code)]
-    pub fn clear(&mut self) {
-        self.input = String::new();
-        self.chars.clear();
-        self.position = 0;
-        self.current_char = ' ';
-        self.unrecognized_chars.clear();
+    fn get_lexeme(&self, token: &Token) -> &str {
+        &self.input_string[token.get_start()..token.get_end()]
     }
 
-    pub fn lexical_analysis(&mut self, input: String) -> Result<Vec<Token>, AppError> {
-        // Store input and initialize position
-        self.input = input;
-        self.chars = self.input.chars().collect();
-        self.position = 0;
-        self.current_char = if self.chars.is_empty() {
-            '\0'
-        } else {
-            self.chars[0]
-        };
-
+    pub fn analyze(&mut self) -> Result<Vec<Token>, AppError> {
         // Get all patterns in lexing order (longest/most specific first)
         let patterns = TokenType::all_patterns();
 
@@ -66,8 +41,8 @@ impl Lexer {
         let mut byte_pos = 0;
 
         // First pass: parse the entire input and collect all tokens
-        while byte_pos < self.input.len() {
-            let remaining = &self.input[byte_pos..];
+        while byte_pos < self.input_string.len() {
+            let remaining = &self.input_string[byte_pos..];
 
             // Skip whitespace
             if remaining.starts_with(char::is_whitespace) {
@@ -81,11 +56,9 @@ impl Lexer {
                 if let Some(mat) = regex.find(remaining) {
                     if mat.start() == 0 {
                         // Must match at beginning
-                        let lexeme = mat.as_str().to_string();
-                        let start_pos = byte_pos as i32;
-                        let end_pos = (byte_pos + mat.len()) as i32;
-                        let token =
-                            Token::new(token_type.clone(), lexeme.clone(), start_pos, end_pos);
+                        let start_pos = byte_pos;
+                        let end_pos = byte_pos + mat.len();
+                        let token = Token::new(*token_type, start_pos, end_pos);
                         all_tokens.push(token);
 
                         // Advance byte position by match length
@@ -101,9 +74,8 @@ impl Lexer {
                 let next_char = remaining.chars().next().unwrap();
                 let token = Token::new(
                     TokenType::Unrecognized,
-                    next_char.to_string(),
-                    byte_pos as i32,
-                    (byte_pos + next_char.len_utf8()) as i32,
+                    byte_pos,
+                    byte_pos + next_char.len_utf8(),
                 );
                 all_tokens.push(token);
                 byte_pos += next_char.len_utf8();
@@ -121,12 +93,12 @@ impl Lexer {
         if !unrecognized_tokens.is_empty() {
             let problematic_positions: Vec<(usize, usize)> = unrecognized_tokens
                 .iter()
-                .map(|token| (token.get_start() as usize, token.get_end() as usize))
+                .map(|token| (token.get_start(), token.get_end()))
                 .collect();
 
             let unrecognized_chars: Vec<String> = unrecognized_tokens
                 .iter()
-                .map(|token| format!("'{}'", token.get_lexeme()))
+                .map(|token| format!("'{}'", self.get_lexeme(token)))
                 .collect();
 
             let message = format!(
@@ -149,7 +121,6 @@ impl Lexer {
 
 impl Default for Lexer {
     fn default() -> Self {
-        Self::new()
+        Self::new("".to_string())
     }
 }
-

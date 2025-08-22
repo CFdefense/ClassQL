@@ -23,22 +23,19 @@ struct ExpectedToken {
     end: usize,
 }
 
-struct ParserTestHelper {
-    parser: Parser,
-    lexer: Lexer,
-}
+#[derive(Default)]
+struct ParserTestHelper {}
 
 impl ParserTestHelper {
     fn new() -> Self {
         Self {
-            parser: Parser::new(),
-            lexer: Lexer::new(),
+            // ..Default::default()
         }
     }
 
     fn create_tokens(&mut self, input: &str) -> Vec<Token> {
-        self.lexer.clear();
-        match self.lexer.lexical_analysis(input.to_string()) {
+        let mut lexer = Lexer::new(input.to_string());
+        match lexer.analyze() {
             Ok(tokens) => tokens,
             Err(_) => panic!("Failed to tokenize input: {}", input),
         }
@@ -53,7 +50,8 @@ impl ParserTestHelper {
         let tokens = self.create_tokens(&test_case.input);
         println!("Generated {} tokens", tokens.len());
 
-        let result = self.parser.parse(&tokens);
+        let mut parser = Parser::new(test_case.input.to_string());
+        let result = parser.parse(&tokens);
 
         match result {
             Ok(_) => {
@@ -74,15 +72,11 @@ impl ParserTestHelper {
                     // Validate that problematic tokens have valid positions
                     for token in &problematic_tokens {
                         assert!(
-                            token.get_start() >= 0,
-                            "Token start position should be non-negative"
-                        );
-                        assert!(
                             token.get_end() > token.get_start(),
                             "Token end should be greater than start"
                         );
                         assert!(
-                            token.get_end() <= test_case.input.len() as i32,
+                            token.get_end() <= test_case.input.len(),
                             "Token end should not exceed input length"
                         );
                     }
@@ -127,16 +121,16 @@ impl ParserTestHelper {
 
         for (i, (actual_token, expected_token)) in actual.iter().zip(expected.iter()).enumerate() {
             assert_eq!(
-                actual_token.get_lexeme(),
+                &input[actual_token.get_start()..actual_token.get_end()],
                 expected_token.lexeme,
                 "Token {} lexeme mismatch: expected '{}', got '{}'",
                 i,
                 expected_token.lexeme,
-                actual_token.get_lexeme()
+                &input[actual_token.get_start()..actual_token.get_end()]
             );
 
             assert_eq!(
-                actual_token.get_start() as usize,
+                actual_token.get_start(),
                 expected_token.start,
                 "Token {} start position mismatch: expected {}, got {}",
                 i,
@@ -145,7 +139,7 @@ impl ParserTestHelper {
             );
 
             assert_eq!(
-                actual_token.get_end() as usize,
+                actual_token.get_end(),
                 expected_token.end,
                 "Token {} end position mismatch: expected {}, got {}",
                 i,

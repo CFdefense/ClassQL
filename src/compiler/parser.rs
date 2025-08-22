@@ -84,19 +84,21 @@ impl Ast {
 }
 
 pub struct Parser {
+    input_string: String,
     ast: Ast,
     token_pointer: usize,
 }
 
 impl Default for Parser {
     fn default() -> Self {
-        Self::new()
+        Self::new("".to_string())
     }
 }
 
 impl Parser {
-    pub fn new() -> Self {
+    pub fn new(input_string: String) -> Self {
         Parser {
+            input_string,
             ast: Ast::new(),
             token_pointer: 0,
         }
@@ -151,6 +153,10 @@ impl Parser {
                 }
             }
         }
+    }
+
+    fn get_lexeme(&self, token: &Token) -> &str {
+        &self.input_string[token.get_start()..token.get_end()]
     }
 
     /// Get context-aware suggestions when we have a missing token
@@ -224,7 +230,7 @@ impl Parser {
 
     fn next_token(&mut self, tokens: &[Token]) -> Result<Token, String> {
         if self.token_pointer < tokens.len() {
-            let token = tokens[self.token_pointer].clone();
+            let token = tokens[self.token_pointer];
             self.token_pointer += 1;
             Ok(token)
         } else {
@@ -252,7 +258,7 @@ impl Parser {
                     token: format!(
                         "{} ('{}')",
                         tokens[self.token_pointer].get_token_type(),
-                        tokens[self.token_pointer].get_lexeme()
+                        self.get_lexeme(&tokens[self.token_pointer])
                     ),
                     context: "end of query".to_string(),
                     suggestions: vec![
@@ -261,7 +267,7 @@ impl Parser {
                         "remove extra text".to_string(),
                     ],
                 },
-                vec![tokens[self.token_pointer].clone()],
+                vec![tokens[self.token_pointer]],
             ));
         }
 
@@ -513,7 +519,7 @@ impl Parser {
                         token: format!(
                             "{} ('{}')",
                             next_token.get_token_type(),
-                            next_token.get_lexeme()
+                            self.get_lexeme(&next_token)
                         ),
                         context: "query start".to_string(),
                         suggestions: vec![
@@ -647,7 +653,7 @@ impl Parser {
                 if Self::is_valid_binop_token(next_token.get_token_type()) {
                     return Err((
                         SyntaxError::InvalidContext {
-                            token: next_token.get_lexeme().to_string(),
+                            token: self.get_lexeme(next_token).to_string(),
                             context: "after 'course'".to_string(),
                             suggestions: vec![
                                 "subject".to_string(),
@@ -660,7 +666,7 @@ impl Parser {
                                 "equals".to_string(),
                             ],
                         },
-                        vec![next_token.clone()],
+                        vec![*next_token],
                     ));
                 } else {
                     return Err((
@@ -668,7 +674,7 @@ impl Parser {
                             token: format!(
                                 "{} ('{}')",
                                 next_token.get_token_type(),
-                                next_token.get_lexeme()
+                                self.get_lexeme(next_token)
                             ),
                             context: "after 'course'".to_string(),
                             suggestions: vec![
@@ -682,7 +688,7 @@ impl Parser {
                                 "equals".to_string(),
                             ],
                         },
-                        vec![next_token.clone()],
+                        vec![*next_token],
                     ));
                 }
             }
@@ -732,7 +738,7 @@ impl Parser {
                         token: format!(
                             "{} ('{}')",
                             tokens[self.token_pointer].get_token_type(),
-                            tokens[self.token_pointer].get_lexeme()
+                            self.get_lexeme(&tokens[self.token_pointer])
                         ),
                         context: "after 'section'".to_string(),
                         suggestions: vec![
@@ -746,7 +752,7 @@ impl Parser {
                             "full".to_string(),
                         ],
                     },
-                    vec![tokens[self.token_pointer].clone()],
+                    vec![tokens[self.token_pointer]],
                 ))
             }
         };
@@ -1039,12 +1045,12 @@ impl Parser {
                     token: format!(
                         "{} ('{}')",
                         time_type_token.get_token_type(),
-                        time_type_token.get_lexeme()
+                        self.get_lexeme(time_type_token)
                     ),
                     context: "time query".to_string(),
                     suggestions: vec!["start".to_string(), "end".to_string()],
                 },
-                vec![time_type_token.clone()],
+                vec![*time_type_token],
             ));
         }
 
@@ -1146,7 +1152,7 @@ impl Parser {
                         token: format!(
                             "{} ('{}')",
                             day_token.get_token_type(),
-                            day_token.get_lexeme()
+                            self.get_lexeme(day_token)
                         ),
                         context: "day name".to_string(),
                         suggestions: vec![
@@ -1159,7 +1165,7 @@ impl Parser {
                             "sunday".to_string(),
                         ],
                     },
-                    vec![day_token.clone()],
+                    vec![*day_token],
                 ));
             }
         };
@@ -1369,7 +1375,7 @@ impl Parser {
                 // "with" by itself is not valid
                 return Err((
                     SyntaxError::InvalidContext {
-                        token: condition_token.get_lexeme().to_string(),
+                        token: self.get_lexeme(&condition_token).to_string(),
                         context: "string condition".to_string(),
                         suggestions: vec![
                             "is".to_string(),
@@ -1388,7 +1394,7 @@ impl Parser {
                 if Self::is_valid_binop_token(condition_token.get_token_type()) {
                     return Err((
                         SyntaxError::InvalidContext {
-                            token: condition_token.get_lexeme().to_string(),
+                            token: self.get_lexeme(&condition_token).to_string(),
                             context: "string condition".to_string(),
                             suggestions: vec![
                                 "is".to_string(),
@@ -1407,7 +1413,7 @@ impl Parser {
                             token: format!(
                                 "{} ('{}')",
                                 condition_token.get_token_type(),
-                                condition_token.get_lexeme()
+                                self.get_lexeme(&condition_token)
                             ),
                             context: "string condition".to_string(),
                             suggestions: vec![
@@ -1603,7 +1609,7 @@ impl Parser {
             | TokenType::GreaterEqual => {
                 return Err((
                     SyntaxError::InvalidContext {
-                        token: id_token.get_lexeme().to_string(),
+                        token: self.get_lexeme(&id_token).to_string(),
                         context: "after string condition".to_string(),
                         suggestions: vec![
                             "text value".to_string(),
@@ -1625,7 +1631,7 @@ impl Parser {
             | TokenType::Does => {
                 return Err((
                     SyntaxError::InvalidContext {
-                        token: id_token.get_lexeme().to_string(),
+                        token: self.get_lexeme(&id_token).to_string(),
                         context: "after string condition".to_string(),
                         suggestions: vec![
                             "text value".to_string(),

@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub enum TokenType {
     // Keywords
     Term,
@@ -93,38 +93,31 @@ impl std::fmt::Display for TokenType {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Token {
     token_type: TokenType,
-    lexeme: String,
-    start: i32,
-    end: i32,
+    start: usize,
+    end: usize,
 }
 
 impl Token {
-    pub fn new(token_type: TokenType, lexeme: String, start: i32, end: i32) -> Self {
+    pub fn new(token_type: TokenType, start: usize, end: usize) -> Self {
         Token {
             token_type,
-            lexeme,
             start,
             end,
         }
-    }
-
-    #[allow(dead_code)]
-    pub fn get_lexeme(&self) -> &str {
-        &self.lexeme
     }
 
     pub fn get_token_type(&self) -> &TokenType {
         &self.token_type
     }
 
-    pub fn get_start(&self) -> i32 {
+    pub fn get_start(&self) -> usize {
         self.start
     }
 
-    pub fn get_end(&self) -> i32 {
+    pub fn get_end(&self) -> usize {
         self.end
     }
 }

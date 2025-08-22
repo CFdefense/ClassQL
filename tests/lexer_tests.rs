@@ -21,14 +21,13 @@ struct ExpectedToken {
     content: String,
 }
 
-struct TestHelper {
-    lexer: Lexer,
-}
+#[derive(Default)]
+struct TestHelper {}
 
 impl TestHelper {
     fn new() -> Self {
         Self {
-            lexer: Lexer::new(),
+            // ..Default::default()
         }
     }
 
@@ -42,10 +41,10 @@ impl TestHelper {
         println!("Input: '{}'", test_case.code);
 
         // Clear lexer state before each test
-        self.lexer.clear();
+        let mut lexer = Lexer::new(test_case.code.clone());
 
         // Tokenize the input
-        match self.lexer.lexical_analysis(test_case.code.clone()) {
+        match lexer.analyze() {
             Ok(tokens) => {
                 // Default to expecting success unless explicitly marked as false
                 if test_case.should_succeed == Some(false) {
@@ -75,7 +74,7 @@ impl TestHelper {
                             "  [{}] {} = '{}'",
                             i,
                             actual.get_token_type(),
-                            actual.get_lexeme()
+                            &test_case.code[actual.get_start()..actual.get_end()]
                         );
                     }
                     println!("========================\n");
@@ -96,7 +95,8 @@ impl TestHelper {
                     tokens.iter().zip(test_case.result.iter()).enumerate()
                 {
                     let type_match = actual.get_token_type().to_string() == expected.token_type;
-                    let content_match = actual.get_lexeme() == expected.content;
+                    let content_match =
+                        test_case.code[actual.get_start()..actual.get_end()] == expected.content;
 
                     if !type_match || !content_match {
                         if !has_diff {
@@ -115,7 +115,7 @@ impl TestHelper {
                             println!(
                                 "  Content: Expected '{}' but got '{}'",
                                 expected.content,
-                                actual.get_lexeme()
+                                &test_case.code[actual.get_start()..actual.get_end()]
                             );
                         }
                     }
@@ -131,13 +131,13 @@ impl TestHelper {
                     );
 
                     assert_eq!(
-                        actual.get_lexeme(),
+                        &test_case.code[actual.get_start()..actual.get_end()],
                         expected.content,
                         "Token content mismatch at position {} in test '{}'. Expected: {}, Got: {}",
                         i,
                         test_case.test_name,
                         expected.content,
-                        actual.get_lexeme()
+                        &test_case.code[actual.get_start()..actual.get_end()]
                     );
                 }
 
@@ -272,4 +272,3 @@ fn test_time_queries() {
 fn test_time_edge_cases() {
     run_test_file("time_edge_cases.json");
 }
-
