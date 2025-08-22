@@ -2,7 +2,7 @@ use petgraph::dot::Dot;
 use petgraph::graph::DiGraph;
 use petgraph::stable_graph::NodeIndex;
 
-use super::parser::{Ast, TreeNode};
+use crate::compiler::parser::{Ast, TreeNode};
 pub fn ast_to_dot(input_string: String, ast: &Ast) -> String {
     let mut graph: DiGraph<String, ()> = DiGraph::new();
 
