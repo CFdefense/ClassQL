@@ -7,8 +7,8 @@ mod data;
 mod tui;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut compiler = Compiler::new();
-    let mut tui = Tui::new(&mut compiler)?;
+    let compiler = Compiler::new();
+    let mut tui = Tui::new(compiler)?;
 
     tui.run()?;
     tui.terminate()?;

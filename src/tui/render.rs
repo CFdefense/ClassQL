@@ -29,7 +29,7 @@ pub enum ErrorType {
     Parser,
 }
 
-pub struct Tui<'a> {
+pub struct Tui {
     terminal: DefaultTerminal,
     input: String,
     user_query: String,
@@ -37,15 +37,15 @@ pub struct Tui<'a> {
     toast_start_time: Option<Instant>,
     error_type: Option<ErrorType>,
     problematic_tokens: Vec<(usize, usize)>,
-    compiler: &'a mut Compiler,
+    compiler: Compiler,
     // Tab completion state
     completions: Vec<String>,
     completion_index: Option<usize>,
     show_completions: bool,
 }
 
-impl<'a> Tui<'a> {
-    pub fn new(compiler: &'a mut Compiler) -> Result<Self, TUIError> {
+impl Tui {
+    pub fn new(compiler: Compiler) -> Result<Self, TUIError> {
         // allows for direct terminal input access
         enable_raw_mode()
             .map_err(|_| TUIError::TerminalError(String::from("FAILED TO ENABLE RAW MODE")))?;
