@@ -1,6 +1,8 @@
 /*
-    This module contains the compiler for the application.
-    The compiler is responsible for compiling the user's query into sql.
+    src/dsl/mod.rs
+
+    Module for storing domain-specific language compiler logic. Used for our querying logic.
+
 */
 
 pub mod compiler;

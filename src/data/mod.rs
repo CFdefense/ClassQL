@@ -1,5 +1,8 @@
 /*
-    This module contains the query handling for the application.
+    src/data/mod.rs
+
+    Module for storing relevant database code such as connection and querying logic.
+
 */
 
 pub mod pool;

@@ -1,16 +1,30 @@
-/*
-    TUI: Terminal User Interface
-
-    Using: ratatui crate
-
-    Functions:
-    1. Render a search bar to type in
-    2. Send typed string to query
-    3. Show Nicely Formatted Query Results
-    4. Allow users to scroll Query Results
-    5. Provide Syntax Highlighting
-    6. Look Aesthetic
-*/
+/// src/tui/render.rs
+/// 
+/// Render for the TUI
+///
+/// Responsible for rendering the TUI
+///
+/// Contains:
+/// --- ---
+/// Tui -> TUI struct
+///      Methods:
+///      --- ---
+///      new -> Create a new TUI instance
+///      run -> Run the TUI event loop
+///      terminate -> Terminate the TUI
+///      --- ---
+/// Helper functions:
+///      --- ---
+///      render_logo -> Render the logo
+///      render_search_bar_with_data -> Render the search bar with data
+///      render_search_helpers_with_data -> Render the search helpers with data
+///      render_query_results -> Render the query results
+///      render_syntax_highlighting -> Render the syntax highlighting
+///      render_toast_with_data -> Render the toast with data
+///      render_completion_dropdown -> Render the completion dropdown
+///      --- ---
+/// --- ---
+///
 
 use crate::dsl::compiler::{Compiler, CompilerResult};
 use crate::tui::errors::TUIError;
@@ -22,12 +36,49 @@ use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::{DefaultTerminal, Frame};
 use std::time::{Duration, Instant};
 
+/// ErrorType enum
+///
+/// ErrorType types:
+/// --- ---
+/// Lexer -> Lexer error
+/// Parser -> Parser error
+/// --- ---
+///
+/// Implemented Traits:
+/// --- ---
+/// Debug -> Debug trait for ErrorType
+/// Clone -> Clone trait for ErrorType
+/// --- ---
+///
 #[derive(Debug, Clone)]
 pub enum ErrorType {
     Lexer,
     Parser,
 }
 
+/// Tui struct
+///
+/// Tui fields:
+/// --- ---
+/// terminal -> The terminal instance
+/// input -> The input string
+/// user_query -> The user query string
+/// toast_message -> The toast message
+/// toast_start_time -> The toast start time
+/// error_type -> The error type
+/// problematic_tokens -> The problematic tokens
+/// compiler -> The compiler instance
+/// completions -> The completions
+/// completion_index -> The completion index
+/// show_completions -> Whether to show completions
+/// --- ---
+///
+/// Implemented Traits:
+/// --- ---
+/// Debug -> Debug trait for Tui
+/// Clone -> Clone trait for Tui
+/// --- ---
+///
 pub struct Tui {
     terminal: DefaultTerminal,
     input: String,
@@ -37,13 +88,33 @@ pub struct Tui {
     error_type: Option<ErrorType>,
     problematic_tokens: Vec<(usize, usize)>,
     compiler: Compiler,
-    // Tab completion state
     completions: Vec<String>,
     completion_index: Option<usize>,
     show_completions: bool,
 }
 
+/// Tui Implementation
+///
+/// Methods:
+/// --- ---
+/// new -> Create a new TUI instance
+/// run -> Run the TUI event loop
+/// terminate -> Terminate the TUI
+/// --- ---
+///
 impl Tui {
+    /// Create a new TUI instance
+    ///
+    /// Parameters:
+    /// --- ---
+    /// compiler -> The compiler instance
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// Result<Tui, TUIError> -> The new TUI instance
+    /// --- ---
+    ///
     pub fn new(compiler: Compiler) -> Result<Self, TUIError> {
         // initialize the terminal instance
         let terminal = ratatui::init();
@@ -64,13 +135,24 @@ impl Tui {
         })
     }
 
-    // function to run the tui event loop
+    /// Run the TUI event loop, handling user input and rendering the TUI
+    ///
+    /// Parameters:
+    /// --- ---
+    /// None
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// Result<(), Box<dyn std::error::Error>> -> The result of the event loop
+    /// --- ---
+    ///
     pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         loop {
-            // Update toast timer
+            // update toast timer
             self.update_toast();
 
-            // Extract render data to avoid borrow conflicts
+            // extract render data to avoid borrow conflicts
             let input = self.input.clone();
             let problematic_tokens = self.problematic_tokens.clone();
             let toast_message = self.toast_message.clone();
@@ -79,7 +161,7 @@ impl Tui {
             let completion_index = self.completion_index;
             let show_completions = self.show_completions;
 
-            // Draw the current state
+            // draw the current state
             let terminal = &mut self.terminal;
             terminal.draw(|f| {
                 render_frame(
@@ -94,9 +176,9 @@ impl Tui {
                 );
             })?;
 
-            // Handle input events
+            // handle input events
             if let Event::Key(key) = event::read()? {
-                // Handle completion navigation first if completions are showing
+                // handle completion navigation first if completions are showing
                 if self.show_completions {
                     match key.code {
                         KeyCode::Esc => {
@@ -118,18 +200,18 @@ impl Tui {
                             }
                         }
                         KeyCode::Enter => {
-                            // Insert selected completion
+                            // insert selected completion
                             if let Some(index) = self.completion_index {
                                 if index < self.completions.len() {
                                     let completion = &self.completions[index];
-                                    // Don't add placeholders like <value>
+                                    // don't add placeholders like <value>
                                     if !completion.starts_with('<') {
                                         if !self.input.is_empty() && !self.input.ends_with(' ') {
                                             self.input.push(' ');
                                         }
                                         self.input.push_str(completion);
                                         if !completion.starts_with('"') {
-                                            // Don't add space after quoted strings
+                                            // don't add space after quoted strings
                                             self.input.push(' ');
                                         }
                                     }
@@ -139,43 +221,43 @@ impl Tui {
                             self.completion_index = None;
                         }
                         KeyCode::Tab => {
-                            // Refresh completions on tab
+                            // refresh completions on tab
                             self.handle_tab_completion();
                         }
                         _ => {
-                            // Any other key hides completions
+                            // any other key hides completions
                             self.show_completions = false;
                             self.completion_index = None;
                         }
                     }
-                    continue; // Skip normal key handling when completions are shown
+                    continue; // skip normal key handling when completions are shown
                 }
 
                 match key.code {
                     KeyCode::Esc => break Ok(()),
                     KeyCode::Enter => {
-                        // Process the query here
+                        // process the query here
                         self.user_query = self.input.clone();
 
-                        // Run the compiler and handle the result
+                        // run the compiler and handle the result
                         match self.compiler.run(&self.input) {
                             CompilerResult::Success { message, ast } => {
-                                // Clear any error state
+                                // clear any error state
                                 self.toast_message = None;
                                 self.toast_start_time = None;
                                 self.error_type = None;
                                 self.problematic_tokens.clear();
-                                // Show a brief success message
+                                // show a brief success message
                                 self.toast_message = Some(message);
                                 self.toast_start_time = Some(Instant::now());
-                                // TODO: Process successful AST for semantic analysis or query execution
+                                // TODO: process successful AST for semantic analysis or query execution
                                 println!("Parsed AST: {:?}", ast); // Debug output for now
                             }
                             CompilerResult::LexerError {
                                 message,
                                 problematic_tokens,
                             } => {
-                                // Show error and highlight problematic tokens
+                                // show error and highlight problematic tokens
                                 self.show_toast(message, ErrorType::Lexer);
                                 self.problematic_tokens = problematic_tokens;
                             }
@@ -183,23 +265,23 @@ impl Tui {
                                 message,
                                 problematic_tokens,
                             } => {
-                                // Show error and highlight problematic tokens
+                                // show error and highlight problematic tokens
                                 self.show_toast(message, ErrorType::Parser);
                                 self.problematic_tokens = problematic_tokens;
                             }
                         }
                     }
                     KeyCode::Backspace => {
-                        // Clear any previous toasts and problematic tokens when user backspaces
+                        // clear any previous toasts and problematic tokens when user backspaces
                         self.clear_error_state();
                         self.input.pop();
                     }
                     KeyCode::Tab => {
-                        // Handle tab completion
+                        // handle tab completion
                         self.handle_tab_completion();
                     }
                     KeyCode::Char(c) => {
-                        // Clear any previous toasts and problematic tokens when user starts typing
+                        // clear any previous toasts and problematic tokens when user starts typing
                         self.clear_error_state();
                         self.input.push(c);
                     }
@@ -209,6 +291,18 @@ impl Tui {
         }
     }
 
+    /// Clear the error state
+    ///
+    /// Parameters:
+    /// --- ---
+    /// None
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// None
+    /// --- ---
+    ///
     fn clear_error_state(&mut self) {
         self.toast_message = None;
         self.toast_start_time = None;
@@ -216,8 +310,20 @@ impl Tui {
         self.problematic_tokens.clear();
     }
 
+    /// Handle tab completion
+    ///
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The TUI instance
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// None
+    /// --- ---
+    ///
     fn handle_tab_completion(&mut self) {
-        // Get completion suggestions from compiler
+        // get completion suggestions from compiler
         self.completions = self.compiler.get_tab_completion(self.input.clone());
 
         if !self.completions.is_empty() {
@@ -226,12 +332,32 @@ impl Tui {
         }
     }
 
-    // function to terminate the tui gracefully
+    /// Terminate the TUI gracefully
+    ///
+    /// Parameters:
+    /// --- ---
+    /// self -> The TUI instance
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
     pub fn terminate(&self) -> Result<(), TUIError> {
         ratatui::restore();
         Ok(())
     }
 
+    /// Update the toast
+    ///
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The TUI instance
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// None
+    /// --- ---
+    ///
     fn update_toast(&mut self) {
         if let Some(start_time) = self.toast_start_time {
             if start_time.elapsed() > Duration::from_secs(3) {
@@ -242,6 +368,20 @@ impl Tui {
         }
     }
 
+    /// Show the toast
+    ///
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The TUI instance
+    /// message -> The message to show
+    /// error_type -> The error type
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// None
+    /// --- ---
+    ///
     fn show_toast(&mut self, message: String, error_type: ErrorType) {
         self.toast_message = Some(message);
         self.toast_start_time = Some(Instant::now());
@@ -249,7 +389,25 @@ impl Tui {
     }
 }
 
-// Standalone render function to avoid borrow checker conflicts
+/// Standalone render function to avoid borrow checker conflicts
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// input -> The input string
+/// problematic_tokens -> The problematic tokens
+/// toast_message -> The toast message
+/// error_type -> The error type
+/// completions -> The completions
+/// completion_index -> The completion index
+/// show_completions -> Whether to show completions
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
 #[allow(clippy::too_many_arguments)]
 fn render_frame(
     frame: &mut Frame,
@@ -270,8 +428,20 @@ fn render_frame(
     render_completion_dropdown(frame, completions, completion_index, show_completions);
 }
 
+/// Render the logo
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
 fn render_logo(frame: &mut Frame) {
-    // Generate ASCII art using the crate (thanks thomas)
+    // logo ascii art
     let ascii_art = r#"            
     ██████╗  ██╗         █████╗    ███████╗   ███████╗   ██████╗   ██╗     
    ██╔════╝  ██║        ██╔══██╗   ██╔════╝   ██╔════╝  ██╔═══██╗  ██║     
@@ -305,6 +475,20 @@ fn render_logo(frame: &mut Frame) {
     frame.render_widget(logo_paragraph, logo_area);
 }
 
+/// Render the search bar with data
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// input -> The input string
+/// problematic_tokens -> The problematic tokens
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
 fn render_search_bar_with_data(
     frame: &mut Frame,
     input: &str,
@@ -312,7 +496,7 @@ fn render_search_bar_with_data(
 ) {
     let search_width = 50;
 
-    // Position search bar directly below the logo
+    // position search bar directly below the logo
     let logo_height = 7; // Height of the ASCII art logo
     let search_y = logo_height + 2; // 2 lines below the logo
 
@@ -323,16 +507,16 @@ fn render_search_bar_with_data(
         height: 3,
     };
 
-    // Create styled spans for the input with highlighted problematic tokens
+    // create styled spans for the input with highlighted problematic tokens
     let mut styled_spans = Vec::new();
 
-    // Start with the "> " prefix
+    // start with the "> " prefix
     styled_spans.push(Span::styled("> ", Style::default().fg(Color::White)));
 
-    // Process the input character by character, highlighting problematic tokens
+    // process the input character by character, highlighting problematic tokens
     for (i, ch) in input.chars().enumerate() {
         let is_problematic = problematic_tokens.iter().any(|&(start, end)| {
-            // Token positions are relative to the input string, so we need to match them correctly
+            // token positions are relative to the input string, so we need to match them correctly
             i >= start && i < end
         });
 
@@ -359,8 +543,22 @@ fn render_search_bar_with_data(
     frame.render_widget(search_paragraph, search_area);
 }
 
+/// Render the search helpers with data
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// input -> The input string
+/// toast_message -> The toast message
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
 fn render_search_helpers_with_data(frame: &mut Frame, input: &str, toast_message: &Option<String>) {
-    // Don't show help text if there's an active toast
+    // don't show help text if there's an active toast
     if toast_message.is_some() {
         return;
     }
@@ -386,33 +584,71 @@ fn render_search_helpers_with_data(frame: &mut Frame, input: &str, toast_message
     frame.render_widget(help_paragraph, help_area);
 }
 
+/// TODO: Render the query results
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
 fn render_query_results(frame: &mut Frame) {
     let _ = frame;
 }
 
+/// TODO:Render the syntax highlighting
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
 fn render_syntax_highlighting(frame: &mut Frame) {
     let _ = frame;
 }
 
+/// Render the toast with data
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// toast_message -> The toast message
+/// error_type -> The error type
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
 fn render_toast_with_data(
     frame: &mut Frame,
     toast_message: &Option<String>,
     error_type: &Option<ErrorType>,
 ) {
     if let Some(message) = toast_message {
-        // Use the passed error type to determine toast dimensions
+        // use the passed error type to determine toast dimensions
         let is_parser_error = matches!(error_type, Some(ErrorType::Parser));
 
-        // Calculate toast dimensions based on error type
+        // calculate toast dimensions based on error type
         let (toast_width, max_toast_height) = if is_parser_error {
-            // Parser errors need more space for context and suggestions
+            // parser errors need more space for context and suggestions
             (80_u16, 15)
         } else {
-            // Lexer errors are typically shorter
+            // lexer errors are typically shorter
             (60, 8)
         };
 
-        // Wrap text to fit within the toast width (account for borders and padding)
+        // wrap text to fit within the toast width (account for borders and padding)
         let content_width = toast_width.saturating_sub(4) as usize; // -4 for borders and padding
         let mut wrapped_lines = Vec::new();
 
@@ -420,19 +656,19 @@ fn render_toast_with_data(
             if line.len() <= content_width {
                 wrapped_lines.push(line.to_string());
             } else {
-                // Split long lines into multiple lines
+                // split long lines into multiple lines
                 let mut remaining = line;
                 while !remaining.is_empty() {
                     if remaining.len() <= content_width {
                         wrapped_lines.push(remaining.to_string());
                         break;
                     } else {
-                        // Find a good break point (space, comma, etc.)
+                        // find a good break point (space, comma, etc.)
                         let mut break_point = content_width;
                         if let Some(space_pos) = remaining[..content_width].rfind(' ') {
                             break_point = space_pos;
                         } else if let Some(comma_pos) = remaining[..content_width].rfind(',') {
-                            break_point = comma_pos + 1; // Include the comma
+                            break_point = comma_pos + 1; // include the comma
                         }
 
                         wrapped_lines.push(remaining[..break_point].to_string());
@@ -451,7 +687,7 @@ fn render_toast_with_data(
             height: toast_height,
         };
 
-        // Create styled lines for the toast
+        // create styled lines for the toast
         let styled_lines: Vec<Line> = wrapped_lines
             .iter()
             .map(|line| Line::from(Span::styled(line, Style::default().fg(Color::White))))
@@ -470,6 +706,21 @@ fn render_toast_with_data(
     }
 }
 
+/// Render the completion dropdown
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// completions -> The completions
+/// completion_index -> The completion index
+/// show_completions -> Whether to show completions
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
 fn render_completion_dropdown(
     frame: &mut Frame,
     completions: &[String],
@@ -481,12 +732,12 @@ fn render_completion_dropdown(
     }
 
     let dropdown_width = 50;
-    let dropdown_height = (completions.len() as u16).min(8) + 2; // Dynamic height based on completions, max 8 items + borders
+    let dropdown_height = (completions.len() as u16).min(8) + 2; // dynamic height based on completions, max 8 items + borders
 
-    // Position below the search bar
-    let logo_height = 7; // Height of the ASCII art logo
-    let search_y = logo_height + 2; // Search bar position
-    let search_height = 3; // Search bar height
+    // position below the search bar
+    let logo_height = 7; // height of the ASCII art logo
+    let search_y = logo_height + 2; // search bar position
+    let search_height = 3; // search bar height
     let dropdown_y = search_y + search_height + 1; // 1 line below search bar
 
     let dropdown_area = Rect {
@@ -499,7 +750,7 @@ fn render_completion_dropdown(
     let mut styled_lines = Vec::new();
     for (i, completion) in completions.iter().enumerate() {
         let style = if Some(i) == completion_index {
-            Style::default().fg(Color::Black).bg(Color::White) // Better contrast for selected item
+            Style::default().fg(Color::Black).bg(Color::White) // better contrast for selected item
         } else {
             Style::default().fg(Color::Gray)
         };
