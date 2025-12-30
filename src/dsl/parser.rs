@@ -1,5 +1,5 @@
 /// src/dsl/parser.rs
-/// 
+///
 /// Parser for the DSL
 ///
 /// Responsible for parsing the tokens into an AST
@@ -17,8 +17,7 @@
 ///      parse -> Parse the tokens into an AST
 ///      --- ---
 ///--- ---
-/// 
-
+///
 use crate::dsl::token::{Token, TokenType};
 use crate::tui::errors::{make_user_friendly_for_completion, SyntaxError};
 use std::vec;

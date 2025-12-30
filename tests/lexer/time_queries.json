@@ -4,8 +4,8 @@
     "description": "Test that 'start' and 'end' are properly tokenized as T_START and T_END",
     "code": "start end",
     "result": [
-      {"type": "T_START", "content": "start"},
-      {"type": "T_END", "content": "end"}
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_END", "content": "end"}
     ]
   },
   {
@@ -13,10 +13,10 @@
     "description": "Test that 'START', 'End', 'Start', 'END' are properly tokenized",
     "code": "START End Start END",
     "result": [
-      {"type": "T_START", "content": "START"},
-      {"type": "T_END", "content": "End"},
-      {"type": "T_START", "content": "Start"},
-      {"type": "T_END", "content": "END"}
+      {"token_type": "T_START", "content": "START"},
+      {"token_type": "T_END", "content": "End"},
+      {"token_type": "T_START", "content": "Start"},
+      {"token_type": "T_END", "content": "END"}
     ]
   },
   {
@@ -24,7 +24,7 @@
     "description": "Test that 'to' is properly tokenized as T_TO for time ranges",
     "code": "to",
     "result": [
-      {"type": "T_TO", "content": "to"}
+      {"token_type": "T_TO", "content": "to"}
     ]
   },
   {
@@ -32,9 +32,9 @@
     "description": "Test that 'TO', 'To', 'tO' are properly tokenized",
     "code": "TO To tO",
     "result": [
-      {"type": "T_TO", "content": "TO"},
-      {"type": "T_TO", "content": "To"},
-      {"type": "T_TO", "content": "tO"}
+      {"token_type": "T_TO", "content": "TO"},
+      {"token_type": "T_TO", "content": "To"},
+      {"token_type": "T_TO", "content": "tO"}
     ]
   },
   {
@@ -42,10 +42,10 @@
     "description": "Test 12-hour time formats with AM/PM",
     "code": "9:00am 2:30pm 8:15am 11:45pm",
     "result": [
-      {"type": "T_TIME", "content": "9:00am"},
-      {"type": "T_TIME", "content": "2:30pm"},
-      {"type": "T_TIME", "content": "8:15am"},
-      {"type": "T_TIME", "content": "11:45pm"}
+      {"token_type": "T_TIME", "content": "9:00am"},
+      {"token_type": "T_TIME", "content": "2:30pm"},
+      {"token_type": "T_TIME", "content": "8:15am"},
+      {"token_type": "T_TIME", "content": "11:45pm"}
     ]
   },
   {
@@ -53,10 +53,10 @@
     "description": "Test 12-hour time formats with space before AM/PM",
     "code": "9:00 am 2:30 pm 8:15 am 11:45 pm",
     "result": [
-      {"type": "T_TIME", "content": "9:00 am"},
-      {"type": "T_TIME", "content": "2:30 pm"},
-      {"type": "T_TIME", "content": "8:15 am"},
-      {"type": "T_TIME", "content": "11:45 pm"}
+      {"token_type": "T_TIME", "content": "9:00 am"},
+      {"token_type": "T_TIME", "content": "2:30 pm"},
+      {"token_type": "T_TIME", "content": "8:15 am"},
+      {"token_type": "T_TIME", "content": "11:45 pm"}
     ]
   },
   {
@@ -64,10 +64,10 @@
     "description": "Test 24-hour time formats",
     "code": "14:00 23:30 00:15 16:45",
     "result": [
-      {"type": "T_TIME", "content": "14:00"},
-      {"type": "T_TIME", "content": "23:30"},
-      {"type": "T_TIME", "content": "00:15"},
-      {"type": "T_TIME", "content": "16:45"}
+      {"token_type": "T_TIME", "content": "14:00"},
+      {"token_type": "T_TIME", "content": "23:30"},
+      {"token_type": "T_TIME", "content": "00:15"},
+      {"token_type": "T_TIME", "content": "16:45"}
     ]
   },
   {
@@ -75,10 +75,10 @@
     "description": "Test hour-only formats with AM/PM",
     "code": "8am 11pm 12am 1pm",
     "result": [
-      {"type": "T_TIME", "content": "8am"},
-      {"type": "T_TIME", "content": "11pm"},
-      {"type": "T_TIME", "content": "12am"},
-      {"type": "T_TIME", "content": "1pm"}
+      {"token_type": "T_TIME", "content": "8am"},
+      {"token_type": "T_TIME", "content": "11pm"},
+      {"token_type": "T_TIME", "content": "12am"},
+      {"token_type": "T_TIME", "content": "1pm"}
     ]
   },
   {
@@ -86,10 +86,10 @@
     "description": "Test hour-only formats with space before AM/PM",
     "code": "8 am 11 pm 12 am 1 pm",
     "result": [
-      {"type": "T_TIME", "content": "8 am"},
-      {"type": "T_TIME", "content": "11 pm"},
-      {"type": "T_TIME", "content": "12 am"},
-      {"type": "T_TIME", "content": "1 pm"}
+      {"token_type": "T_TIME", "content": "8 am"},
+      {"token_type": "T_TIME", "content": "11 pm"},
+      {"token_type": "T_TIME", "content": "12 am"},
+      {"token_type": "T_TIME", "content": "1 pm"}
     ]
   },
   {
@@ -97,10 +97,10 @@
     "description": "Test edge case time formats",
     "code": "00:00 12:00 23:59 24:00",
     "result": [
-      {"type": "T_TIME", "content": "00:00"},
-      {"type": "T_TIME", "content": "12:00"},
-      {"type": "T_TIME", "content": "23:59"},
-      {"type": "T_TIME", "content": "24:00"}
+      {"token_type": "T_TIME", "content": "00:00"},
+      {"token_type": "T_TIME", "content": "12:00"},
+      {"token_type": "T_TIME", "content": "23:59"},
+      {"token_type": "T_TIME", "content": "24:00"}
     ]
   },
   {
@@ -108,12 +108,12 @@
     "description": "Test complete time queries with direct time comparison",
     "code": "start > 9:00am end <= 17:00",
     "result": [
-      {"type": "T_START", "content": "start"},
-      {"type": "T_GREATERTHAN", "content": ">"},
-      {"type": "T_TIME", "content": "9:00am"},
-      {"type": "T_END", "content": "end"},
-      {"type": "T_LESSEQUAL", "content": "<="},
-      {"type": "T_TIME", "content": "17:00"}
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_GREATERTHAN", "content": ">"},
+      {"token_type": "T_TIME", "content": "9:00am"},
+      {"token_type": "T_END", "content": "end"},
+      {"token_type": "T_LESSEQUAL", "content": "<="},
+      {"token_type": "T_TIME", "content": "17:00"}
     ]
   },
   {
@@ -121,14 +121,14 @@
     "description": "Test complete time queries with time ranges",
     "code": "start 9:00 to 17:00 end 8:00am to 4:00pm",
     "result": [
-      {"type": "T_START", "content": "start"},
-      {"type": "T_TIME", "content": "9:00"},
-      {"type": "T_TO", "content": "to"},
-      {"type": "T_TIME", "content": "17:00"},
-      {"type": "T_END", "content": "end"},
-      {"type": "T_TIME", "content": "8:00am"},
-      {"type": "T_TO", "content": "to"},
-      {"type": "T_TIME", "content": "4:00pm"}
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_TIME", "content": "9:00"},
+      {"token_type": "T_TO", "content": "to"},
+      {"token_type": "T_TIME", "content": "17:00"},
+      {"token_type": "T_END", "content": "end"},
+      {"token_type": "T_TIME", "content": "8:00am"},
+      {"token_type": "T_TO", "content": "to"},
+      {"token_type": "T_TIME", "content": "4:00pm"}
     ]
   },
   {
@@ -136,18 +136,18 @@
     "description": "Test time queries with various comparison operators",
     "code": "start = 8:30 start != 12:00 start >= 9:00 start < 16:00",
     "result": [
-      {"type": "T_START", "content": "start"},
-      {"type": "T_EQUALS", "content": "="},
-      {"type": "T_TIME", "content": "8:30"},
-      {"type": "T_START", "content": "start"},
-      {"type": "T_NOTEQUALS", "content": "!="},
-      {"type": "T_TIME", "content": "12:00"},
-      {"type": "T_START", "content": "start"},
-      {"type": "T_GREATEREQUAL", "content": ">="},
-      {"type": "T_TIME", "content": "9:00"},
-      {"type": "T_START", "content": "start"},
-      {"type": "T_LESSTHAN", "content": "<"},
-      {"type": "T_TIME", "content": "16:00"}
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_EQUALS", "content": "="},
+      {"token_type": "T_TIME", "content": "8:30"},
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_NOTEQUALS", "content": "!="},
+      {"token_type": "T_TIME", "content": "12:00"},
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_GREATEREQUAL", "content": ">="},
+      {"token_type": "T_TIME", "content": "9:00"},
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_LESSTHAN", "content": "<"},
+      {"token_type": "T_TIME", "content": "16:00"}
     ]
   },
   {
@@ -155,25 +155,25 @@
     "description": "Test complex time queries with logical operators",
     "code": "(start > 9:00am and start < 11:00am) or (end >= 15:00 and end <= 17:00)",
     "result": [
-      {"type": "T_LEFTPAREN", "content": "("},
-      {"type": "T_START", "content": "start"},
-      {"type": "T_GREATERTHAN", "content": ">"},
-      {"type": "T_TIME", "content": "9:00am"},
-      {"type": "T_AND", "content": "and"},
-      {"type": "T_START", "content": "start"},
-      {"type": "T_LESSTHAN", "content": "<"},
-      {"type": "T_TIME", "content": "11:00am"},
-      {"type": "T_RIGHTPAREN", "content": ")"},
-      {"type": "T_OR", "content": "or"},
-      {"type": "T_LEFTPAREN", "content": "("},
-      {"type": "T_END", "content": "end"},
-      {"type": "T_GREATEREQUAL", "content": ">="},
-      {"type": "T_TIME", "content": "15:00"},
-      {"type": "T_AND", "content": "and"},
-      {"type": "T_END", "content": "end"},
-      {"type": "T_LESSEQUAL", "content": "<="},
-      {"type": "T_TIME", "content": "17:00"},
-      {"type": "T_RIGHTPAREN", "content": ")"}
+      {"token_type": "T_LEFTPAREN", "content": "("},
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_GREATERTHAN", "content": ">"},
+      {"token_type": "T_TIME", "content": "9:00am"},
+      {"token_type": "T_AND", "content": "and"},
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_LESSTHAN", "content": "<"},
+      {"token_type": "T_TIME", "content": "11:00am"},
+      {"token_type": "T_RIGHTPAREN", "content": ")"},
+      {"token_type": "T_OR", "content": "or"},
+      {"token_type": "T_LEFTPAREN", "content": "("},
+      {"token_type": "T_END", "content": "end"},
+      {"token_type": "T_GREATEREQUAL", "content": ">="},
+      {"token_type": "T_TIME", "content": "15:00"},
+      {"token_type": "T_AND", "content": "and"},
+      {"token_type": "T_END", "content": "end"},
+      {"token_type": "T_LESSEQUAL", "content": "<="},
+      {"token_type": "T_TIME", "content": "17:00"},
+      {"token_type": "T_RIGHTPAREN", "content": ")"}
     ]
   },
   {
@@ -181,14 +181,14 @@
     "description": "Test time queries mixing different time formats",
     "code": "start 8am to 5:00pm end 14:00 to 18:00",
     "result": [
-      {"type": "T_START", "content": "start"},
-      {"type": "T_TIME", "content": "8am"},
-      {"type": "T_TO", "content": "to"},
-      {"type": "T_TIME", "content": "5:00pm"},
-      {"type": "T_END", "content": "end"},
-      {"type": "T_TIME", "content": "14:00"},
-      {"type": "T_TO", "content": "to"},
-      {"type": "T_TIME", "content": "18:00"}
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_TIME", "content": "8am"},
+      {"token_type": "T_TO", "content": "to"},
+      {"token_type": "T_TIME", "content": "5:00pm"},
+      {"token_type": "T_END", "content": "end"},
+      {"token_type": "T_TIME", "content": "14:00"},
+      {"token_type": "T_TO", "content": "to"},
+      {"token_type": "T_TIME", "content": "18:00"}
     ]
   },
   {
@@ -196,14 +196,14 @@
     "description": "Test time queries within section query context",
     "code": "section start > 9:00 and end < 17:00",
     "result": [
-      {"type": "T_SECTION", "content": "section"},
-      {"type": "T_START", "content": "start"},
-      {"type": "T_GREATERTHAN", "content": ">"},
-      {"type": "T_TIME", "content": "9:00"},
-      {"type": "T_AND", "content": "and"},
-      {"type": "T_END", "content": "end"},
-      {"type": "T_LESSTHAN", "content": "<"},
-      {"type": "T_TIME", "content": "17:00"}
+      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_GREATERTHAN", "content": ">"},
+      {"token_type": "T_TIME", "content": "9:00"},
+      {"token_type": "T_AND", "content": "and"},
+      {"token_type": "T_END", "content": "end"},
+      {"token_type": "T_LESSTHAN", "content": "<"},
+      {"token_type": "T_TIME", "content": "17:00"}
     ]
   },
   {
@@ -211,11 +211,11 @@
     "description": "Test time queries within course query context",
     "code": "course start 8:00am to 10:00am",
     "result": [
-      {"type": "T_COURSE", "content": "course"},
-      {"type": "T_START", "content": "start"},
-      {"type": "T_TIME", "content": "8:00am"},
-      {"type": "T_TO", "content": "to"},
-      {"type": "T_TIME", "content": "10:00am"}
+      {"token_type": "T_COURSE", "content": "course"},
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_TIME", "content": "8:00am"},
+      {"token_type": "T_TO", "content": "to"},
+      {"token_type": "T_TIME", "content": "10:00am"}
     ]
   },
   {
@@ -223,14 +223,14 @@
     "description": "Test time queries within professor query context",
     "code": "prof start > 9:00 and end < 17:00",
     "result": [
-      {"type": "T_PROF", "content": "prof"},
-      {"type": "T_START", "content": "start"},
-      {"type": "T_GREATERTHAN", "content": ">"},
-      {"type": "T_TIME", "content": "9:00"},
-      {"type": "T_AND", "content": "and"},
-      {"type": "T_END", "content": "end"},
-      {"type": "T_LESSTHAN", "content": "<"},
-      {"type": "T_TIME", "content": "17:00"}
+      {"token_type": "T_PROF", "content": "prof"},
+      {"token_type": "T_START", "content": "start"},
+      {"token_type": "T_GREATERTHAN", "content": ">"},
+      {"token_type": "T_TIME", "content": "9:00"},
+      {"token_type": "T_AND", "content": "and"},
+      {"token_type": "T_END", "content": "end"},
+      {"token_type": "T_LESSTHAN", "content": "<"},
+      {"token_type": "T_TIME", "content": "17:00"}
     ]
   }
 ] 

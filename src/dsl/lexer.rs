@@ -1,5 +1,5 @@
 /// src/dsl/lexer.rs
-/// 
+///
 /// Lexer for the query language.
 ///
 /// Responsible for converting the input string into a stream of tokens.
@@ -15,7 +15,6 @@
 ///      --- ---
 /// --- ---
 ///
-
 use super::token::{Token, TokenType};
 use crate::tui::errors::AppError;
 use regex::Regex;

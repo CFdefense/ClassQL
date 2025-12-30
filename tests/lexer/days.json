@@ -4,12 +4,12 @@
         "description": "Test all progressive abbreviations for Monday",
         "code": "m mo mon mond monda monday",
         "result": [
-            {"type": "T_MONDAY", "content": "m"},
-            {"type": "T_MONDAY", "content": "mo"},
-            {"type": "T_MONDAY", "content": "mon"},
-            {"type": "T_MONDAY", "content": "mond"},
-            {"type": "T_MONDAY", "content": "monda"},
-            {"type": "T_MONDAY", "content": "monday"}
+            {"token_type": "T_MONDAY", "content": "m"},
+            {"token_type": "T_MONDAY", "content": "mo"},
+            {"token_type": "T_MONDAY", "content": "mon"},
+            {"token_type": "T_MONDAY", "content": "mond"},
+            {"token_type": "T_MONDAY", "content": "monda"},
+            {"token_type": "T_MONDAY", "content": "monday"}
         ]
     },
     {
@@ -17,12 +17,12 @@
         "description": "Test all progressive abbreviations for Tuesday",
         "code": "tu tue tues tuesd tuesda tuesday",
         "result": [
-            {"type": "T_TUESDAY", "content": "tu"},
-            {"type": "T_TUESDAY", "content": "tue"},
-            {"type": "T_TUESDAY", "content": "tues"},
-            {"type": "T_TUESDAY", "content": "tuesd"},
-            {"type": "T_TUESDAY", "content": "tuesda"},
-            {"type": "T_TUESDAY", "content": "tuesday"}
+            {"token_type": "T_TUESDAY", "content": "tu"},
+            {"token_type": "T_TUESDAY", "content": "tue"},
+            {"token_type": "T_TUESDAY", "content": "tues"},
+            {"token_type": "T_TUESDAY", "content": "tuesd"},
+            {"token_type": "T_TUESDAY", "content": "tuesda"},
+            {"token_type": "T_TUESDAY", "content": "tuesday"}
         ]
     },
     {
@@ -30,15 +30,15 @@
         "description": "Test all progressive abbreviations for Wednesday",
         "code": "w we wed wedn wedne wednes wednesd wednesda wednesday",
         "result": [
-            {"type": "T_WEDNESDAY", "content": "w"},
-            {"type": "T_WEDNESDAY", "content": "we"},
-            {"type": "T_WEDNESDAY", "content": "wed"},
-            {"type": "T_WEDNESDAY", "content": "wedn"},
-            {"type": "T_WEDNESDAY", "content": "wedne"},
-            {"type": "T_WEDNESDAY", "content": "wednes"},
-            {"type": "T_WEDNESDAY", "content": "wednesd"},
-            {"type": "T_WEDNESDAY", "content": "wednesda"},
-            {"type": "T_WEDNESDAY", "content": "wednesday"}
+            {"token_type": "T_WEDNESDAY", "content": "w"},
+            {"token_type": "T_WEDNESDAY", "content": "we"},
+            {"token_type": "T_WEDNESDAY", "content": "wed"},
+            {"token_type": "T_WEDNESDAY", "content": "wedn"},
+            {"token_type": "T_WEDNESDAY", "content": "wedne"},
+            {"token_type": "T_WEDNESDAY", "content": "wednes"},
+            {"token_type": "T_WEDNESDAY", "content": "wednesd"},
+            {"token_type": "T_WEDNESDAY", "content": "wednesda"},
+            {"token_type": "T_WEDNESDAY", "content": "wednesday"}
         ]
     },
     {
@@ -46,12 +46,12 @@
         "description": "Test all progressive abbreviations for Thursday",
         "code": "th thu thur thurs thursda thursday",
         "result": [
-            {"type": "T_THURSDAY", "content": "th"},
-            {"type": "T_THURSDAY", "content": "thu"},
-            {"type": "T_THURSDAY", "content": "thur"},
-            {"type": "T_THURSDAY", "content": "thurs"},
-            {"type": "T_THURSDAY", "content": "thursda"},
-            {"type": "T_THURSDAY", "content": "thursday"}
+            {"token_type": "T_THURSDAY", "content": "th"},
+            {"token_type": "T_THURSDAY", "content": "thu"},
+            {"token_type": "T_THURSDAY", "content": "thur"},
+            {"token_type": "T_THURSDAY", "content": "thurs"},
+            {"token_type": "T_THURSDAY", "content": "thursda"},
+            {"token_type": "T_THURSDAY", "content": "thursday"}
         ]
     },
     {
@@ -59,12 +59,12 @@
         "description": "Test all progressive abbreviations for Friday",
         "code": "f fr fri frid frida friday",
         "result": [
-            {"type": "T_FRIDAY", "content": "f"},
-            {"type": "T_FRIDAY", "content": "fr"},
-            {"type": "T_FRIDAY", "content": "fri"},
-            {"type": "T_FRIDAY", "content": "frid"},
-            {"type": "T_FRIDAY", "content": "frida"},
-            {"type": "T_FRIDAY", "content": "friday"}
+            {"token_type": "T_FRIDAY", "content": "f"},
+            {"token_type": "T_FRIDAY", "content": "fr"},
+            {"token_type": "T_FRIDAY", "content": "fri"},
+            {"token_type": "T_FRIDAY", "content": "frid"},
+            {"token_type": "T_FRIDAY", "content": "frida"},
+            {"token_type": "T_FRIDAY", "content": "friday"}
         ]
     },
     {
@@ -72,13 +72,13 @@
         "description": "Test all progressive abbreviations for Saturday",
         "code": "sa sat satu satur saturd saturda saturday",
         "result": [
-            {"type": "T_SATURDAY", "content": "sa"},
-            {"type": "T_SATURDAY", "content": "sat"},
-            {"type": "T_SATURDAY", "content": "satu"},
-            {"type": "T_SATURDAY", "content": "satur"},
-            {"type": "T_SATURDAY", "content": "saturd"},
-            {"type": "T_SATURDAY", "content": "saturda"},
-            {"type": "T_SATURDAY", "content": "saturday"}
+            {"token_type": "T_SATURDAY", "content": "sa"},
+            {"token_type": "T_SATURDAY", "content": "sat"},
+            {"token_type": "T_SATURDAY", "content": "satu"},
+            {"token_type": "T_SATURDAY", "content": "satur"},
+            {"token_type": "T_SATURDAY", "content": "saturd"},
+            {"token_type": "T_SATURDAY", "content": "saturda"},
+            {"token_type": "T_SATURDAY", "content": "saturday"}
         ]
     },
     {
@@ -86,11 +86,11 @@
         "description": "Test all progressive abbreviations for Sunday",
         "code": "su sun sund sunda sunday",
         "result": [
-            {"type": "T_SUNDAY", "content": "su"},
-            {"type": "T_SUNDAY", "content": "sun"},
-            {"type": "T_SUNDAY", "content": "sund"},
-            {"type": "T_SUNDAY", "content": "sunda"},
-            {"type": "T_SUNDAY", "content": "sunday"}
+            {"token_type": "T_SUNDAY", "content": "su"},
+            {"token_type": "T_SUNDAY", "content": "sun"},
+            {"token_type": "T_SUNDAY", "content": "sund"},
+            {"token_type": "T_SUNDAY", "content": "sunda"},
+            {"token_type": "T_SUNDAY", "content": "sunday"}
         ]
     },
     {
@@ -98,11 +98,11 @@
         "description": "Test mixed day abbreviations in one query",
         "code": "mon and fri or sat",
         "result": [
-            {"type": "T_MONDAY", "content": "mon"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_FRIDAY", "content": "fri"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_SATURDAY", "content": "sat"}
+            {"token_type": "T_MONDAY", "content": "mon"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_FRIDAY", "content": "fri"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_SATURDAY", "content": "sat"}
         ]
     },
     {
@@ -110,25 +110,25 @@
         "description": "Test day scheduling expressions with parentheses for precedence control",
         "code": "(monday = true and wednesday = true) or (friday = true and saturday = false)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_MONDAY", "content": "monday"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "true"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_WEDNESDAY", "content": "wednesday"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "true"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_FRIDAY", "content": "friday"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "true"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_SATURDAY", "content": "saturday"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "false"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_MONDAY", "content": "monday"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "true"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_WEDNESDAY", "content": "wednesday"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "true"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_FRIDAY", "content": "friday"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "true"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_SATURDAY", "content": "saturday"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "false"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -136,29 +136,29 @@
         "description": "Test complex day logic with deeply nested parentheses",
         "code": "((monday or tuesday) and (wednesday or thursday)) or ((friday and saturday) or sunday)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_MONDAY", "content": "monday"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_TUESDAY", "content": "tuesday"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_WEDNESDAY", "content": "wednesday"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_THURSDAY", "content": "thursday"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_FRIDAY", "content": "friday"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_SATURDAY", "content": "saturday"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_SUNDAY", "content": "sunday"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_MONDAY", "content": "monday"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_TUESDAY", "content": "tuesday"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_WEDNESDAY", "content": "wednesday"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_THURSDAY", "content": "thursday"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_FRIDAY", "content": "friday"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_SATURDAY", "content": "saturday"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_SUNDAY", "content": "sunday"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     }
 ] 

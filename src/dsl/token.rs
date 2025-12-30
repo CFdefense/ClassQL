@@ -1,5 +1,5 @@
 /// src/dsl/token.rs
-/// 
+///
 /// Token types for the DSL
 ///
 /// Responsible for defining the token types for the DSL
@@ -33,7 +33,7 @@
 /// Copy -> Copy trait for TokenType
 /// Display -> Display trait for TokenType
 /// --- ---
-/// 
+///
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub enum TokenType {
     // keywords

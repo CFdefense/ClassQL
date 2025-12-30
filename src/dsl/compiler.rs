@@ -1,5 +1,5 @@
 /// src/dsl/compiler.rs
-/// 
+///
 /// Compiler for the DSL
 ///
 /// Responsible for compiling the DSL into a SQL query
@@ -16,7 +16,6 @@
 ///      --- ---
 /// --- ---
 ///
-
 use super::lexer::Lexer;
 use super::parser::{Ast, Parser};
 use crate::tui::errors::AppError;
@@ -29,12 +28,12 @@ use crate::tui::errors::AppError;
 /// LexerError -> Lexical analysis failed, contains message and problematic tokens
 /// ParserError -> Parsing failed, contains message and problematic tokens
 /// --- ---
-/// 
+///
 /// Implemented Traits:
 /// --- ---
 /// Debug -> Debug trait for CompilerResult
 /// --- ---
-/// 
+///
 ///
 #[derive(Debug)]
 pub enum CompilerResult {
@@ -64,7 +63,7 @@ pub enum CompilerResult {
 /// Implemented Traits:
 /// --- ---
 /// None -> No implemented traits
-/// --- --- 
+/// --- ---
 ///
 pub struct Compiler {}
 
@@ -81,7 +80,7 @@ impl Compiler {
     /// Create a new compiler instance
     ///
     /// TODO: implement future functionality for cleaner state refresh
-    /// 
+    ///
     /// Parameters:
     /// --- ---
     /// None

@@ -4,9 +4,9 @@
     "description": "Test that invalid hour values are still tokenized as T_TIME (lexer only does pattern matching)",
     "code": "25:00 99:30 100:00",
     "result": [
-      {"type": "T_TIME", "content": "25:00"},
-      {"type": "T_TIME", "content": "99:30"},
-      {"type": "T_TIME", "content": "100:00"}
+      {"token_type": "T_TIME", "content": "25:00"},
+      {"token_type": "T_TIME", "content": "99:30"},
+      {"token_type": "T_TIME", "content": "100:00"}
     ]
   },
   {
@@ -14,9 +14,9 @@
     "description": "Test that invalid minute values are still tokenized as T_TIME (lexer only does pattern matching)",
     "code": "12:60 15:99 8:70",
     "result": [
-      {"type": "T_TIME", "content": "12:60"},
-      {"type": "T_TIME", "content": "15:99"},
-      {"type": "T_TIME", "content": "8:70"}
+      {"token_type": "T_TIME", "content": "12:60"},
+      {"token_type": "T_TIME", "content": "15:99"},
+      {"token_type": "T_TIME", "content": "8:70"}
     ]
   },
   {
@@ -24,12 +24,12 @@
     "description": "Test that invalid AM/PM values are not tokenized as T_TIME",
     "code": "9:00xm 2:30ym 8:15zm",
     "result": [
-      {"type": "T_TIME", "content": "9:00"},
-      {"type": "T_IDENTIFIER", "content": "xm"},
-      {"type": "T_TIME", "content": "2:30"},
-      {"type": "T_IDENTIFIER", "content": "ym"},
-      {"type": "T_TIME", "content": "8:15"},
-      {"type": "T_IDENTIFIER", "content": "zm"}
+      {"token_type": "T_TIME", "content": "9:00"},
+      {"token_type": "T_IDENTIFIER", "content": "xm"},
+      {"token_type": "T_TIME", "content": "2:30"},
+      {"token_type": "T_IDENTIFIER", "content": "ym"},
+      {"token_type": "T_TIME", "content": "8:15"},
+      {"token_type": "T_IDENTIFIER", "content": "zm"}
     ]
   },
   {
@@ -37,9 +37,9 @@
     "description": "Test that times without colons are not tokenized as T_TIME",
     "code": "900am 230pm 800",
     "result": [
-      {"type": "T_TIME", "content": "900am"},
-      {"type": "T_TIME", "content": "230pm"},
-      {"type": "T_INTEGER", "content": "800"}
+      {"token_type": "T_TIME", "content": "900am"},
+      {"token_type": "T_TIME", "content": "230pm"},
+      {"token_type": "T_INTEGER", "content": "800"}
     ]
   },
   {
@@ -79,9 +79,9 @@
     "description": "Test that times with leading zeros are handled correctly",
     "code": "09:00 02:30am 08:15pm",
     "result": [
-      {"type": "T_TIME", "content": "09:00"},
-      {"type": "T_TIME", "content": "02:30am"},
-      {"type": "T_TIME", "content": "08:15pm"}
+      {"token_type": "T_TIME", "content": "09:00"},
+      {"token_type": "T_TIME", "content": "02:30am"},
+      {"token_type": "T_TIME", "content": "08:15pm"}
     ]
   },
   {
@@ -89,10 +89,10 @@
     "description": "Test boundary values for time formats",
     "code": "00:00am 12:00pm 23:59pm 24:00am",
     "result": [
-      {"type": "T_TIME", "content": "00:00am"},
-      {"type": "T_TIME", "content": "12:00pm"},
-      {"type": "T_TIME", "content": "23:59pm"},
-      {"type": "T_TIME", "content": "24:00am"}
+      {"token_type": "T_TIME", "content": "00:00am"},
+      {"token_type": "T_TIME", "content": "12:00pm"},
+      {"token_type": "T_TIME", "content": "23:59pm"},
+      {"token_type": "T_TIME", "content": "24:00am"}
     ]
   }
 ] 

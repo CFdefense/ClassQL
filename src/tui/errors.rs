@@ -1,5 +1,5 @@
 /// src/tui/errors.rs
-/// 
+///
 /// Errors for the TUI
 ///
 /// Responsible for handling errors that occur in the TUI
@@ -16,7 +16,6 @@
 ///      make_user_friendly -> Make technical terms more user-friendly
 ///      --- ---
 /// --- ---
-
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
@@ -40,13 +39,13 @@ pub enum TUIError {
 }
 
 /// TUIError Error Trait Implementation
-/// 
+///
 /// Implements the Error trait for TUIError
-/// 
+///
 impl Error for TUIError {}
 
 /// TUIError Display Trait Implementation
-/// 
+///
 /// Parameters:
 /// --- ---
 /// self -> The TUIError to display
@@ -90,7 +89,7 @@ pub enum AppError {
 }
 
 /// AppError Display Trait Implementation
-/// 
+///
 /// Parameters:
 /// --- ---
 /// self -> The AppError to display
@@ -129,7 +128,7 @@ impl Display for AppError {
 /// PartialEq -> PartialEq trait for SyntaxError
 /// Display -> Display trait for SyntaxError
 /// --- ---
-/// 
+///
 #[derive(Debug, PartialEq, Clone)]
 pub enum SyntaxError {
     MissingToken(String),
@@ -148,7 +147,7 @@ pub enum SyntaxError {
 }
 
 /// SyntaxError Display Trait Implementation
-/// 
+///
 /// Parameters:
 /// --- ---
 /// self -> The SyntaxError to display
@@ -236,7 +235,7 @@ impl Display for SyntaxError {
 }
 
 /// Helper function to extract the actual user text from technical token descriptions
-/// 
+///
 /// Parameters:
 /// --- ---
 /// token -> The token to extract the user text from
@@ -266,7 +265,7 @@ fn extract_user_text(token: &str) -> String {
 }
 
 /// Helper function to make technical terms more user-friendly for completion
-/// 
+///
 /// Parameters:
 /// --- ---
 /// term -> The term to make more user-friendly
@@ -293,7 +292,7 @@ pub fn make_user_friendly_for_completion(term: &str) -> String {
 }
 
 /// Helper function to make technical terms more user-friendly
-/// 
+///
 /// Parameters:
 /// --- ---
 /// term -> The term to make more user-friendly

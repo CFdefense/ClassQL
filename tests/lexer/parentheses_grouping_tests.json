@@ -4,8 +4,8 @@
         "description": "Test basic left and right parentheses tokens",
         "code": "( )",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -13,11 +13,11 @@
         "description": "Test simple expression grouping with parentheses",
         "code": "(prof is Alan)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -25,17 +25,17 @@
         "description": "Test boolean logic with parentheses for precedence control",
         "code": "(prof is Alan) and (course contains CS)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -43,25 +43,25 @@
         "description": "Test nested parentheses for complex precedence",
         "code": "((prof is Alan) and (course contains CS)) or (subject is Math)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Math"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Math"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -69,26 +69,26 @@
         "description": "Test complex boolean expression with mixed precedence",
         "code": "not (prof is Alan) and ((course contains CS) or (subject is Math))",
         "result": [
-            {"type": "T_NOT", "content": "not"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Math"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_NOT", "content": "not"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Math"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -96,17 +96,17 @@
         "description": "Test comparison operators with parentheses grouping",
         "code": "(credit >= 3) and (hours < 4)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_LESSTHAN", "content": "<"},
-            {"type": "T_INTEGER", "content": "4"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_LESSTHAN", "content": "<"},
+            {"token_type": "T_INTEGER", "content": "4"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -114,17 +114,17 @@
         "description": "Test mixed content including strings, numbers, and identifiers with parentheses",
         "code": "(title contains \"Data Structures\") and (campus = \"Main\")",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Data Structures\""},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_CAMPUS", "content": "campus"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"Main\""},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Data Structures\""},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_CAMPUS", "content": "campus"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"Main\""},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -132,8 +132,8 @@
         "description": "Test empty parentheses (edge case)",
         "code": "()",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -141,10 +141,10 @@
         "description": "Test single left parenthesis (edge case)",
         "code": "(prof is Alan",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"}
         ]
     },
     {
@@ -152,10 +152,10 @@
         "description": "Test single right parenthesis (edge case)",
         "code": "prof is Alan)",
         "result": [
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     }
 ] 

@@ -4,12 +4,12 @@
         "description": "Test tokens smashed together without spaces",
         "code": "subject=\"CS\"andcourse=\"101\"",
         "result": [
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS\""},
-            {"type": "T_IDENTIFIER", "content": "andcourse"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"101\""}
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS\""},
+            {"token_type": "T_IDENTIFIER", "content": "andcourse"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"101\""}
         ]
     },
     {
@@ -17,14 +17,14 @@
         "description": "Test operators smashed together",
         "code": "credit hours>=3<=6!=5",
         "result": [
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_LESSEQUAL", "content": "<="},
-            {"type": "T_INTEGER", "content": "6"},
-            {"type": "T_NOTEQUALS", "content": "!="},
-            {"type": "T_INTEGER", "content": "5"}
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_LESSEQUAL", "content": "<="},
+            {"token_type": "T_INTEGER", "content": "6"},
+            {"token_type": "T_NOTEQUALS", "content": "!="},
+            {"token_type": "T_INTEGER", "content": "5"}
         ]
     },
     {
@@ -40,7 +40,7 @@
         "description": "Test day abbreviations without spaces",
         "code": "monfrisuedwethusatsun",
         "result": [
-            {"type": "T_IDENTIFIER", "content": "monfrisuedwethusatsun"}
+            {"token_type": "T_IDENTIFIER", "content": "monfrisuedwethusatsun"}
         ]
     },
     {
@@ -48,7 +48,7 @@
         "description": "Test numbers directly adjacent to letters",
         "code": "course123hours456credit789",
         "result": [
-            {"type": "T_IDENTIFIER", "content": "course123hours456credit789"}
+            {"token_type": "T_IDENTIFIER", "content": "course123hours456credit789"}
         ]
     },
     {
@@ -56,23 +56,23 @@
         "description": "Test parentheses expressions without spaces",
         "code": "(prof=Alan)and(course=CS)or(subject=Math)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "Math"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "Math"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -80,21 +80,21 @@
         "description": "Test very deeply nested parentheses for stress testing",
         "code": "((((((prof=Alan))))))",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -102,47 +102,47 @@
         "description": "Test complex mixed expression with parentheses under stress",
         "code": "((subject=CS)and(credit>=3))or((prof=Alan)and(course=101))and((campus=Main)or(method=Online))",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_INTEGER", "content": "101"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_CAMPUS", "content": "campus"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "Main"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_METHOD", "content": "method"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "Online"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_INTEGER", "content": "101"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_CAMPUS", "content": "campus"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "Main"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_METHOD", "content": "method"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "Online"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -150,13 +150,13 @@
         "description": "Test that unrecognized characters inside quotes are treated as part of the string",
         "code": "title = \"CS@101\" and course = \"Data&Algorithms\"",
         "result": [
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS@101\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"Data&Algorithms\""}
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS@101\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"Data&Algorithms\""}
         ]
     }
 ] 

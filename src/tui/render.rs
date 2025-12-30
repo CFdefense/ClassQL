@@ -1,5 +1,5 @@
 /// src/tui/render.rs
-/// 
+///
 /// Render for the TUI
 ///
 /// Responsible for rendering the TUI
@@ -25,7 +25,6 @@
 ///      --- ---
 /// --- ---
 ///
-
 use crate::dsl::compiler::{Compiler, CompilerResult};
 use crate::tui::errors::TUIError;
 use crossterm::event::{self, Event, KeyCode};
