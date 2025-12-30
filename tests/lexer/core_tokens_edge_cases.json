@@ -4,9 +4,9 @@
     "description": "Test core tokens with various whitespace patterns",
     "code": "  section  \t  title  \n  number  ",
     "result": [
-      {"type": "T_SECTION", "content": "section"},
-      {"type": "T_TITLE", "content": "title"},
-      {"type": "T_NUMBER", "content": "number"}
+      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_TITLE", "content": "title"},
+      {"token_type": "T_NUMBER", "content": "number"}
     ]
   },
   {
@@ -14,10 +14,10 @@
     "description": "Test core tokens are case sensitive",
     "code": "SECTION Title NUMBER Description",
     "result": [
-      {"type": "T_SECTION", "content": "SECTION"},
-      {"type": "T_TITLE", "content": "Title"},
-      {"type": "T_NUMBER", "content": "NUMBER"},
-      {"type": "T_DESCRIPTION", "content": "Description"}
+      {"token_type": "T_SECTION", "content": "SECTION"},
+      {"token_type": "T_TITLE", "content": "Title"},
+      {"token_type": "T_NUMBER", "content": "NUMBER"},
+      {"token_type": "T_DESCRIPTION", "content": "Description"}
     ]
   },
   {
@@ -25,10 +25,10 @@
     "description": "Test that partial matches don't interfere with core tokens",
     "code": "sectional sectioned sectioning section",
     "result": [
-      {"type": "T_IDENTIFIER", "content": "sectional"},
-      {"type": "T_IDENTIFIER", "content": "sectioned"},
-      {"type": "T_IDENTIFIER", "content": "sectioning"},
-      {"type": "T_SECTION", "content": "section"}
+      {"token_type": "T_IDENTIFIER", "content": "sectional"},
+      {"token_type": "T_IDENTIFIER", "content": "sectioned"},
+      {"token_type": "T_IDENTIFIER", "content": "sectioning"},
+      {"token_type": "T_SECTION", "content": "section"}
     ]
   },
   {
@@ -36,9 +36,9 @@
     "description": "Test core tokens followed by numbers",
     "code": "section123 title456 number789",
     "result": [
-      {"type": "T_IDENTIFIER", "content": "section123"},
-      {"type": "T_IDENTIFIER", "content": "title456"},
-      {"type": "T_IDENTIFIER", "content": "number789"}
+      {"token_type": "T_IDENTIFIER", "content": "section123"},
+      {"token_type": "T_IDENTIFIER", "content": "title456"},
+      {"token_type": "T_IDENTIFIER", "content": "number789"}
     ]
   },
   {
@@ -46,9 +46,9 @@
     "description": "Test core tokens with underscores",
     "code": "section_token title_token number_token",
     "result": [
-      {"type": "T_IDENTIFIER", "content": "section_token"},
-      {"type": "T_IDENTIFIER", "content": "title_token"},
-      {"type": "T_IDENTIFIER", "content": "number_token"}
+      {"token_type": "T_IDENTIFIER", "content": "section_token"},
+      {"token_type": "T_IDENTIFIER", "content": "title_token"},
+      {"token_type": "T_IDENTIFIER", "content": "number_token"}
     ]
   },
   {
@@ -56,9 +56,9 @@
     "description": "Test core tokens in quoted strings",
     "code": "\"section\" \"title\" \"number\"",
     "result": [
-      {"type": "T_STRING", "content": "\"section\""},
-      {"type": "T_STRING", "content": "\"title\""},
-      {"type": "T_STRING", "content": "\"number\""}
+      {"token_type": "T_STRING", "content": "\"section\""},
+      {"token_type": "T_STRING", "content": "\"title\""},
+      {"token_type": "T_STRING", "content": "\"number\""}
     ]
   },
   {
@@ -66,15 +66,15 @@
     "description": "Test core tokens with parentheses",
     "code": "(section) (title) (number)",
     "result": [
-      {"type": "T_LEFTPAREN", "content": "("},
-      {"type": "T_SECTION", "content": "section"},
-      {"type": "T_RIGHTPAREN", "content": ")"},
-      {"type": "T_LEFTPAREN", "content": "("},
-      {"type": "T_TITLE", "content": "title"},
-      {"type": "T_RIGHTPAREN", "content": ")"},
-      {"type": "T_LEFTPAREN", "content": "("},
-      {"type": "T_NUMBER", "content": "number"},
-      {"type": "T_RIGHTPAREN", "content": ")"}
+      {"token_type": "T_LEFTPAREN", "content": "("},
+      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_RIGHTPAREN", "content": ")"},
+      {"token_type": "T_LEFTPAREN", "content": "("},
+      {"token_type": "T_TITLE", "content": "title"},
+      {"token_type": "T_RIGHTPAREN", "content": ")"},
+      {"token_type": "T_LEFTPAREN", "content": "("},
+      {"token_type": "T_NUMBER", "content": "number"},
+      {"token_type": "T_RIGHTPAREN", "content": ")"}
     ]
   },
   {
@@ -82,15 +82,15 @@
     "description": "Test core tokens with comparison operators",
     "code": "section = \"CS101\" title != \"Advanced\" number > 100",
     "result": [
-      {"type": "T_SECTION", "content": "section"},
-      {"type": "T_EQUALS", "content": "="},
-      {"type": "T_STRING", "content": "\"CS101\""},
-      {"type": "T_TITLE", "content": "title"},
-      {"type": "T_NOTEQUALS", "content": "!="},
-      {"type": "T_STRING", "content": "\"Advanced\""},
-      {"type": "T_NUMBER", "content": "number"},
-      {"type": "T_GREATERTHAN", "content": ">"},
-      {"type": "T_INTEGER", "content": "100"}
+      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_EQUALS", "content": "="},
+      {"token_type": "T_STRING", "content": "\"CS101\""},
+      {"token_type": "T_TITLE", "content": "title"},
+      {"token_type": "T_NOTEQUALS", "content": "!="},
+      {"token_type": "T_STRING", "content": "\"Advanced\""},
+      {"token_type": "T_NUMBER", "content": "number"},
+      {"token_type": "T_GREATERTHAN", "content": ">"},
+      {"token_type": "T_INTEGER", "content": "100"}
     ]
   },
   {
@@ -98,12 +98,12 @@
     "description": "Test core tokens with contains operator",
     "code": "section contains \"101\" title contains \"Introduction\"",
     "result": [
-      {"type": "T_SECTION", "content": "section"},
-      {"type": "T_CONTAINS", "content": "contains"},
-      {"type": "T_STRING", "content": "\"101\""},
-      {"type": "T_TITLE", "content": "title"},
-      {"type": "T_CONTAINS", "content": "contains"},
-      {"type": "T_STRING", "content": "\"Introduction\""}
+      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_CONTAINS", "content": "contains"},
+      {"token_type": "T_STRING", "content": "\"101\""},
+      {"token_type": "T_TITLE", "content": "title"},
+      {"token_type": "T_CONTAINS", "content": "contains"},
+      {"token_type": "T_STRING", "content": "\"Introduction\""}
     ]
   },
   {
@@ -111,12 +111,12 @@
     "description": "Test core tokens at boundary conditions",
     "code": "asection sectiona atitle titlea anumber numbera",
     "result": [
-      {"type": "T_IDENTIFIER", "content": "asection"},
-      {"type": "T_IDENTIFIER", "content": "sectiona"},
-      {"type": "T_IDENTIFIER", "content": "atitle"},
-      {"type": "T_IDENTIFIER", "content": "titlea"},
-      {"type": "T_IDENTIFIER", "content": "anumber"},
-      {"type": "T_IDENTIFIER", "content": "numbera"}
+      {"token_type": "T_IDENTIFIER", "content": "asection"},
+      {"token_type": "T_IDENTIFIER", "content": "sectiona"},
+      {"token_type": "T_IDENTIFIER", "content": "atitle"},
+      {"token_type": "T_IDENTIFIER", "content": "titlea"},
+      {"token_type": "T_IDENTIFIER", "content": "anumber"},
+      {"token_type": "T_IDENTIFIER", "content": "numbera"}
     ]
   }
 ] 

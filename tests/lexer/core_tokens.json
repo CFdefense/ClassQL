@@ -4,7 +4,7 @@
     "description": "Test basic section token recognition",
     "code": "section",
     "result": [
-      {"type": "T_SECTION", "content": "section"}
+      {"token_type": "T_SECTION", "content": "section"}
     ]
   },
   {
@@ -12,7 +12,7 @@
     "description": "Test basic title token recognition",
     "code": "title",
     "result": [
-      {"type": "T_TITLE", "content": "title"}
+      {"token_type": "T_TITLE", "content": "title"}
     ]
   },
   {
@@ -20,7 +20,7 @@
     "description": "Test basic number token recognition",
     "code": "number",
     "result": [
-      {"type": "T_NUMBER", "content": "number"}
+      {"token_type": "T_NUMBER", "content": "number"}
     ]
   },
   {
@@ -28,7 +28,7 @@
     "description": "Test basic description token recognition",
     "code": "description",
     "result": [
-      {"type": "T_DESCRIPTION", "content": "description"}
+      {"token_type": "T_DESCRIPTION", "content": "description"}
     ]
   },
   {
@@ -36,7 +36,7 @@
     "description": "Test basic enrollment token recognition",
     "code": "enrollment",
     "result": [
-      {"type": "T_ENROLLMENT", "content": "enrollment"}
+      {"token_type": "T_ENROLLMENT", "content": "enrollment"}
     ]
   },
   {
@@ -44,7 +44,7 @@
     "description": "Test basic cap token recognition",
     "code": "cap",
     "result": [
-      {"type": "T_CAP", "content": "cap"}
+      {"token_type": "T_CAP", "content": "cap"}
     ]
   },
   {
@@ -52,7 +52,7 @@
     "description": "Test basic instruction token recognition",
     "code": "instruction",
     "result": [
-      {"type": "T_INSTRUCTION", "content": "instruction"}
+      {"token_type": "T_INSTRUCTION", "content": "instruction"}
     ]
   },
   {
@@ -60,7 +60,7 @@
     "description": "Test basic meeting token recognition",
     "code": "meeting",
     "result": [
-      {"type": "T_MEETING", "content": "meeting"}
+      {"token_type": "T_MEETING", "content": "meeting"}
     ]
   },
   {
@@ -68,7 +68,7 @@
     "description": "Test basic type token recognition",
     "code": "type",
     "result": [
-      {"type": "T_TYPE", "content": "type"}
+      {"token_type": "T_TYPE", "content": "type"}
     ]
   },
   {
@@ -76,7 +76,7 @@
     "description": "Test basic full token recognition",
     "code": "full",
     "result": [
-      {"type": "T_FULL", "content": "full"}
+      {"token_type": "T_FULL", "content": "full"}
     ]
   },
   {
@@ -84,10 +84,10 @@
     "description": "Test multiple core tokens in sequence",
     "code": "section title number description",
     "result": [
-      {"type": "T_SECTION", "content": "section"},
-      {"type": "T_TITLE", "content": "title"},
-      {"type": "T_NUMBER", "content": "number"},
-      {"type": "T_DESCRIPTION", "content": "description"}
+      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_TITLE", "content": "title"},
+      {"token_type": "T_NUMBER", "content": "number"},
+      {"token_type": "T_DESCRIPTION", "content": "description"}
     ]
   },
   {
@@ -95,13 +95,13 @@
     "description": "Test core tokens with comparison operators",
     "code": "section = \"CS101\" and enrollment > 50",
     "result": [
-      {"type": "T_SECTION", "content": "section"},
-      {"type": "T_EQUALS", "content": "="},
-      {"type": "T_STRING", "content": "\"CS101\""},
-      {"type": "T_AND", "content": "and"},
-      {"type": "T_ENROLLMENT", "content": "enrollment"},
-      {"type": "T_GREATERTHAN", "content": ">"},
-      {"type": "T_INTEGER", "content": "50"}
+      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_EQUALS", "content": "="},
+      {"token_type": "T_STRING", "content": "\"CS101\""},
+      {"token_type": "T_AND", "content": "and"},
+      {"token_type": "T_ENROLLMENT", "content": "enrollment"},
+      {"token_type": "T_GREATERTHAN", "content": ">"},
+      {"token_type": "T_INTEGER", "content": "50"}
     ]
   },
   {
@@ -109,13 +109,13 @@
     "description": "Test core tokens with contains operator",
     "code": "title contains \"Introduction\" or description contains \"Computer Science\"",
     "result": [
-      {"type": "T_TITLE", "content": "title"},
-      {"type": "T_CONTAINS", "content": "contains"},
-      {"type": "T_STRING", "content": "\"Introduction\""},
-      {"type": "T_OR", "content": "or"},
-      {"type": "T_DESCRIPTION", "content": "description"},
-      {"type": "T_CONTAINS", "content": "contains"},
-      {"type": "T_STRING", "content": "\"Computer Science\""}
+      {"token_type": "T_TITLE", "content": "title"},
+      {"token_type": "T_CONTAINS", "content": "contains"},
+      {"token_type": "T_STRING", "content": "\"Introduction\""},
+      {"token_type": "T_OR", "content": "or"},
+      {"token_type": "T_DESCRIPTION", "content": "description"},
+      {"token_type": "T_CONTAINS", "content": "contains"},
+      {"token_type": "T_STRING", "content": "\"Computer Science\""}
     ]
   },
   {
@@ -123,26 +123,26 @@
     "description": "Test complex query with multiple core tokens and operators",
     "code": "(section = \"CS101\" and enrollment < 100) or (title contains \"Advanced\" and credit hours >= 3)",
     "result": [
-      {"type": "T_LEFTPAREN", "content": "("},
-      {"type": "T_SECTION", "content": "section"},
-      {"type": "T_EQUALS", "content": "="},
-      {"type": "T_STRING", "content": "\"CS101\""},
-      {"type": "T_AND", "content": "and"},
-      {"type": "T_ENROLLMENT", "content": "enrollment"},
-      {"type": "T_LESSTHAN", "content": "<"},
-      {"type": "T_INTEGER", "content": "100"},
-      {"type": "T_RIGHTPAREN", "content": ")"},
-      {"type": "T_OR", "content": "or"},
-      {"type": "T_LEFTPAREN", "content": "("},
-      {"type": "T_TITLE", "content": "title"},
-      {"type": "T_CONTAINS", "content": "contains"},
-      {"type": "T_STRING", "content": "\"Advanced\""},
-      {"type": "T_AND", "content": "and"},
-      {"type": "T_CREDIT", "content": "credit"},
-      {"type": "T_HOURS", "content": "hours"},
-      {"type": "T_GREATEREQUAL", "content": ">="},
-      {"type": "T_INTEGER", "content": "3"},
-      {"type": "T_RIGHTPAREN", "content": ")"}
+      {"token_type": "T_LEFTPAREN", "content": "("},
+      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_EQUALS", "content": "="},
+      {"token_type": "T_STRING", "content": "\"CS101\""},
+      {"token_type": "T_AND", "content": "and"},
+      {"token_type": "T_ENROLLMENT", "content": "enrollment"},
+      {"token_type": "T_LESSTHAN", "content": "<"},
+      {"token_type": "T_INTEGER", "content": "100"},
+      {"token_type": "T_RIGHTPAREN", "content": ")"},
+      {"token_type": "T_OR", "content": "or"},
+      {"token_type": "T_LEFTPAREN", "content": "("},
+      {"token_type": "T_TITLE", "content": "title"},
+      {"token_type": "T_CONTAINS", "content": "contains"},
+      {"token_type": "T_STRING", "content": "\"Advanced\""},
+      {"token_type": "T_AND", "content": "and"},
+      {"token_type": "T_CREDIT", "content": "credit"},
+      {"token_type": "T_HOURS", "content": "hours"},
+      {"token_type": "T_GREATEREQUAL", "content": ">="},
+      {"token_type": "T_INTEGER", "content": "3"},
+      {"token_type": "T_RIGHTPAREN", "content": ")"}
     ]
   },
   {
@@ -150,8 +150,8 @@
     "description": "Test compound meeting type keyword recognition",
     "code": "meeting type",
     "result": [
-      {"type": "T_MEETING", "content": "meeting"},
-      {"type": "T_TYPE", "content": "type"}
+      {"token_type": "T_MEETING", "content": "meeting"},
+      {"token_type": "T_TYPE", "content": "type"}
     ]
   }
 ] 

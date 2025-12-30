@@ -4,9 +4,9 @@
         "description": "Test quoted string literals",
         "code": "\"Computer Science\" \"MATH 101\" \"Dr. Smith\"",
         "result": [
-            {"type": "T_STRING", "content": "\"Computer Science\""},
-            {"type": "T_STRING", "content": "\"MATH 101\""},
-            {"type": "T_STRING", "content": "\"Dr. Smith\""}
+            {"token_type": "T_STRING", "content": "\"Computer Science\""},
+            {"token_type": "T_STRING", "content": "\"MATH 101\""},
+            {"token_type": "T_STRING", "content": "\"Dr. Smith\""}
         ]
     },
     {
@@ -14,10 +14,10 @@
         "description": "Test unquoted alphanumeric identifiers",
         "code": "CS101 MATH_200 course123 prof_smith",
         "result": [
-            {"type": "T_IDENTIFIER", "content": "CS101"},
-            {"type": "T_IDENTIFIER", "content": "MATH_200"},
-            {"type": "T_IDENTIFIER", "content": "course123"},
-            {"type": "T_IDENTIFIER", "content": "prof_smith"}
+            {"token_type": "T_IDENTIFIER", "content": "CS101"},
+            {"token_type": "T_IDENTIFIER", "content": "MATH_200"},
+            {"token_type": "T_IDENTIFIER", "content": "course123"},
+            {"token_type": "T_IDENTIFIER", "content": "prof_smith"}
         ]
     },
     {
@@ -25,11 +25,11 @@
         "description": "Test integer literals",
         "code": "0 3 15 101 2024",
         "result": [
-            {"type": "T_INTEGER", "content": "0"},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_INTEGER", "content": "15"},
-            {"type": "T_INTEGER", "content": "101"},
-            {"type": "T_INTEGER", "content": "2024"}
+            {"token_type": "T_INTEGER", "content": "0"},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_INTEGER", "content": "15"},
+            {"token_type": "T_INTEGER", "content": "101"},
+            {"token_type": "T_INTEGER", "content": "2024"}
         ]
     },
     {
@@ -37,11 +37,11 @@
         "description": "Test time format patterns from grammar",
         "code": "9:00am 2:30pm 14:00 8am 11pm",
         "result": [
-            {"type": "T_TIME", "content": "9:00am"},
-            {"type": "T_TIME", "content": "2:30pm"},
-            {"type": "T_TIME", "content": "14:00"},
-            {"type": "T_TIME", "content": "8am"},
-            {"type": "T_TIME", "content": "11pm"}
+            {"token_type": "T_TIME", "content": "9:00am"},
+            {"token_type": "T_TIME", "content": "2:30pm"},
+            {"token_type": "T_TIME", "content": "14:00"},
+            {"token_type": "T_TIME", "content": "8am"},
+            {"token_type": "T_TIME", "content": "11pm"}
         ]
     },
     {
@@ -49,13 +49,13 @@
         "description": "Test mixed literal types in one expression",
         "code": "course = \"CS101\" credit hours > 3",
         "result": [
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS101\""},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_INTEGER", "content": "3"}
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS101\""},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_INTEGER", "content": "3"}
         ]
     },
     {
@@ -63,18 +63,18 @@
         "description": "Test parentheses grouping with various literal types",
         "code": "(course = \"CS101\") and (credit hours > 3)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS101\""},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS101\""},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -82,33 +82,33 @@
         "description": "Test deeply nested literals with parentheses grouping",
         "code": "((prof = \"Dr. Smith\") and (course = \"CS101\")) or ((subject = \"MATH\") and (credit = 3))",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"Dr. Smith\""},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS101\""},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"MATH\""},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"Dr. Smith\""},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS101\""},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"MATH\""},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     }
 ] 

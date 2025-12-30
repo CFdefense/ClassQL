@@ -4,9 +4,9 @@
         "description": "Test string that never closes",
         "code": "title = \"Computer Science",
         "result": [
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"Computer Science"}
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"Computer Science"}
         ]
     },
     {
@@ -14,7 +14,7 @@
         "description": "Test just empty quotes",
         "code": "\"\"",
         "result": [
-            {"type": "T_STRING", "content": "\"\""}
+            {"token_type": "T_STRING", "content": "\"\""}
         ]
     },
     {
@@ -22,9 +22,9 @@
         "description": "Test malformed time patterns",
         "code": "25:70 99pm 8:99am",
         "result": [
-            {"type": "T_TIME", "content": "25:70"},
-            {"type": "T_TIME", "content": "99pm"},
-            {"type": "T_TIME", "content": "8:99am"}
+            {"token_type": "T_TIME", "content": "25:70"},
+            {"token_type": "T_TIME", "content": "99pm"},
+            {"token_type": "T_TIME", "content": "8:99am"}
         ]
     },
     {
@@ -40,10 +40,10 @@
         "description": "Test mixing quoted and unquoted content",
         "code": "title\"Computer Science\"and course",
         "result": [
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_STRING", "content": "\"Computer Science\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_COURSE", "content": "course"}
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_STRING", "content": "\"Computer Science\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_COURSE", "content": "course"}
         ]
     },
     {
@@ -51,8 +51,8 @@
         "description": "Test numbers embedded in weird contexts",
         "code": "123subject456prof789and000",
         "result": [
-            {"type": "T_INTEGER", "content": "123"},
-            {"type": "T_IDENTIFIER", "content": "subject456prof789and000"}
+            {"token_type": "T_INTEGER", "content": "123"},
+            {"token_type": "T_IDENTIFIER", "content": "subject456prof789and000"}
         ]
     },
     {
@@ -60,12 +60,12 @@
         "description": "Test mixed case versions of keywords",
         "code": "SUBJECT Prof CouRSe AnD Or NoT",
         "result": [
-            {"type": "T_SUBJECT", "content": "SUBJECT"},
-            {"type": "T_PROF", "content": "Prof"},
-            {"type": "T_COURSE", "content": "CouRSe"},
-            {"type": "T_AND", "content": "AnD"},
-            {"type": "T_OR", "content": "Or"},
-            {"type": "T_NOT", "content": "NoT"}
+            {"token_type": "T_SUBJECT", "content": "SUBJECT"},
+            {"token_type": "T_PROF", "content": "Prof"},
+            {"token_type": "T_COURSE", "content": "CouRSe"},
+            {"token_type": "T_AND", "content": "AnD"},
+            {"token_type": "T_OR", "content": "Or"},
+            {"token_type": "T_NOT", "content": "NoT"}
         ]
     },
     {
@@ -73,7 +73,7 @@
         "description": "Test very long identifier",
         "code": "thisissomeridiculouslylongidentifierthatgoesforeverandeverandever123",
         "result": [
-            {"type": "T_IDENTIFIER", "content": "thisissomeridiculouslylongidentifierthatgoesforeverandeverandever123"}
+            {"token_type": "T_IDENTIFIER", "content": "thisissomeridiculouslylongidentifierthatgoesforeverandeverandever123"}
         ]
     },
     {
@@ -81,14 +81,14 @@
         "description": "Test malformed parentheses expressions",
         "code": "(prof is Alan and course contains CS",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_IDENTIFIER", "content": "CS"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_IDENTIFIER", "content": "CS"}
         ]
     },
     {
@@ -96,15 +96,15 @@
         "description": "Test expressions with unmatched right parentheses",
         "code": "prof is Alan) and course contains CS)",
         "result": [
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     }
 ] 

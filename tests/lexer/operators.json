@@ -4,12 +4,12 @@
         "description": "Test basic comparison operators",
         "code": "= != < > <= >=",
         "result": [
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_NOTEQUALS", "content": "!="},
-            {"type": "T_LESSTHAN", "content": "<"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_LESSEQUAL", "content": "<="},
-            {"type": "T_GREATEREQUAL", "content": ">="}
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_NOTEQUALS", "content": "!="},
+            {"token_type": "T_LESSTHAN", "content": "<"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_LESSEQUAL", "content": "<="},
+            {"token_type": "T_GREATEREQUAL", "content": ">="}
         ]
     },
     {
@@ -17,10 +17,10 @@
         "description": "Test condition operators from grammar",
         "code": "contains has is equals",
         "result": [
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_HAS", "content": "has"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_EQUALSWORD", "content": "equals"}
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_HAS", "content": "has"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_EQUALSWORD", "content": "equals"}
         ]
     },
     {
@@ -28,15 +28,15 @@
         "description": "Test multi-word condition operators",
         "code": "starts with ends with not equals does not equal",
         "result": [
-            {"type": "T_STARTS", "content": "starts"},
-            {"type": "T_WITH", "content": "with"},
-            {"type": "T_ENDS", "content": "ends"},
-            {"type": "T_WITH", "content": "with"},
-            {"type": "T_NOT", "content": "not"},
-            {"type": "T_EQUALSWORD", "content": "equals"},
-            {"type": "T_DOES", "content": "does"},
-            {"type": "T_NOT", "content": "not"},
-            {"type": "T_EQUAL", "content": "equal"}
+            {"token_type": "T_STARTS", "content": "starts"},
+            {"token_type": "T_WITH", "content": "with"},
+            {"token_type": "T_ENDS", "content": "ends"},
+            {"token_type": "T_WITH", "content": "with"},
+            {"token_type": "T_NOT", "content": "not"},
+            {"token_type": "T_EQUALSWORD", "content": "equals"},
+            {"token_type": "T_DOES", "content": "does"},
+            {"token_type": "T_NOT", "content": "not"},
+            {"token_type": "T_EQUAL", "content": "equal"}
         ]
     },
     {
@@ -44,18 +44,18 @@
         "description": "Test binary operators for numerical comparisons",
         "code": "less than greater than at least at most more than fewer than",
         "result": [
-            {"type": "T_LESS", "content": "less"},
-            {"type": "T_THAN", "content": "than"},
-            {"type": "T_GREATER", "content": "greater"},
-            {"type": "T_THAN", "content": "than"},
-            {"type": "T_AT", "content": "at"},
-            {"type": "T_LEAST", "content": "least"},
-            {"type": "T_AT", "content": "at"},
-            {"type": "T_MOST", "content": "most"},
-            {"type": "T_MORE", "content": "more"},
-            {"type": "T_THAN", "content": "than"},
-            {"type": "T_FEWER", "content": "fewer"},
-            {"type": "T_THAN", "content": "than"}
+            {"token_type": "T_LESS", "content": "less"},
+            {"token_type": "T_THAN", "content": "than"},
+            {"token_type": "T_GREATER", "content": "greater"},
+            {"token_type": "T_THAN", "content": "than"},
+            {"token_type": "T_AT", "content": "at"},
+            {"token_type": "T_LEAST", "content": "least"},
+            {"token_type": "T_AT", "content": "at"},
+            {"token_type": "T_MOST", "content": "most"},
+            {"token_type": "T_MORE", "content": "more"},
+            {"token_type": "T_THAN", "content": "than"},
+            {"token_type": "T_FEWER", "content": "fewer"},
+            {"token_type": "T_THAN", "content": "than"}
         ]
     },
     {
@@ -63,9 +63,9 @@
         "description": "Test logical operators",
         "code": "or and not",
         "result": [
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_NOT", "content": "not"}
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_NOT", "content": "not"}
         ]
     },
     {
@@ -73,8 +73,8 @@
         "description": "Test parentheses operators for grouping",
         "code": "( )",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     }
 ] 

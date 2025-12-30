@@ -52,9 +52,9 @@
         "description": "Test invalid operator-like sequences",
         "code": "===",
         "result": [
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_EQUALS", "content": "="}
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_EQUALS", "content": "="}
         ]
     },
     {

@@ -4,13 +4,13 @@
         "description": "Test subject and course number combination",
         "code": "subject = \"CS\" and course = \"101\"",
         "result": [
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"101\""}
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"101\""}
         ]
     },
     {
@@ -18,9 +18,9 @@
         "description": "Test professor name search",
         "code": "prof contains \"Smith\"",
         "result": [
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Smith\""}
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Smith\""}
         ]
     },
     {
@@ -28,15 +28,15 @@
         "description": "Test credit hours range query",
         "code": "credit hours >= 3 and credit hours <= 6",
         "result": [
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_LESSEQUAL", "content": "<="},
-            {"type": "T_INTEGER", "content": "6"}
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_LESSEQUAL", "content": "<="},
+            {"token_type": "T_INTEGER", "content": "6"}
         ]
     },
     {
@@ -44,9 +44,9 @@
         "description": "Test course title search",
         "code": "title contains \"Introduction\"",
         "result": [
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Introduction\""}
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Introduction\""}
         ]
     },
     {
@@ -54,13 +54,13 @@
         "description": "Test day-based schedule filtering",
         "code": "monday = true and friday = false",
         "result": [
-            {"type": "T_MONDAY", "content": "monday"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "true"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_FRIDAY", "content": "friday"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "false"}
+            {"token_type": "T_MONDAY", "content": "monday"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "true"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_FRIDAY", "content": "friday"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "false"}
         ]
     },
     {
@@ -68,13 +68,13 @@
         "description": "Test campus and instruction method filtering",
         "code": "campus = \"Main\" and method contains \"Online\"",
         "result": [
-            {"type": "T_CAMPUS", "content": "campus"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"Main\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_METHOD", "content": "method"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Online\""}
+            {"token_type": "T_CAMPUS", "content": "campus"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"Main\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_METHOD", "content": "method"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Online\""}
         ]
     },
     {
@@ -82,21 +82,21 @@
         "description": "Test complex boolean expression with parentheses for precedence control",
         "code": "(prof is Alan or prof is Bob) and (course contains CS)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Bob"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Bob"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -104,33 +104,33 @@
         "description": "Test deeply nested parentheses for complex logical precedence",
         "code": "((subject is Math) and (credit >= 3)) or ((subject is CS) and (credit >= 4))",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Math"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "4"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Math"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "4"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -138,7 +138,7 @@
         "description": "Test basic section token recognition",
         "code": "section",
         "result": [
-            {"type": "T_SECTION", "content": "section"}
+            {"token_type": "T_SECTION", "content": "section"}
         ]
     },
     {
@@ -146,7 +146,7 @@
         "description": "Test basic title token recognition",
         "code": "title",
         "result": [
-            {"type": "T_TITLE", "content": "title"}
+            {"token_type": "T_TITLE", "content": "title"}
         ]
     },
     {
@@ -154,7 +154,7 @@
         "description": "Test basic number token recognition",
         "code": "number",
         "result": [
-            {"type": "T_NUMBER", "content": "number"}
+            {"token_type": "T_NUMBER", "content": "number"}
         ]
     },
     {
@@ -162,7 +162,7 @@
         "description": "Test basic description token recognition",
         "code": "description",
         "result": [
-            {"type": "T_DESCRIPTION", "content": "description"}
+            {"token_type": "T_DESCRIPTION", "content": "description"}
         ]
     },
     {
@@ -170,7 +170,7 @@
         "description": "Test basic enrollment token recognition",
         "code": "enrollment",
         "result": [
-            {"type": "T_ENROLLMENT", "content": "enrollment"}
+            {"token_type": "T_ENROLLMENT", "content": "enrollment"}
         ]
     },
     {
@@ -178,7 +178,7 @@
         "description": "Test basic cap token recognition",
         "code": "cap",
         "result": [
-            {"type": "T_CAP", "content": "cap"}
+            {"token_type": "T_CAP", "content": "cap"}
         ]
     },
     {
@@ -186,7 +186,7 @@
         "description": "Test basic instruction token recognition",
         "code": "instruction",
         "result": [
-            {"type": "T_INSTRUCTION", "content": "instruction"}
+            {"token_type": "T_INSTRUCTION", "content": "instruction"}
         ]
     },
     {
@@ -194,7 +194,7 @@
         "description": "Test basic meeting token recognition",
         "code": "meeting",
         "result": [
-            {"type": "T_MEETING", "content": "meeting"}
+            {"token_type": "T_MEETING", "content": "meeting"}
         ]
     },
     {
@@ -202,7 +202,7 @@
         "description": "Test basic type token recognition",
         "code": "type",
         "result": [
-            {"type": "T_TYPE", "content": "type"}
+            {"token_type": "T_TYPE", "content": "type"}
         ]
     },
     {
@@ -210,7 +210,7 @@
         "description": "Test basic full token recognition",
         "code": "full",
         "result": [
-            {"type": "T_FULL", "content": "full"}
+            {"token_type": "T_FULL", "content": "full"}
         ]
     },
     {
@@ -218,10 +218,10 @@
         "description": "Test multiple core tokens in sequence",
         "code": "section title number description",
         "result": [
-            {"type": "T_SECTION", "content": "section"},
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_NUMBER", "content": "number"},
-            {"type": "T_DESCRIPTION", "content": "description"}
+            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_NUMBER", "content": "number"},
+            {"token_type": "T_DESCRIPTION", "content": "description"}
         ]
     },
     {
@@ -229,13 +229,13 @@
         "description": "Test core tokens with comparison operators",
         "code": "section = \"CS101\" and enrollment > 50",
         "result": [
-            {"type": "T_SECTION", "content": "section"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS101\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_ENROLLMENT", "content": "enrollment"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_INTEGER", "content": "50"}
+            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS101\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_ENROLLMENT", "content": "enrollment"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_INTEGER", "content": "50"}
         ]
     },
     {
@@ -243,13 +243,13 @@
         "description": "Test core tokens with contains operator",
         "code": "title contains \"Introduction\" or description contains \"Computer Science\"",
         "result": [
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Introduction\""},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_DESCRIPTION", "content": "description"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Computer Science\""}
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Introduction\""},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_DESCRIPTION", "content": "description"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Computer Science\""}
         ]
     },
     {
@@ -257,26 +257,26 @@
         "description": "Test complex query with multiple core tokens and operators",
         "code": "(section = \"CS101\" and enrollment < 100) or (title contains \"Advanced\" and credit hours >= 3)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_SECTION", "content": "section"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS101\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_ENROLLMENT", "content": "enrollment"},
-            {"type": "T_LESSTHAN", "content": "<"},
-            {"type": "T_INTEGER", "content": "100"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Advanced\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS101\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_ENROLLMENT", "content": "enrollment"},
+            {"token_type": "T_LESSTHAN", "content": "<"},
+            {"token_type": "T_INTEGER", "content": "100"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Advanced\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -284,9 +284,9 @@
         "description": "Test core tokens with various whitespace patterns",
         "code": "  section  \t  title  \n  number  ",
         "result": [
-            {"type": "T_SECTION", "content": "section"},
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_NUMBER", "content": "number"}
+            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_NUMBER", "content": "number"}
         ]
     },
     {
@@ -294,10 +294,10 @@
         "description": "Test core tokens are case sensitive",
         "code": "SECTION Title NUMBER Description",
         "result": [
-            {"type": "T_SECTION", "content": "SECTION"},
-            {"type": "T_TITLE", "content": "Title"},
-            {"type": "T_NUMBER", "content": "NUMBER"},
-            {"type": "T_DESCRIPTION", "content": "Description"}
+            {"token_type": "T_SECTION", "content": "SECTION"},
+            {"token_type": "T_TITLE", "content": "Title"},
+            {"token_type": "T_NUMBER", "content": "NUMBER"},
+            {"token_type": "T_DESCRIPTION", "content": "Description"}
         ]
     },
     {
@@ -305,10 +305,10 @@
         "description": "Test that partial matches don't interfere with core tokens",
         "code": "sectional sectioned sectioning section",
         "result": [
-            {"type": "T_IDENTIFIER", "content": "sectional"},
-            {"type": "T_IDENTIFIER", "content": "sectioned"},
-            {"type": "T_IDENTIFIER", "content": "sectioning"},
-            {"type": "T_SECTION", "content": "section"}
+            {"token_type": "T_IDENTIFIER", "content": "sectional"},
+            {"token_type": "T_IDENTIFIER", "content": "sectioned"},
+            {"token_type": "T_IDENTIFIER", "content": "sectioning"},
+            {"token_type": "T_SECTION", "content": "section"}
         ]
     },
     {
@@ -316,9 +316,9 @@
         "description": "Test core tokens followed by numbers",
         "code": "section123 title456 number789",
         "result": [
-            {"type": "T_IDENTIFIER", "content": "section123"},
-            {"type": "T_IDENTIFIER", "content": "title456"},
-            {"type": "T_IDENTIFIER", "content": "number789"}
+            {"token_type": "T_IDENTIFIER", "content": "section123"},
+            {"token_type": "T_IDENTIFIER", "content": "title456"},
+            {"token_type": "T_IDENTIFIER", "content": "number789"}
         ]
     },
     {
@@ -326,9 +326,9 @@
         "description": "Test core tokens with underscores",
         "code": "section_token title_token number_token",
         "result": [
-            {"type": "T_IDENTIFIER", "content": "section_token"},
-            {"type": "T_IDENTIFIER", "content": "title_token"},
-            {"type": "T_IDENTIFIER", "content": "number_token"}
+            {"token_type": "T_IDENTIFIER", "content": "section_token"},
+            {"token_type": "T_IDENTIFIER", "content": "title_token"},
+            {"token_type": "T_IDENTIFIER", "content": "number_token"}
         ]
     },
     {
@@ -336,9 +336,9 @@
         "description": "Test core tokens in quoted strings",
         "code": "\"section\" \"title\" \"number\"",
         "result": [
-            {"type": "T_STRING", "content": "\"section\""},
-            {"type": "T_STRING", "content": "\"title\""},
-            {"type": "T_STRING", "content": "\"number\""}
+            {"token_type": "T_STRING", "content": "\"section\""},
+            {"token_type": "T_STRING", "content": "\"title\""},
+            {"token_type": "T_STRING", "content": "\"number\""}
         ]
     },
     {
@@ -346,15 +346,15 @@
         "description": "Test core tokens with parentheses",
         "code": "(section) (title) (number)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_SECTION", "content": "section"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_NUMBER", "content": "number"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_NUMBER", "content": "number"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -362,15 +362,15 @@
         "description": "Test core tokens with comparison operators",
         "code": "section = \"CS101\" title != \"Advanced\" number > 100",
         "result": [
-            {"type": "T_SECTION", "content": "section"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS101\""},
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_NOTEQUALS", "content": "!="},
-            {"type": "T_STRING", "content": "\"Advanced\""},
-            {"type": "T_NUMBER", "content": "number"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_INTEGER", "content": "100"}
+            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS101\""},
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_NOTEQUALS", "content": "!="},
+            {"token_type": "T_STRING", "content": "\"Advanced\""},
+            {"token_type": "T_NUMBER", "content": "number"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_INTEGER", "content": "100"}
         ]
     },
     {
@@ -378,12 +378,12 @@
         "description": "Test core tokens with contains operator",
         "code": "section contains \"101\" title contains \"Introduction\"",
         "result": [
-            {"type": "T_SECTION", "content": "section"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"101\""},
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Introduction\""}
+            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"101\""},
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Introduction\""}
         ]
     },
     {
@@ -391,12 +391,12 @@
         "description": "Test core tokens at boundary conditions",
         "code": "asection sectiona atitle titlea anumber numbera",
         "result": [
-            {"type": "T_IDENTIFIER", "content": "asection"},
-            {"type": "T_IDENTIFIER", "content": "sectiona"},
-            {"type": "T_IDENTIFIER", "content": "atitle"},
-            {"type": "T_IDENTIFIER", "content": "titlea"},
-            {"type": "T_IDENTIFIER", "content": "anumber"},
-            {"type": "T_IDENTIFIER", "content": "numbera"}
+            {"token_type": "T_IDENTIFIER", "content": "asection"},
+            {"token_type": "T_IDENTIFIER", "content": "sectiona"},
+            {"token_type": "T_IDENTIFIER", "content": "atitle"},
+            {"token_type": "T_IDENTIFIER", "content": "titlea"},
+            {"token_type": "T_IDENTIFIER", "content": "anumber"},
+            {"token_type": "T_IDENTIFIER", "content": "numbera"}
         ]
     },
     {
@@ -404,64 +404,64 @@
         "description": "Test very long query with many core tokens",
         "code": "section = \"CS101\" and title contains \"Introduction\" and number = \"101\" and description contains \"Computer Science\" and enrollment < 100 and cap > 50 and instruction is \"in-person\" and meeting type is \"lecture\" and campus is \"main\" and credit hours >= 3 and prereqs contains \"MATH101\" and corereqs contains \"CS100\" and time is \"MWF\" and prof email contains \"@university.edu\"",
         "result": [
-            {"type": "T_SECTION", "content": "section"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS101\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Introduction\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_NUMBER", "content": "number"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"101\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_DESCRIPTION", "content": "description"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Computer Science\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_ENROLLMENT", "content": "enrollment"},
-            {"type": "T_LESSTHAN", "content": "<"},
-            {"type": "T_INTEGER", "content": "100"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_CAP", "content": "cap"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_INTEGER", "content": "50"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_INSTRUCTION", "content": "instruction"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_STRING", "content": "\"in-person\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_MEETING", "content": "meeting"},
-            {"type": "T_TYPE", "content": "type"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_STRING", "content": "\"lecture\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_CAMPUS", "content": "campus"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_STRING", "content": "\"main\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_PREREQS", "content": "prereqs"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"MATH101\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_COREREQS", "content": "corereqs"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"CS100\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_IDENTIFIER", "content": "time"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_STRING", "content": "\"MWF\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_EMAIL", "content": "email"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"@university.edu\""}
+            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS101\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Introduction\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_NUMBER", "content": "number"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"101\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_DESCRIPTION", "content": "description"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Computer Science\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_ENROLLMENT", "content": "enrollment"},
+            {"token_type": "T_LESSTHAN", "content": "<"},
+            {"token_type": "T_INTEGER", "content": "100"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_CAP", "content": "cap"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_INTEGER", "content": "50"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_INSTRUCTION", "content": "instruction"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_STRING", "content": "\"in-person\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_MEETING", "content": "meeting"},
+            {"token_type": "T_TYPE", "content": "type"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_STRING", "content": "\"lecture\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_CAMPUS", "content": "campus"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_STRING", "content": "\"main\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_PREREQS", "content": "prereqs"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"MATH101\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_COREREQS", "content": "corereqs"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"CS100\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_IDENTIFIER", "content": "time"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_STRING", "content": "\"MWF\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_EMAIL", "content": "email"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"@university.edu\""}
         ]
     },
     {
@@ -469,58 +469,58 @@
         "description": "Test deeply nested parentheses with core tokens",
         "code": "((((section = \"CS101\" and (title contains \"Introduction\" or (number = \"101\" and description contains \"Computer Science\"))) and enrollment < 100) or (cap > 50 and instruction is \"in-person\")) and (meeting type is \"lecture\" or campus is \"main\"))",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_SECTION", "content": "section"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS101\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Introduction\""},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_NUMBER", "content": "number"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"101\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_DESCRIPTION", "content": "description"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Computer Science\""},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_ENROLLMENT", "content": "enrollment"},
-            {"type": "T_LESSTHAN", "content": "<"},
-            {"type": "T_INTEGER", "content": "100"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_CAP", "content": "cap"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_INTEGER", "content": "50"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_INSTRUCTION", "content": "instruction"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_STRING", "content": "\"in-person\""},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_MEETING", "content": "meeting"},
-            {"type": "T_TYPE", "content": "type"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_STRING", "content": "\"lecture\""},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_CAMPUS", "content": "campus"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_STRING", "content": "\"main\""},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS101\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Introduction\""},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_NUMBER", "content": "number"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"101\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_DESCRIPTION", "content": "description"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Computer Science\""},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_ENROLLMENT", "content": "enrollment"},
+            {"token_type": "T_LESSTHAN", "content": "<"},
+            {"token_type": "T_INTEGER", "content": "100"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_CAP", "content": "cap"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_INTEGER", "content": "50"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_INSTRUCTION", "content": "instruction"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_STRING", "content": "\"in-person\""},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_MEETING", "content": "meeting"},
+            {"token_type": "T_TYPE", "content": "type"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_STRING", "content": "\"lecture\""},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_CAMPUS", "content": "campus"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_STRING", "content": "\"main\""},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -528,64 +528,64 @@
         "description": "Test core tokens with mixed logical operators",
         "code": "section = \"CS101\" or title contains \"Introduction\" and number = \"101\" or description contains \"Computer Science\" and enrollment < 100 or cap > 50 and instruction is \"in-person\" or meeting type is \"lecture\" and campus is \"main\" or credit hours >= 3 and prereqs contains \"MATH101\" or corereqs contains \"CS100\" and time is \"MWF\" or prof email contains \"@university.edu\"",
         "result": [
-            {"type": "T_SECTION", "content": "section"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS101\""},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Introduction\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_NUMBER", "content": "number"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"101\""},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_DESCRIPTION", "content": "description"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Computer Science\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_ENROLLMENT", "content": "enrollment"},
-            {"type": "T_LESSTHAN", "content": "<"},
-            {"type": "T_INTEGER", "content": "100"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_CAP", "content": "cap"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_INTEGER", "content": "50"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_INSTRUCTION", "content": "instruction"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_STRING", "content": "\"in-person\""},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_MEETING", "content": "meeting"},
-            {"type": "T_TYPE", "content": "type"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_STRING", "content": "\"lecture\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_CAMPUS", "content": "campus"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_STRING", "content": "\"main\""},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_PREREQS", "content": "prereqs"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"MATH101\""},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_COREREQS", "content": "corereqs"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"CS100\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_IDENTIFIER", "content": "time"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_STRING", "content": "\"MWF\""},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_EMAIL", "content": "email"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"@university.edu\""}
+            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS101\""},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Introduction\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_NUMBER", "content": "number"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"101\""},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_DESCRIPTION", "content": "description"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Computer Science\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_ENROLLMENT", "content": "enrollment"},
+            {"token_type": "T_LESSTHAN", "content": "<"},
+            {"token_type": "T_INTEGER", "content": "100"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_CAP", "content": "cap"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_INTEGER", "content": "50"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_INSTRUCTION", "content": "instruction"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_STRING", "content": "\"in-person\""},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_MEETING", "content": "meeting"},
+            {"token_type": "T_TYPE", "content": "type"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_STRING", "content": "\"lecture\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_CAMPUS", "content": "campus"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_STRING", "content": "\"main\""},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_PREREQS", "content": "prereqs"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"MATH101\""},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_COREREQS", "content": "corereqs"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"CS100\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_IDENTIFIER", "content": "time"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_STRING", "content": "\"MWF\""},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_EMAIL", "content": "email"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"@university.edu\""}
         ]
     },
     {
@@ -593,53 +593,53 @@
         "description": "Test repeated core tokens in various contexts",
         "code": "section = \"CS101\" and section = \"CS102\" or title contains \"Introduction\" and title contains \"Advanced\" and number = \"101\" or number = \"201\" and description contains \"Computer Science\" or description contains \"Mathematics\" and enrollment < 100 or enrollment > 200 and cap > 50 or cap < 25",
         "result": [
-            {"type": "T_SECTION", "content": "section"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS101\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_SECTION", "content": "section"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS102\""},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Introduction\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Advanced\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_NUMBER", "content": "number"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"101\""},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_NUMBER", "content": "number"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"201\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_DESCRIPTION", "content": "description"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Computer Science\""},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_DESCRIPTION", "content": "description"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Mathematics\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_ENROLLMENT", "content": "enrollment"},
-            {"type": "T_LESSTHAN", "content": "<"},
-            {"type": "T_INTEGER", "content": "100"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_ENROLLMENT", "content": "enrollment"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_INTEGER", "content": "200"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_CAP", "content": "cap"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_INTEGER", "content": "50"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_CAP", "content": "cap"},
-            {"type": "T_LESSTHAN", "content": "<"},
-            {"type": "T_INTEGER", "content": "25"}
+            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS101\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS102\""},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Introduction\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Advanced\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_NUMBER", "content": "number"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"101\""},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_NUMBER", "content": "number"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"201\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_DESCRIPTION", "content": "description"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Computer Science\""},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_DESCRIPTION", "content": "description"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Mathematics\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_ENROLLMENT", "content": "enrollment"},
+            {"token_type": "T_LESSTHAN", "content": "<"},
+            {"token_type": "T_INTEGER", "content": "100"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_ENROLLMENT", "content": "enrollment"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_INTEGER", "content": "200"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_CAP", "content": "cap"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_INTEGER", "content": "50"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_CAP", "content": "cap"},
+            {"token_type": "T_LESSTHAN", "content": "<"},
+            {"token_type": "T_INTEGER", "content": "25"}
         ]
     }
 ] 

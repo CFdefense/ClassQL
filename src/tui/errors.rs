@@ -1,13 +1,62 @@
+/// src/tui/errors.rs
+///
+/// Errors for the TUI
+///
+/// Responsible for handling errors that occur in the TUI
+///
+/// Contains:
+/// --- ---
+/// TUIError -> TUI error enum
+/// AppError -> Application error enum
+/// SyntaxError -> Syntax error enum
+/// Other helper functions:
+///      --- ---
+///      extract_user_text -> Extract the user text from the token
+///      make_user_friendly_for_completion -> Make technical terms more user-friendly for completion
+///      make_user_friendly -> Make technical terms more user-friendly
+///      --- ---
+/// --- ---
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-impl Error for TUIError {}
-
+/// TUIError enum
+///
+/// TUIError types:
+/// --- ---
+/// TerminalError -> Terminal error
+/// --- ---
+///
+/// Implemented Traits:
+/// --- ---
+/// Debug -> Debug trait for TUIError
+/// Error -> Error trait for TUIError
+/// Display -> Display trait for TUIError
+/// --- ---
+///
 #[derive(Debug)]
 pub enum TUIError {
     TerminalError(String),
 }
 
+/// TUIError Error Trait Implementation
+///
+/// Implements the Error trait for TUIError
+///
+impl Error for TUIError {}
+
+/// TUIError Display Trait Implementation
+///
+/// Parameters:
+/// --- ---
+/// self -> The TUIError to display
+/// f -> The formatter to display the TUIError
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// std::fmt::Result -> The result of the display
+/// --- ---
+///
 impl Display for TUIError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -16,6 +65,22 @@ impl Display for TUIError {
     }
 }
 
+/// AppError enum
+///
+/// AppError types:
+/// --- ---
+/// Empty -> Empty error
+/// SyntaxError -> Syntax error
+/// UnrecognizedTokens -> Unrecognized tokens
+/// --- ---
+///
+/// Implemented Traits:
+/// --- ---
+/// Debug -> Debug trait for AppError
+/// PartialEq -> PartialEq trait for AppError
+/// Display -> Display trait for AppError
+/// --- ---
+///
 #[derive(Debug, PartialEq)]
 pub enum AppError {
     Empty,
@@ -23,6 +88,19 @@ pub enum AppError {
     UnrecognizedTokens(String, Vec<(usize, usize)>),
 }
 
+/// AppError Display Trait Implementation
+///
+/// Parameters:
+/// --- ---
+/// self -> The AppError to display
+/// f -> The formatter to display the AppError
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// std::fmt::Result -> The result of the display
+/// --- ---
+///
 impl Display for AppError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -33,6 +111,24 @@ impl Display for AppError {
     }
 }
 
+/// SyntaxError enum
+///
+/// SyntaxError types:
+/// --- ---
+/// MissingToken -> Missing token
+/// UnclosedParenthesis -> Unclosed parenthesis
+/// EmptyQuery -> Empty query
+/// ExpectedAfter -> Expected after
+/// InvalidContext -> Invalid context
+/// --- ---
+///
+/// Implemented Traits:
+/// --- ---
+/// Debug -> Debug trait for SyntaxError
+/// PartialEq -> PartialEq trait for SyntaxError
+/// Display -> Display trait for SyntaxError
+/// --- ---
+///
 #[derive(Debug, PartialEq, Clone)]
 pub enum SyntaxError {
     MissingToken(String),
@@ -50,6 +146,19 @@ pub enum SyntaxError {
     },
 }
 
+/// SyntaxError Display Trait Implementation
+///
+/// Parameters:
+/// --- ---
+/// self -> The SyntaxError to display
+/// f -> The formatter to display the SyntaxError
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// std::fmt::Result -> The result of the display
+/// --- ---
+///
 impl Display for SyntaxError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -68,7 +177,7 @@ impl Display for SyntaxError {
 
                 let user_friendly_after = make_user_friendly(after);
 
-                // Special case for start of query - use "Please start with" instead of "After..."
+                // special case for start of query - use "Please start with" instead of "After..."
                 if after == "start of query" {
                     if user_friendly_expected.len() == 1 {
                         write!(f, "Please start with: {}", user_friendly_expected[0])
@@ -125,26 +234,48 @@ impl Display for SyntaxError {
     }
 }
 
-// Helper function to extract the actual user text from technical token descriptions
+/// Helper function to extract the actual user text from technical token descriptions
+///
+/// Parameters:
+/// --- ---
+/// token -> The token to extract the user text from
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// String -> The user text from the token
+/// --- ---
+///
 fn extract_user_text(token: &str) -> String {
-    // Handle patterns like "T_IDENTIFIER ('man')" -> "man"
+    // handle patterns like "T_IDENTIFIER ('man')" -> "man"
     if let Some(start) = token.find("('") {
         if let Some(end) = token.rfind("')") {
             return token[start + 2..end].to_string();
         }
     }
 
-    // Handle patterns like "T_CONTAINS" -> "contains"
+    // handle patterns like "T_CONTAINS" -> "contains"
     if let Some(token_name) = token.strip_prefix("T_") {
-        // Extract the token name and convert to user-friendly format
+        // extract the token name and convert to user-friendly format
         return token_name.to_lowercase().replace("_", " ");
     }
 
-    // Otherwise return the token as-is
+    // otherwise return the token as-is
     token.to_string()
 }
 
-// Helper function to make technical terms more user-friendly for completion
+/// Helper function to make technical terms more user-friendly for completion
+///
+/// Parameters:
+/// --- ---
+/// term -> The term to make more user-friendly
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// String -> The user-friendly term
+/// --- ---
+///
 pub fn make_user_friendly_for_completion(term: &str) -> String {
     match term {
         "prof" => "professor".to_string(),
@@ -160,7 +291,18 @@ pub fn make_user_friendly_for_completion(term: &str) -> String {
     }
 }
 
-// Helper function to make technical terms more user-friendly
+/// Helper function to make technical terms more user-friendly
+///
+/// Parameters:
+/// --- ---
+/// term -> The term to make more user-friendly
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// String -> The user-friendly term
+/// --- ---
+///
 fn make_user_friendly(term: &str) -> String {
     match term {
         "entity keyword" => "search field".to_string(),

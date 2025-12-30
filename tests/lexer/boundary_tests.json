@@ -4,13 +4,13 @@
         "description": "Test shortest possible valid tokens",
         "code": "m f w = < > !",
         "result": [
-            {"type": "T_MONDAY", "content": "m"},
-            {"type": "T_FRIDAY", "content": "f"},
-            {"type": "T_WEDNESDAY", "content": "w"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_LESSTHAN", "content": "<"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_EXCLAMATION", "content": "!"}
+            {"token_type": "T_MONDAY", "content": "m"},
+            {"token_type": "T_FRIDAY", "content": "f"},
+            {"token_type": "T_WEDNESDAY", "content": "w"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_LESSTHAN", "content": "<"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_EXCLAMATION", "content": "!"}
         ]
     },
     {
@@ -18,9 +18,9 @@
         "description": "Test very large numbers",
         "code": "0 1234567890 999999999999999999",
         "result": [
-            {"type": "T_INTEGER", "content": "0"},
-            {"type": "T_INTEGER", "content": "1234567890"},
-            {"type": "T_INTEGER", "content": "999999999999999999"}
+            {"token_type": "T_INTEGER", "content": "0"},
+            {"token_type": "T_INTEGER", "content": "1234567890"},
+            {"token_type": "T_INTEGER", "content": "999999999999999999"}
         ]
     },
     {
@@ -28,15 +28,15 @@
         "description": "Test all comparison operators together",
         "code": "= != < > <= >= and or not",
         "result": [
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_NOTEQUALS", "content": "!="},
-            {"type": "T_LESSTHAN", "content": "<"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_LESSEQUAL", "content": "<="},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_NOT", "content": "not"}
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_NOTEQUALS", "content": "!="},
+            {"token_type": "T_LESSTHAN", "content": "<"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_LESSEQUAL", "content": "<="},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_NOT", "content": "not"}
         ]
     },
     {
@@ -44,13 +44,13 @@
         "description": "Test potential day abbreviation conflicts",
         "code": "m mo mon monday tu tue tuesday",
         "result": [
-            {"type": "T_MONDAY", "content": "m"},
-            {"type": "T_MONDAY", "content": "mo"},
-            {"type": "T_MONDAY", "content": "mon"},
-            {"type": "T_MONDAY", "content": "monday"},
-            {"type": "T_TUESDAY", "content": "tu"},
-            {"type": "T_TUESDAY", "content": "tue"},
-            {"type": "T_TUESDAY", "content": "tuesday"}
+            {"token_type": "T_MONDAY", "content": "m"},
+            {"token_type": "T_MONDAY", "content": "mo"},
+            {"token_type": "T_MONDAY", "content": "mon"},
+            {"token_type": "T_MONDAY", "content": "monday"},
+            {"token_type": "T_TUESDAY", "content": "tu"},
+            {"token_type": "T_TUESDAY", "content": "tue"},
+            {"token_type": "T_TUESDAY", "content": "tuesday"}
         ]
     },
     {
@@ -58,9 +58,9 @@
         "description": "Test shortest possible valid query",
         "code": "subject=\"CS\"",
         "result": [
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS\""}
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS\""}
         ]
     },
     {
@@ -68,22 +68,22 @@
         "description": "Test very complex nested query",
         "code": "subject=\"CS\"andcourse=\"101\"andcredit hours>=3andmon=trueor prof contains\"Smith\"",
         "result": [
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS\""},
-            {"type": "T_IDENTIFIER", "content": "andcourse"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"101\""},
-            {"type": "T_IDENTIFIER", "content": "andcredit"},
-            {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_IDENTIFIER", "content": "andmon"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "trueor"},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Smith\""}
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS\""},
+            {"token_type": "T_IDENTIFIER", "content": "andcourse"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"101\""},
+            {"token_type": "T_IDENTIFIER", "content": "andcredit"},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_IDENTIFIER", "content": "andmon"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "trueor"},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Smith\""}
         ]
     },
     {
@@ -91,9 +91,9 @@
         "description": "Test non-ASCII characters",
         "code": "subject=\"Résumé\"",
         "result": [
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"Résumé\""}
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"Résumé\""}
         ]
     },
     {
@@ -101,26 +101,26 @@
         "description": "Test same complex query with proper spacing", 
         "code": "subject = \"CS\" and course = \"101\" and credit hours >= 3 and mon = true or prof contains \"Smith\"",
         "result": [
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"101\""},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_MONDAY", "content": "mon"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "true"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Smith\""}
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"101\""},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_MONDAY", "content": "mon"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "true"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Smith\""}
         ]
     },
     {
@@ -128,17 +128,17 @@
         "description": "Test very deeply nested parentheses for boundary conditions",
         "code": "((((prof is Alan))))",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -146,17 +146,17 @@
         "description": "Test parentheses at the very beginning and end of expressions",
         "code": "(prof is Alan) and (course contains CS)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -164,34 +164,34 @@
         "description": "Test complex nested boolean logic with parentheses for precedence control",
         "code": "not ((prof is Alan) and (course contains CS)) or ((subject is Math) and (credit >= 3))",
         "result": [
-            {"type": "T_NOT", "content": "not"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_OR", "content": "or"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Math"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_NOT", "content": "not"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_OR", "content": "or"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Math"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     }
 ] 

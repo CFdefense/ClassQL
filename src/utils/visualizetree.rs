@@ -1,8 +1,34 @@
+/// src/utils/visualizetree.rs
+///
+/// Visualize the AST as a graph
+///
+/// Responsible for visualizing the AST as a graph
+///
+/// Contains:
+/// --- ---
+/// ast_to_dot -> Convert the AST to a DOT graph
+/// add_tree_nodes_recursive -> Recursively add TreeNodes and their children to the graph
+/// --- ---
+///
 use petgraph::dot::Dot;
 use petgraph::graph::DiGraph;
 use petgraph::stable_graph::NodeIndex;
 
-use crate::compiler::parser::{Ast, TreeNode};
+use crate::dsl::parser::{Ast, TreeNode};
+
+/// Convert the AST to a DOT graph
+///
+/// Parameters:
+/// --- ---
+/// input_string -> The input string to convert
+/// ast -> The AST to convert
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// String -> The DOT graph
+/// --- ---
+///
 pub fn ast_to_dot(input_string: String, ast: &Ast) -> String {
     let mut graph: DiGraph<String, ()> = DiGraph::new();
 
@@ -12,18 +38,32 @@ pub fn ast_to_dot(input_string: String, ast: &Ast) -> String {
         add_tree_nodes_recursive(input_string, &mut graph, ast_head_idx, head_node);
     }
 
-    // Generate DOT output
+    // generate DOT output
     format!("{:?}", Dot::new(&graph)).replace("label = \"()\"", "label = \"\"")
 }
 
-/// Recursive helper function to add TreeNodes and their children to the graph.
+/// Recursive helper function to add TreeNodes and their children to the graph
+///
+/// Parameters:
+/// --- ---
+/// input_string -> The input string to convert
+/// graph -> The graph to add the TreeNodes to
+/// parent_idx -> The index of the parent TreeNode
+/// tree_node -> The TreeNode to add
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
 fn add_tree_nodes_recursive(
     input_string: String,
     graph: &mut DiGraph<String, ()>,
     parent_idx: NodeIndex,
     tree_node: &TreeNode,
 ) {
-    // Add the current TreeNode's NodeType as a node in the graph
+    // add the current TreeNode's NodeType as a node in the graph
     // if it has a lexeme add that or add the production name
     let current_node_label = match tree_node.lexical_token {
         Some(t) => format!(
@@ -38,7 +78,7 @@ fn add_tree_nodes_recursive(
 
     graph.add_edge(parent_idx, current_idx, ());
 
-    // Add the rest of them
+    // add the rest of the TreeNodes
     for child in &tree_node.children {
         add_tree_nodes_recursive(input_string.clone(), graph, current_idx, child);
     }

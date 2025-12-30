@@ -16,10 +16,10 @@
         "description": "Test single character operators",
         "code": "= < > !",
         "result": [
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_LESSTHAN", "content": "<"},
-            {"type": "T_GREATERTHAN", "content": ">"},
-            {"type": "T_EXCLAMATION", "content": "!"}
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_LESSTHAN", "content": "<"},
+            {"token_type": "T_GREATERTHAN", "content": ">"},
+            {"token_type": "T_EXCLAMATION", "content": "!"}
         ]
     },
     {
@@ -27,9 +27,9 @@
         "description": "Test edge case numbers",
         "code": "0 999999 1",
         "result": [
-            {"type": "T_INTEGER", "content": "0"},
-            {"type": "T_INTEGER", "content": "999999"},
-            {"type": "T_INTEGER", "content": "1"}
+            {"token_type": "T_INTEGER", "content": "0"},
+            {"token_type": "T_INTEGER", "content": "999999"},
+            {"token_type": "T_INTEGER", "content": "1"}
         ]
     },
     {
@@ -37,9 +37,9 @@
         "description": "Test empty quoted strings",
         "code": "title = \"\"",
         "result": [
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"\""}
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"\""}
         ]
     },
     {
@@ -47,8 +47,8 @@
         "description": "Test quoted strings containing spaces",
         "code": "\"Computer Science 101\" \"Data Structures and Algorithms\"",
         "result": [
-            {"type": "T_STRING", "content": "\"Computer Science 101\""},
-            {"type": "T_STRING", "content": "\"Data Structures and Algorithms\""}
+            {"token_type": "T_STRING", "content": "\"Computer Science 101\""},
+            {"token_type": "T_STRING", "content": "\"Data Structures and Algorithms\""}
         ]
     },
     {
@@ -56,11 +56,11 @@
         "description": "Test case sensitivity of keywords",
         "code": "Term PROF Course subject SUB",
         "result": [
-            {"type": "T_TERM", "content": "Term"},
-            {"type": "T_PROF", "content": "PROF"},
-            {"type": "T_COURSE", "content": "Course"},
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_SUBJECT", "content": "SUB"}
+            {"token_type": "T_TERM", "content": "Term"},
+            {"token_type": "T_PROF", "content": "PROF"},
+            {"token_type": "T_COURSE", "content": "Course"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_SUBJECT", "content": "SUB"}
         ]
     },
     {
@@ -68,9 +68,9 @@
         "description": "Test adjacent operators without spaces",
         "code": ">=<=!=",
         "result": [
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_LESSEQUAL", "content": "<="},
-            {"type": "T_NOTEQUALS", "content": "!="}
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_LESSEQUAL", "content": "<="},
+            {"token_type": "T_NOTEQUALS", "content": "!="}
         ]
     },
     {
@@ -78,13 +78,13 @@
         "description": "Test adjacent parentheses without spaces",
         "code": "()((())",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -92,17 +92,17 @@
         "description": "Test parentheses adjacent to operators without spaces",
         "code": "(prof=Alan)and(course=CS)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {

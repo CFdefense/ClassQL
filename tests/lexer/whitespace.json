@@ -4,9 +4,9 @@
         "description": "Test basic space-separated tokens",
         "code": "term = \"Fall2024\"",
         "result": [
-            {"type": "T_TERM", "content": "term"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"Fall2024\""}
+            {"token_type": "T_TERM", "content": "term"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"Fall2024\""}
         ]
     },
     {
@@ -14,9 +14,9 @@
         "description": "Test handling of multiple consecutive spaces",
         "code": "course    =     \"CS101\"",
         "result": [
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS101\""}
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS101\""}
         ]
     },
     {
@@ -24,9 +24,9 @@
         "description": "Test handling of tab characters",
         "code": "prof\t=\t\"Smith\"",
         "result": [
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"Smith\""}
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"Smith\""}
         ]
     },
     {
@@ -34,12 +34,12 @@
         "description": "Test handling of newline characters",
         "code": "subject = \"CS\"\ncourse = \"101\"",
         "result": [
-            {"type": "T_SUBJECT", "content": "subject"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"CS\""},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"101\""}
+            {"token_type": "T_SUBJECT", "content": "subject"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"CS\""},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"101\""}
         ]
     },
     {
@@ -47,14 +47,14 @@
         "description": "Test mixed spaces, tabs, and newlines",
         "code": "credit hours\t>=  3\n and\r\n  campus = \"Main\"",
         "result": [
-            {"type": "T_CREDIT", "content": "credit"},
-            {"type": "T_HOURS", "content": "hours"},
-            {"type": "T_GREATEREQUAL", "content": ">="},
-            {"type": "T_INTEGER", "content": "3"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_CAMPUS", "content": "campus"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_STRING", "content": "\"Main\""}
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_GREATEREQUAL", "content": ">="},
+            {"token_type": "T_INTEGER", "content": "3"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_CAMPUS", "content": "campus"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_STRING", "content": "\"Main\""}
         ]
     },
     {
@@ -62,9 +62,9 @@
         "description": "Test leading and trailing whitespace handling",
         "code": "   title contains \"Math\"   ",
         "result": [
-            {"type": "T_TITLE", "content": "title"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_STRING", "content": "\"Math\""}
+            {"token_type": "T_TITLE", "content": "title"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_STRING", "content": "\"Math\""}
         ]
     },
     {
@@ -72,17 +72,17 @@
         "description": "Test parentheses with different whitespace patterns",
         "code": "( prof is Alan ) and ( course contains CS )",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_IS", "content": "is"},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_CONTAINS", "content": "contains"},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_IS", "content": "is"},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     },
     {
@@ -90,17 +90,17 @@
         "description": "Test parentheses with minimal spacing",
         "code": "(prof=Alan)and(course=CS)",
         "result": [
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_PROF", "content": "prof"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "Alan"},
-            {"type": "T_RIGHTPAREN", "content": ")"},
-            {"type": "T_AND", "content": "and"},
-            {"type": "T_LEFTPAREN", "content": "("},
-            {"type": "T_COURSE", "content": "course"},
-            {"type": "T_EQUALS", "content": "="},
-            {"type": "T_IDENTIFIER", "content": "CS"},
-            {"type": "T_RIGHTPAREN", "content": ")"}
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_PROF", "content": "prof"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "Alan"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_LEFTPAREN", "content": "("},
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_IDENTIFIER", "content": "CS"},
+            {"token_type": "T_RIGHTPAREN", "content": ")"}
         ]
     }
 ] 
