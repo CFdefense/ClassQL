@@ -1,9 +1,26 @@
+///
+/// Compiler for the DSL
+///
+/// Responsible for compiling the DSL into a SQL query
+///
+/// Contains:
+/// --- ---
+/// CompilerResult -> Result types for the compiler
+/// Compiler -> Compiler struct
+///      Methods:
+///      --- ---
+///      new -> Create a new compiler instance
+///      run -> Compile the DSL into a SQL query
+///      get_tab_completion -> Get tab completion suggestions for the current input
+///      --- ---
+///
+
 use super::lexer::Lexer;
 use super::parser::{Ast, Parser};
 use crate::tui::errors::AppError;
 
 /// Result Types for the Compiler
-/// 
+///
 /// Results:
 /// --- ---
 /// Sucess -> Compilation was successful, contains message and AST
@@ -11,6 +28,12 @@ use crate::tui::errors::AppError;
 /// ParserError -> Parsing failed, contains message and problematic tokens
 /// --- ---
 /// 
+/// Implemented Traits:
+/// --- ---
+/// Debug -> Debug trait for CompilerResult
+/// --- ---
+/// 
+///
 #[derive(Debug)]
 pub enum CompilerResult {
     Success {
@@ -31,21 +54,41 @@ pub enum CompilerResult {
 ///
 /// Responsible for compiling the DSL into a SQL query
 ///
+/// Fields:
+/// --- ---
+/// None -> No fields
+/// --- ---
+///
+/// Implemented Traits:
+/// --- ---
+/// None -> No implemented traits
+/// --- --- 
+///
 pub struct Compiler {}
 
-/// Compiler methods
-/// 
+/// Compiler Implementation
+///
 /// Methods:
 /// --- ---
 /// new -> Create a new compiler instance
 /// run -> Compile the DSL into a SQL query
 /// get_tab_completion -> Get tab completion suggestions for the current input
 /// --- ---
-/// 
+///
 impl Compiler {
     /// Create a new compiler instance
     ///
     /// TODO: implement future functionality for cleaner state refresh
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// None
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// Compiler -> The new compiler instance
+    /// --- ---
     ///
     pub fn new() -> Self {
         Compiler {
@@ -55,11 +98,18 @@ impl Compiler {
 
     /// Compile the DSL into a SQL query
     ///
-    /// Will return a CompilerResult
+    /// Parameters:
+    /// --- ---
+    /// input -> The input string to compile
+    /// --- ---
     ///
-    /// Will return a CompilerResult::Success if the compilation is successful
-    ///
-    /// Will return a CompilerResult::LexerError if the lexical analysis fails
+    /// Returns:
+    /// --- ---
+    /// CompilerResult:
+    ///     Success -> Compilation was successful, contains message and AST
+    ///     LexerError -> Lexical analysis failed, contains message and problematic tokens
+    ///     ParserError -> Parsing failed, contains message and problematic tokens
+    /// --- ---
     ///
     pub fn run(&mut self, input: &str) -> CompilerResult {
         // refresh lexer state
@@ -106,12 +156,21 @@ impl Compiler {
     }
 
     /// Get tab completion suggestions for the current input
-    /// 
-    /// Partial Compilation Method
     ///
-    /// Will preform lexical analysis on the input and then a special parser method to get completion suggestions
-    /// 
-    /// Will return a vector of strings of completion suggestions
+    /// Partial Compilation Method:
+    /// --- ---
+    /// Will ONLY preform lexical analysis on the input and then a special parser method to get completion suggestions
+    /// --- ---
+    ///
+    /// Parameters:
+    /// --- ---
+    /// input -> The input string to get completion suggestions for
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// Vec<String> -> Vector of strings of completion suggestions
+    /// --- ---
     ///
     pub fn get_tab_completion(&mut self, input: String) -> Vec<String> {
         // refresh lexer state

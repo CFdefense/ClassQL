@@ -1,15 +1,41 @@
-/*
-    This module is responsible for parsing the tokens into an AST
-
-    The AST is a tree of nodes that represent the query
-
-    The AST can then be used by the semantic analyzer to check for semantic errors
-*/
+///
+/// Parser for the DSL
+///
+/// Responsible for parsing the tokens into an AST
+///
+/// Contains:
+/// --- ---
+/// NodeType -> Node types for the AST
+/// TreeNode -> Tree node struct
+/// Ast -> AST struct
+/// Parser -> Parser struct
+///      Methods:
+///      --- ---
+///      new -> Create a new parser instance
+///      get_completion_suggestions -> Get completion suggestions for the current input
+///      parse -> Parse the tokens into an AST
+///      --- ---
+///
 
 use crate::dsl::token::{Token, TokenType};
 use crate::tui::errors::{make_user_friendly_for_completion, SyntaxError};
 use std::vec;
 
+/// Node types for the AST
+///
+/// Node types:
+/// --- ---
+/// ... (see below)
+/// --- ---
+/// 
+/// Implemented Traits:
+/// --- ---
+/// Debug -> Debug trait for NodeType
+/// Clone -> Clone trait for NodeType
+/// PartialEq -> PartialEq trait for NodeType
+/// Display -> Display trait for NodeType
+/// --- ---
+/// 
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeType {
     T(TokenType),
@@ -46,6 +72,19 @@ pub enum NodeType {
     EmailIdentifier,
 }
 
+/// NodeType Display Trait Implementation
+///
+/// Parameters:
+/// --- ---
+/// self -> The NodeType to display
+/// f -> The formatter to display the NodeType
+/// --- ---
+/// 
+/// Returns:
+/// --- ---
+/// Result<(), std::fmt::Error> -> The result of the display
+/// --- ---
+/// 
 impl std::fmt::Display for NodeType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -55,11 +94,22 @@ impl std::fmt::Display for NodeType {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct Ast {
-    pub head: Option<TreeNode>,
-}
-
+/// TreeNode for the AST
+///
+/// Fields:
+/// --- ---
+/// children -> The children of the TreeNode
+/// node_type -> The type of the TreeNode
+/// lexical_token -> The lexical token of the TreeNode
+/// node_content -> The content of the TreeNode
+/// --- ---
+/// 
+/// Implemented Traits:
+/// --- ---
+/// Debug -> Debug trait for TreeNode
+/// Clone -> Clone trait for TreeNode
+/// --- ---
+/// 
 #[derive(Debug, Clone)]
 pub struct TreeNode {
     pub children: Vec<TreeNode>,
@@ -68,7 +118,28 @@ pub struct TreeNode {
     pub node_content: String,
 }
 
+/// TreeNode Implementation
+///
+/// Methods:
+/// --- ---
+/// new -> Create a new TreeNode
+/// --- ---
+/// 
 impl TreeNode {
+    /// Create a new TreeNode
+    ///
+    /// Parameters:
+    /// --- ---
+    /// node_type -> The type of the TreeNode
+    /// node_content -> The content of the TreeNode
+    /// lexical_token -> The lexical token of the TreeNode
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// TreeNode -> The new TreeNode
+    /// --- ---
+    /// 
     fn new(node_type: NodeType, node_content: String, lexical_token: Option<Token>) -> Self {
         TreeNode {
             children: Vec::new(),
@@ -79,25 +150,91 @@ impl TreeNode {
     }
 }
 
+/// AST for the DSL
+///
+/// Fields:
+/// --- ---
+/// head -> The head of the AST
+/// --- ---
+///
+/// Implemented Traits:
+/// --- ---
+/// Debug -> Debug trait for Ast
+/// Clone -> Clone trait for Ast
+/// --- ---
+/// 
+#[derive(Debug, Clone)]
+pub struct Ast {
+    pub head: Option<TreeNode>,
+}
+
+/// Ast Implementation
+///
+/// Methods:
+/// --- ---
+/// new -> Create a new Ast
+/// --- ---
+/// 
 impl Ast {
+    /// Create a new Ast
+    ///
+    /// Parameters:
+    /// --- ---
+    /// None
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Ast -> The new Ast
+    /// --- ---
+    /// 
     fn new() -> Self {
         Ast { head: None }
     }
 }
 
+/// Parser for the DSL
+///
+/// Fields:
+/// --- ---
+/// input_string -> The input string to parse
+/// ast -> The AST to parse
+/// token_pointer -> The pointer to the current token
+/// --- ---
+/// 
+/// Implemented Traits:
+/// --- ---
+/// None -> No implemented traits
+/// --- --- 
+///
 pub struct Parser {
     input_string: String,
     ast: Ast,
     token_pointer: usize,
 }
 
-impl Default for Parser {
-    fn default() -> Self {
-        Self::new("".to_string())
-    }
-}
-
+/// Parser Implementation
+///
+/// Methods:
+/// --- ---
+/// new -> Create a new Parser
+/// get_completion_suggestions -> Get completion suggestions for the current input
+/// parse -> Parse the tokens into an AST
+/// --- ---
+/// 
 impl Parser {
+    /// Create a new Parser
+    ///
+    /// Parameters:
+    /// --- ---
+    /// input_string -> The input string to parse
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Parser -> The new Parser
+    /// --- ---
+    /// 
     pub fn new(input_string: String) -> Self {
         Parser {
             input_string,
@@ -107,19 +244,31 @@ impl Parser {
     }
 
     /// Get completion suggestions based on current parser state
+    ///
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to get completion suggestions for
+    /// tokens -> The tokens to get completion suggestions for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Vec<String> -> Vector of strings of completion suggestions
+    /// --- ---
+    /// 
     pub fn get_completion_suggestions(&mut self, tokens: &Vec<Token>) -> Vec<String> {
-        // Reset parser state
+        // reset parser state
         self.token_pointer = 0;
         self.ast = Ast::new();
 
-        // Try to parse and see where it fails
+        // try to parse and see where it fails
         match self.parse(tokens) {
             Ok(_) => {
-                // Parse succeeded - suggest logical operators or end query
+                // parse succeeded - suggest logical operators or end query
                 vec!["and".to_string(), "or".to_string()]
             }
             Err((error, _)) => {
-                // Parse failed - extract suggestions from error
+                // parse failed - extract suggestions from error
                 match error {
                     SyntaxError::ExpectedAfter { expected, .. } => expected
                         .iter()
@@ -130,11 +279,11 @@ impl Parser {
                         .map(|s| make_user_friendly_for_completion(s))
                         .collect(),
                     SyntaxError::MissingToken(_) => {
-                        // Provide generic suggestions based on current context
+                        // provide generic suggestions based on current context
                         self.get_context_suggestions(tokens)
                     }
                     SyntaxError::EmptyQuery => {
-                        // Empty query - suggest starting entities
+                        // empty query - suggest starting entities
                         vec![
                             "professor".to_string(),
                             "course".to_string(),
@@ -157,14 +306,39 @@ impl Parser {
         }
     }
 
+    /// Get the lexeme of a token
+    ///
+    /// Parameters:
+    /// --- ---
+    /// self -> The Parser to get the lexeme for
+    /// token -> The token to get the lexeme for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// &str -> The lexeme of the token
+    /// --- ---
+    /// 
     fn get_lexeme(&self, token: &Token) -> &str {
         &self.input_string[token.get_start()..token.get_end()]
     }
 
     /// Get context-aware suggestions when we have a missing token
+    ///
+    /// Parameters:
+    /// --- ---
+    /// self -> The Parser to get context suggestions for
+    /// tokens -> The tokens to get context suggestions for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Vec<String> -> Vector of strings of context suggestions
+    /// --- ---
+    /// 
     fn get_context_suggestions(&self, tokens: &[Token]) -> Vec<String> {
         if tokens.is_empty() {
-            // Start of query
+            // start of query
             vec![
                 "professor".to_string(),
                 "course".to_string(),
@@ -193,11 +367,11 @@ impl Parser {
                 TokenType::Start | TokenType::End => {
                     vec!["=".to_string(), ">".to_string(), "<".to_string()]
                 }
-                // String condition operators
+                // string condition operators
                 TokenType::Is | TokenType::Equals | TokenType::Contains => {
-                    vec!["<value>".to_string()] // Placeholder for user input
+                    vec!["<value>".to_string()] // placeholder for user input
                 }
-                // After values
+                // after values
                 TokenType::Identifier | TokenType::String => {
                     vec!["and".to_string(), "or".to_string()]
                 }
@@ -206,6 +380,18 @@ impl Parser {
         }
     }
 
+    /// Check if a token is a valid binary operator
+    ///
+    /// Parameters:
+    /// --- ---
+    /// token_type -> The token type to check
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// bool -> True if the token is a valid binary operator, false otherwise
+    /// --- ---
+    /// 
     fn is_valid_binop_token(token_type: &TokenType) -> bool {
         matches!(
             *token_type,
@@ -230,6 +416,19 @@ impl Parser {
         )
     }
 
+    /// Get the next token
+    ///
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to get the next token for
+    /// tokens -> The tokens to get the next token for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<Token, String> -> The next token
+    /// --- ---
+    /// 
     fn next_token(&mut self, tokens: &[Token]) -> Result<Token, String> {
         if self.token_pointer < tokens.len() {
             let token = tokens[self.token_pointer];
@@ -240,20 +439,35 @@ impl Parser {
         }
     }
 
+    /// Parse the tokens into an AST
+    ///
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the tokens for
+    /// tokens -> The tokens to parse
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<Ast, (SyntaxError, Vec<Token>)>
+    ///     Ok(Ast) -> Parsing succeeded, contains the AST
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     pub fn parse(&mut self, tokens: &Vec<Token>) -> Result<Ast, (SyntaxError, Vec<Token>)> {
         self.token_pointer = 0;
         self.ast = Ast::new();
 
-        // Check for empty query
+        // check for empty query
         if tokens.is_empty() {
             return Err((SyntaxError::EmptyQuery, vec![]));
         }
 
-        // Create Query node and set it as AST head
+        // create query node and set it as AST head
         let query_node = self.parse_query(tokens)?;
         self.ast.head = Some(query_node);
 
-        // Check if there are remaining unconsumed tokens
+        // check if there are remaining unconsumed tokens
         if self.token_pointer < tokens.len() {
             return Err((
                 SyntaxError::InvalidContext {
@@ -278,12 +492,31 @@ impl Parser {
         })
     }
 
-    // <query> ::= <logical_term> ("or" <logical_term>)*
+    /// Parse the query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <query> ::= <logical_term> ("or" <logical_term>)*
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the query for
+    /// tokens -> The tokens to parse the query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_query(&mut self, tokens: &Vec<Token>) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // Create Query node first
+        // create query node first
         let mut query_node = TreeNode::new(NodeType::Query, NodeType::Query.to_string(), None);
 
-        // Parse the first logical term
+        // parse the first logical term
         let mut first_term = self.parse_logical_term(tokens)?;
 
         // continue parsing logical terms until we hit the end of the tokens or we hit a non-or token
@@ -296,7 +529,7 @@ impl Parser {
             })?;
 
             if *next_token.get_token_type() != TokenType::Or {
-                // Put the token back by decrementing the pointer
+                // put the token back by decrementing the pointer
                 self.token_pointer -= 1;
                 break;
             }
@@ -313,12 +546,28 @@ impl Parser {
             first_term = or_node;
         }
 
-        // Add the final result to query node
+        // add the final result to query node
         query_node.children.push(first_term);
         Ok(query_node)
     }
 
-    // <logical_term> ::= <logical_factor> ("and" <logical_factor>)*
+    /// Parse the logical term into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <logical_term> ::= <logical_factor> ("and" <logical_factor>)*
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the logical term for
+    /// tokens -> The tokens to parse the logical term for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
     fn parse_logical_term(
         &mut self,
         tokens: &Vec<Token>,
@@ -332,7 +581,7 @@ impl Parser {
         // parse the first logical factor
         let mut first_factor = self.parse_logical_factor(tokens)?;
 
-        // continue parsing logical factors until we hit the end of the tokens or we hit a non-and token
+        // continue parsing logical factors until we hit the end of the tokens or we hit a non-AND token
         while self.token_pointer < tokens.len() {
             let next_token = self.next_token(tokens).map_err(|_| {
                 (
@@ -344,7 +593,7 @@ impl Parser {
             })?;
 
             if *next_token.get_token_type() != TokenType::And {
-                // Put the token back by decrementing the pointer
+                // put the token back by decrementing the pointer
                 self.token_pointer -= 1;
                 break;
             }
@@ -365,7 +614,26 @@ impl Parser {
         Ok(logical_term_node)
     }
 
-    // <logical_factor> ::= <entity_query> | "(" <query> ")" | "not" <logical_factor>
+    /// Parse the logical factor into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <logical_factor> ::= <entity_query> | "(" <query> ")" | "not" <logical_factor>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the logical factor for
+    /// tokens -> The tokens to parse the logical factor for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_logical_factor(
         &mut self,
         tokens: &Vec<Token>,
@@ -376,11 +644,11 @@ impl Parser {
             None,
         );
 
-        // Check if the first token is "not"
+        // check if the first token is "not"
         if self.token_pointer < tokens.len()
             && *tokens[self.token_pointer].get_token_type() == TokenType::Not
         {
-            // Parse "not" <logical_factor>
+            // parse "not" <logical_factor>
             let not_token = self.next_token(tokens).map_err(|_| {
                 (
                     SyntaxError::MissingToken("Expected 'not' token".into()),
@@ -398,11 +666,11 @@ impl Parser {
             not_node.children.push(factor);
             logical_factor_node.children.push(not_node);
         }
-        // Check if the first token is a left parenthesis
+        // check if the first token is a left parenthesis
         else if self.token_pointer < tokens.len()
             && *tokens[self.token_pointer].get_token_type() == TokenType::LeftParen
         {
-            // Parse parenthesized query: "(" <query> ")"
+            // parse parenthesized query: "(" <query> ")"
             let left_paren = self.next_token(tokens).map_err(|_| {
                 (
                     SyntaxError::MissingToken("Expected opening parenthesis".into()),
@@ -425,7 +693,7 @@ impl Parser {
 
             logical_factor_node.children.push(query);
         } else {
-            // Parse entity query
+            // parse entity query
             let entity_query = self.parse_entity_query(tokens)?;
             logical_factor_node.children.push(entity_query);
         }
@@ -433,7 +701,26 @@ impl Parser {
         Ok(logical_factor_node)
     }
 
-    // <entity_query> ::= <professor_query> | <course_query> | <section_query> | <meeting_type_query> | <time_query> | <day_query>
+    /// Parse the entity query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <entity_query> ::= <professor_query> | <course_query> | <section_query> | <meeting_type_query> | <time_query> | <day_query>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the entity query for
+    /// tokens -> The tokens to parse the entity query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_entity_query(
         &mut self,
         tokens: &[Token],
@@ -561,7 +848,26 @@ impl Parser {
         Ok(entity_query)
     }
 
-    // <professor_query> ::= "prof" <condition> <string>
+    /// Parse the professor query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <professor_query> ::= "prof" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the professor query for
+    /// tokens -> The tokens to parse the professor query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_professor_query(
         &mut self,
         tokens: &[Token],
@@ -582,7 +888,26 @@ impl Parser {
         Ok(prof_node)
     }
 
-    // <course_query> ::= "course" (<condition> <string> | <subject_query> | <number_query> | <title_query> | <description_query> | <credit_hours_query> | <prereqs_query> | <coreqs_query>)
+    /// Parse the course query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <course_query> ::= "course" (<condition> <string> | <subject_query> | <number_query> | <title_query> | <description_query> | <credit_hours_query> | <prereqs_query> | <coreqs_query>)
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the course query for
+    /// tokens -> The tokens to parse the course query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_course_query(
         &mut self,
         tokens: &[Token],
@@ -721,7 +1046,26 @@ impl Parser {
         Ok(course_node)
     }
 
-    // <subject_query> ::= ("subject" | "sub") <condition> <string>
+    /// Parse the subject query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <subject_query> ::= ("subject" | "sub") <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the subject query for
+    /// tokens -> The tokens to parse the subject query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_subject_query(
         &mut self,
         tokens: &[Token],
@@ -742,7 +1086,26 @@ impl Parser {
         Ok(subject_node)
     }
 
-    // <section_query> ::= "section" <subject_query> | <course_query> | <enrollment_cap_query> | <instruction_method_query> | <campus_query> | <enrollment_query> | <full_query>
+    /// Parse the section query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <section_query> ::= "section" <subject_query> | <course_query> | <enrollment_cap_query> | <instruction_method_query> | <campus_query> | <enrollment_query> | <full_query>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the section query for
+    /// tokens -> The tokens to parse the section query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_section_query(
         &mut self,
         tokens: &[Token],
@@ -792,7 +1155,26 @@ impl Parser {
         Ok(section_node)
     }
 
-    // <number_query> ::= "number" <condition> <string>
+    /// Parse the number query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <number_query> ::= "number" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the number query for
+    /// tokens -> The tokens to parse the number query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_number_query(
         &mut self,
         tokens: &[Token],
@@ -813,7 +1195,26 @@ impl Parser {
         Ok(number_node)
     }
 
-    // <title_query> ::= "title" <condition> <string>
+    /// Parse the title query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <title_query> ::= "title" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the title query for
+    /// tokens -> The tokens to parse the title query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_title_query(
         &mut self,
         tokens: &[Token],
@@ -834,7 +1235,26 @@ impl Parser {
         Ok(title_node)
     }
 
-    // <description_query> ::= "description" <condition> <string>
+    /// Parse the description query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <description_query> ::= "description" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the description query for
+    /// tokens -> The tokens to parse the description query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_description_query(
         &mut self,
         tokens: &[Token],
@@ -855,7 +1275,26 @@ impl Parser {
         Ok(description_node)
     }
 
-    // <credit_hours_query> ::= "credit hours" <binop> <integer>
+    /// Parse the credit hours query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <credit_hours_query> ::= "credit hours" <binop> <integer>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the credit hours query for
+    /// tokens -> The tokens to parse the credit hours query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_credit_hours_query(
         &mut self,
         tokens: &[Token],
@@ -899,7 +1338,26 @@ impl Parser {
         Ok(credit_node)
     }
 
-    // <prereqs_query> ::= "prereqs" <string_list>
+    /// Parse the prereqs query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <prereqs_query> ::= "prereqs" <string_list>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the prereqs query for
+    /// tokens -> The tokens to parse the prereqs query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_prereqs_query(
         &mut self,
         tokens: &[Token],
@@ -917,7 +1375,26 @@ impl Parser {
         Ok(prereqs_node)
     }
 
-    // <coreqs_query> ::= "corereqs" <string_list>
+    /// Parse the coreqs query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <coreqs_query> ::= "corereqs" <string_list>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the coreqs query for
+    /// tokens -> The tokens to parse the coreqs query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_coreqs_query(
         &mut self,
         tokens: &[Token],
@@ -935,7 +1412,26 @@ impl Parser {
         Ok(coreqs_node)
     }
 
-    // <enrollment_cap_query> ::= "cap" <binop> <integer> | "enrollment cap" <binop> <integer>
+    /// Parse the enrollment cap query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <enrollment_cap_query> ::= "cap" <binop> <integer> | "enrollment cap" <binop> <integer>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the enrollment cap query for
+    /// tokens -> The tokens to parse the enrollment cap query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_enrollment_cap_query(
         &mut self,
         tokens: &[Token],
@@ -970,7 +1466,26 @@ impl Parser {
         Ok(cap_node)
     }
 
-    // <instruction_method_query> ::= "method" <condition> <string>
+    /// Parse the instruction method query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <instruction_method_query> ::= "method" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the instruction method query for
+    /// tokens -> The tokens to parse the instruction method query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_instruction_method_query(
         &mut self,
         tokens: &[Token],
@@ -991,7 +1506,26 @@ impl Parser {
         Ok(method_node)
     }
 
-    // <campus_query> ::= "campus" <condition> <string>
+    /// Parse the campus query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <campus_query> ::= "campus" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the campus query for
+    /// tokens -> The tokens to parse the campus query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_campus_query(
         &mut self,
         tokens: &[Token],
@@ -1012,7 +1546,26 @@ impl Parser {
         Ok(campus_node)
     }
 
-    // <enrollment_query> ::= "size" <binop> <integer> | "enrollment" <binop> <integer>
+    /// Parse the enrollment query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <enrollment_query> ::= "size" <binop> <integer> | "enrollment" <binop> <integer>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the enrollment query for
+    /// tokens -> The tokens to parse the enrollment query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_enrollment_query(
         &mut self,
         tokens: &[Token],
@@ -1053,7 +1606,26 @@ impl Parser {
         Ok(enrollment_node)
     }
 
-    // <full_query> ::= "full" <condition> <string>
+    /// Parse the full query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <full_query> ::= "full" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the full query for
+    /// tokens -> The tokens to parse the full query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_full_query(
         &mut self,
         tokens: &[Token],
@@ -1074,7 +1646,26 @@ impl Parser {
         Ok(full_node)
     }
 
-    // <meeting_type_query> ::= ("meeting type" | "type") <condition> <string>
+    /// Parse the meeting type query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <meeting_type_query> ::= ("meeting type" | "type") <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the meeting type query for
+    /// tokens -> The tokens to parse the meeting type query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_meeting_type_query(
         &mut self,
         tokens: &[Token],
@@ -1101,7 +1692,26 @@ impl Parser {
         Ok(meeting_node)
     }
 
-    // <time_query> ::= ("start" | "end") (<binop> <time> | <time_range>)
+    /// Parse the time query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <time_query> ::= ("start" | "end") (<binop> <time> | <time_range>)
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the time query for
+    /// tokens -> The tokens to parse the time query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_time_query(
         &mut self,
         tokens: &[Token],
@@ -1177,7 +1787,26 @@ impl Parser {
         Ok(time_node)
     }
 
-    // <time_range> ::= <time> "to" <time>
+    /// Parse the time range into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <time_range> ::= <time> "to" <time>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the time range for
+    /// tokens -> The tokens to parse the time range for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_time_range(
         &mut self,
         tokens: &[Token],
@@ -1216,9 +1845,28 @@ impl Parser {
         Ok(time_range_node)
     }
 
-    // <day_query> ::= <monday_query> | <tuesday_query> | <wednesday_query> | <thursday_query> | <friday_query> | <saturday_query> | <sunday_query>
+    /// Parse the day query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <day_query> ::= <monday_query> | <tuesday_query> | <wednesday_query> | <thursday_query> | <friday_query> | <saturday_query> | <sunday_query>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the day query for
+    /// tokens -> The tokens to parse the day query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_day_query(&mut self, tokens: &[Token]) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // The day token was already consumed in parse_entity_query, check which one it was
+        // the day token was already consumed in parse_entity_query, check which one it was
         let day_token = &tokens[self.token_pointer - 1];
         let mut day_node = TreeNode::new(
             NodeType::DayQuery,
@@ -1262,7 +1910,26 @@ impl Parser {
         Ok(day_node)
     }
 
-    // Helper functions for individual day queries
+    /// Parse the monday query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <monday_query> ::= "monday" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the monday query for
+    /// tokens -> The tokens to parse the monday query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_monday_query(
         &mut self,
         tokens: &[Token],
@@ -1280,6 +1947,26 @@ impl Parser {
         Ok(monday_node)
     }
 
+    /// Parse the tuesday query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <tuesday_query> ::= "tuesday" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the tuesday query for
+    /// tokens -> The tokens to parse the tuesday query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_tuesday_query(
         &mut self,
         tokens: &[Token],
@@ -1297,6 +1984,26 @@ impl Parser {
         Ok(tuesday_node)
     }
 
+    /// Parse the wednesday query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <wednesday_query> ::= "wednesday" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the wednesday query for
+    /// tokens -> The tokens to parse the wednesday query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_wednesday_query(
         &mut self,
         tokens: &[Token],
@@ -1314,6 +2021,26 @@ impl Parser {
         Ok(wednesday_node)
     }
 
+    /// Parse the thursday query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <thursday_query> ::= "thursday" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the thursday query for
+    /// tokens -> The tokens to parse the thursday query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_thursday_query(
         &mut self,
         tokens: &[Token],
@@ -1331,6 +2058,26 @@ impl Parser {
         Ok(thursday_node)
     }
 
+    /// Parse the friday query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <friday_query> ::= "friday" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the friday query for
+    /// tokens -> The tokens to parse the friday query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_friday_query(
         &mut self,
         tokens: &[Token],
@@ -1348,6 +2095,26 @@ impl Parser {
         Ok(friday_node)
     }
 
+    /// Parse the saturday query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <saturday_query> ::= "saturday" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the saturday query for
+    /// tokens -> The tokens to parse the saturday query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_saturday_query(
         &mut self,
         tokens: &[Token],
@@ -1365,6 +2132,26 @@ impl Parser {
         Ok(saturday_node)
     }
 
+    /// Parse the sunday query into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <sunday_query> ::= "sunday" <condition> <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the sunday query for
+    /// tokens -> The tokens to parse the sunday query for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_sunday_query(
         &mut self,
         tokens: &[Token],
@@ -1382,7 +2169,26 @@ impl Parser {
         Ok(sunday_node)
     }
 
-    // <time> ::= [0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)
+    /// Parse the time into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <time> ::= [0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the time for
+    /// tokens -> The tokens to parse the time for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_time(&mut self, tokens: &[Token]) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
         let time_token = self
             .next_token(tokens)
@@ -1390,8 +2196,8 @@ impl Parser {
         let mut time_node =
             TreeNode::new(NodeType::Time, NodeType::Time.to_string(), Some(time_token));
 
-        // For now, we'll assume any token can be a time
-        // In a real implementation, you'd validate it matches the time regex pattern
+        // for now, we'll assume any token can be a time
+        // in a real implementation, you'd validate it matches the time regex pattern
         time_node.children.push(TreeNode::new(
             NodeType::String,
             time_token.get_token_type().to_string(),
@@ -1401,7 +2207,26 @@ impl Parser {
         Ok(time_node)
     }
 
-    // <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal"
+    /// Parse the condition into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal"
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the condition for
+    /// tokens -> The tokens to parse the condition for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_condition(&mut self, tokens: &[Token]) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
         let condition_token = self.next_token(tokens).map_err(|_| {
             (
@@ -1428,7 +2253,7 @@ impl Parser {
             Some(condition_token),
         );
 
-        // Check if it's a valid condition token
+        // check if it's a valid condition token
         match *condition_token.get_token_type() {
             TokenType::Equals
             | TokenType::NotEquals
@@ -1438,46 +2263,46 @@ impl Parser {
             | TokenType::Equal
             | TokenType::EqualsWord
             | TokenType::Does => {
-                // Valid standalone condition
+                // valid standalone condition
             }
             TokenType::Starts => {
-                // "starts" must be followed by "with"
+                // "STARTS" must be followed by "WITH"
                 if self.token_pointer >= tokens.len()
                     || *tokens[self.token_pointer].get_token_type() != TokenType::With
                 {
                     return Err((
-                        SyntaxError::MissingToken("Expected 'with' after 'starts'".into()),
+                        SyntaxError::MissingToken("Expected 'WITH' after 'STARTS'".into()),
                         vec![],
                     ));
                 }
-                // Consume the "with" token
+                // consume the "with" token
                 self.next_token(tokens).map_err(|_| {
                     (
-                        SyntaxError::MissingToken("Expected 'with' after 'starts'".into()),
+                        SyntaxError::MissingToken("Expected 'WITH' after 'STARTS'".into()),
                         vec![],
                     )
                 })?;
             }
             TokenType::Ends => {
-                // "ends" must be followed by "with"
+                // "ENDS" must be followed by "WITH"
                 if self.token_pointer >= tokens.len()
                     || *tokens[self.token_pointer].get_token_type() != TokenType::With
                 {
                     return Err((
-                        SyntaxError::MissingToken("Expected 'with' after 'ends'".into()),
+                        SyntaxError::MissingToken("Expected 'WITH' after 'ENDS'".into()),
                         vec![],
                     ));
                 }
-                // Consume the "with" token
+                // consume the "WITH" token
                 self.next_token(tokens).map_err(|_| {
                     (
-                        SyntaxError::MissingToken("Expected 'with' after 'ends'".into()),
+                        SyntaxError::MissingToken("Expected 'WITH' after 'ENDS'".into()),
                         vec![],
                     )
                 })?;
             }
             TokenType::With => {
-                // "with" by itself is not valid
+                // "WITH" by itself is not valid
                 return Err((
                     SyntaxError::InvalidContext {
                         token: self.get_lexeme(&condition_token).to_string(),
@@ -1495,7 +2320,7 @@ impl Parser {
                 ));
             }
             _ => {
-                // Check if it's a binary operator (invalid in condition context)
+                // check if it's a binary operator (invalid in condition context)
                 if Self::is_valid_binop_token(condition_token.get_token_type()) {
                     return Err((
                         SyntaxError::InvalidContext {
@@ -1545,7 +2370,26 @@ impl Parser {
         Ok(condition_node)
     }
 
-    // <binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "equals" | "is" | "not equals" | "not" | "does not equal" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at least" | "at most" | "more than" | "fewer than"
+    /// Parse the binop into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "equals" | "is" | "not equals" | "not" | "does not equal" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at least" | "at most" | "more than" | "fewer than"
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the binop for
+    /// tokens -> The tokens to parse the binop for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_binop(&mut self, tokens: &[Token]) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
         let operator_token = self.next_token(tokens).map_err(|_| {
             (
@@ -1574,7 +2418,7 @@ impl Parser {
             Some(operator_token),
         );
 
-        // Check if it's a valid binary operator
+        // check if it's a valid binary operator
         match *operator_token.get_token_type() {
             TokenType::Equals
             | TokenType::NotEquals
@@ -1594,7 +2438,7 @@ impl Parser {
             | TokenType::Most
             | TokenType::More
             | TokenType::Fewer => {
-                // Valid operator
+                // valid operator
             }
             _ => {
                 return Err((
@@ -1628,7 +2472,26 @@ impl Parser {
         Ok(binop_node)
     }
 
-    // <string_list> ::= <string> | <string_list> "," <string>
+    /// Parse the string list into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <string_list> ::= <string> | <string_list> "," <string>
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the string list for
+    /// tokens -> The tokens to parse the string list for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_string_list(
         &mut self,
         tokens: &[Token],
@@ -1636,11 +2499,11 @@ impl Parser {
         let mut string_list_node =
             TreeNode::new(NodeType::StringList, NodeType::StringList.to_string(), None);
 
-        // Parse first string
+        // parse first string
         let first_string = self.parse_string(tokens)?;
         string_list_node.children.push(first_string);
 
-        // Check if there are more strings separated by commas
+        // check if there are more strings separated by commas
         while self.token_pointer < tokens.len() {
             let next_token = &tokens[self.token_pointer];
 
@@ -1660,9 +2523,28 @@ impl Parser {
         Ok(string_list_node)
     }
 
-    // <string> ::= "[^"]*"?
+    /// Parse the string into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <string> ::= "[^"]*"?
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the string for
+    /// tokens -> The tokens to parse the string for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_string(&mut self, tokens: &[Token]) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
-        // Try to parse as email first, fallback to regular identifier
+        // try to parse as email first, fallback to regular identifier
         if self.token_pointer < tokens.len() {
             let next_token = &tokens[self.token_pointer];
             if next_token.get_token_type().to_string().contains("@") {
@@ -1675,7 +2557,26 @@ impl Parser {
         }
     }
 
-    // <integer> ::= [0-9]+
+    /// Parse the integer into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <integer> ::= [0-9]+
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the integer for
+    /// tokens -> The tokens to parse the integer for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_integer(&mut self, tokens: &[Token]) -> Result<TreeNode, (SyntaxError, Vec<Token>)> {
         let digit_token = self
             .next_token(tokens)
@@ -1686,8 +2587,8 @@ impl Parser {
             Some(digit_token),
         );
 
-        // For now, we'll assume any token can be an integer
-        // In a real implementation, you'd validate it's actually numeric
+        // for now, we'll assume any token can be an integer
+        // in a real implementation, you'd validate it's actually numeric
         integer_node.children.push(TreeNode::new(
             NodeType::String,
             digit_token.get_token_type().to_string(),
@@ -1697,7 +2598,26 @@ impl Parser {
         Ok(integer_node)
     }
 
-    // <identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*
+    /// Parse the identifier into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the identifier for
+    /// tokens -> The tokens to parse the identifier for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_identifier(
         &mut self,
         tokens: &[Token],
@@ -1714,9 +2634,9 @@ impl Parser {
             Some(id_token),
         );
 
-        // Check if this is an operator token that shouldn't be here
+        // check if this is an operator token that shouldn't be here
         match *id_token.get_token_type() {
-            // Binary operators that are invalid in string context
+            // binary operators that are invalid in string context
             TokenType::Equals
             | TokenType::NotEquals
             | TokenType::LessThan
@@ -1736,7 +2656,7 @@ impl Parser {
                     vec![id_token],
                 ));
             }
-            // String condition operators that are invalid here (double operators)
+            // string condition operators that are invalid here (double operators)
             TokenType::Contains
             | TokenType::Has
             | TokenType::Starts
@@ -1757,9 +2677,9 @@ impl Parser {
                     vec![id_token],
                 ));
             }
-            // Accept other tokens as valid identifiers
+            // accept other tokens as valid identifiers
             _ => {
-                // Valid identifier
+                // valid identifier
             }
         }
 
@@ -1772,7 +2692,26 @@ impl Parser {
         Ok(identifier_node)
     }
 
-    // <email_identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*@[a-zA-Z0-9_]*\.[a-zA-Z0-9_.]*
+    /// Parse the email identifier into a TreeNode
+    /// 
+    /// Syntax:
+    /// --- ---
+    /// <email_identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*@[a-zA-Z0-9_]*\.[a-zA-Z0-9_.]*
+    /// --- ---
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser to parse the email identifier for
+    /// tokens -> The tokens to parse the email identifier for
+    /// --- ---
+    /// 
+    /// Returns:
+    /// --- ---
+    /// Result<TreeNode, (SyntaxError, Vec<Token>)>
+    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
+    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
+    /// --- ---
+    /// 
     fn parse_email_identifier(
         &mut self,
         tokens: &[Token],
@@ -1789,8 +2728,8 @@ impl Parser {
             Some(email_token),
         );
 
-        // For now, we'll assume any token can be an email identifier
-        // In a real implementation, you'd validate it matches the email pattern
+        // for now, we'll assume any token can be an email identifier
+        // in a real implementation, you'd validate it matches the email pattern
         email_node.children.push(TreeNode::new(
             NodeType::String,
             email_token.get_token_type().to_string(),

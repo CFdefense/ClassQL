@@ -1,32 +1,95 @@
-/*
-Lexer for the query language.
-
-The lexer is responsible for converting the input string into a stream of tokens.
-
-Will return a vector of tokens.
-
-If there is an unrecognized character, it will return a vector of error tokens.
-
-These error tokens should be used to tell the user that there is some unrecognized character in the input.
-*/
-
+/// Lexer for the query language.
+///
+/// Responsible for converting the input string into a stream of tokens.
+///
+/// Contains:
+/// --- ---
+/// Lexer -> Lexer struct
+///      Methods:
+///      --- ---
+///      new -> Create a new lexer instance
+///      get_lexeme -> Get the lexeme of a token
+///      analyze -> Convert the input string into a stream of tokens
+///      --- ---
+/// 
 use super::token::{Token, TokenType};
 use crate::tui::errors::AppError;
 use regex::Regex;
 
+/// Lexer for the query language.
+///
+/// Responsible for converting the input string into a stream of tokens.
+/// 
+/// Fields:
+/// --- ---
+/// input_string -> The input string to convert into tokens
+/// --- ---
+///
+/// Implemented Traits:
+/// --- ---
+/// None -> No implemented traits
+/// --- --- 
+///
 pub struct Lexer {
     input_string: String,
 }
 
+/// Lexer Implementation
+///
+/// Methods:
+/// --- ---
+/// new -> Create a new lexer instance
+/// get_lexeme -> Get the lexeme of a token
+/// analyze -> Convert the input string into a stream of tokens
+/// --- ---
+///
 impl Lexer {
+    /// Create a new lexer instance 
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// input_string -> The input string to convert into tokens
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// Lexer -> The new lexer instance
+    /// --- ---
+    /// 
     pub fn new(input_string: String) -> Self {
         Lexer { input_string }
     }
 
+    /// Get the lexeme of a token
+    ///
+    /// Parameters:
+    /// --- ---
+    /// token -> The token to get the lexeme of
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// &str -> The lexeme of the token
+    /// --- ---
+    ///
     fn get_lexeme(&self, token: &Token) -> &str {
         &self.input_string[token.get_start()..token.get_end()]
     }
 
+    /// Convert the input string into a stream of tokens
+    ///
+    /// Parameters:
+    /// --- ---
+    /// None
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// Result<Vec<Token>, AppError>:
+    ///     Ok -> The stream of tokens
+    ///     Err -> An error occurred, contains message and problematic tokens
+    /// --- ---
+    ///
     pub fn analyze(&mut self) -> Result<Vec<Token>, AppError> {
         // Get all patterns in lexing order (longest/most specific first)
         let patterns = TokenType::all_patterns();
@@ -116,11 +179,5 @@ impl Lexer {
 
         // Otherwise return all valid tokens
         Ok(all_tokens)
-    }
-}
-
-impl Default for Lexer {
-    fn default() -> Self {
-        Self::new("".to_string())
     }
 }
