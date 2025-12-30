@@ -12,7 +12,7 @@
     6. Look Aesthetic
 */
 
-use crate::compiler::compiler::{Compiler, CompilerResult};
+use crate::dsl::compiler::{Compiler, CompilerResult};
 use crate::tui::errors::TUIError;
 use crossterm::event::{self, Event, KeyCode};
 use ratatui::layout::Rect;

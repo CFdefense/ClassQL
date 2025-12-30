@@ -6,7 +6,7 @@
     The AST can then be used by the semantic analyzer to check for semantic errors
 */
 
-use crate::compiler::token::{Token, TokenType};
+use crate::dsl::token::{Token, TokenType};
 use crate::tui::errors::{make_user_friendly_for_completion, SyntaxError};
 use std::vec;
 
@@ -1800,4 +1800,3 @@ impl Parser {
         Ok(email_node)
     }
 }
-

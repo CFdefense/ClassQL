@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 use clap::Parser;
-use classql::compiler::compiler::{
+use classql::dsl::compiler::{
     Compiler,
     CompilerResult::{LexerError, ParserError, Success},
 };

@@ -1,6 +1,6 @@
-use classql::compiler::lexer::Lexer;
-use classql::compiler::parser::Parser;
-use classql::compiler::token::Token;
+use classql::dsl::lexer::Lexer;
+use classql::dsl::parser::Parser;
+use classql::dsl::token::Token;
 use classql::tui::errors::SyntaxError;
 use serde::{Deserialize, Serialize};
 use std::fs;

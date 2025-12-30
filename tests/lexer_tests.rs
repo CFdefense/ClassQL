@@ -1,4 +1,4 @@
-use classql::compiler::lexer::Lexer;
+use classql::dsl::lexer::Lexer;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
