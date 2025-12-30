@@ -1,3 +1,5 @@
+/// src/dsl/lexer.rs
+/// 
 /// Lexer for the query language.
 ///
 /// Responsible for converting the input string into a stream of tokens.
@@ -11,7 +13,9 @@
 ///      get_lexeme -> Get the lexeme of a token
 ///      analyze -> Convert the input string into a stream of tokens
 ///      --- ---
-/// 
+/// --- ---
+///
+
 use super::token::{Token, TokenType};
 use crate::tui::errors::AppError;
 use regex::Regex;
@@ -19,7 +23,7 @@ use regex::Regex;
 /// Lexer for the query language.
 ///
 /// Responsible for converting the input string into a stream of tokens.
-/// 
+///
 /// Fields:
 /// --- ---
 /// input_string -> The input string to convert into tokens
@@ -28,7 +32,7 @@ use regex::Regex;
 /// Implemented Traits:
 /// --- ---
 /// None -> No implemented traits
-/// --- --- 
+/// --- ---
 ///
 pub struct Lexer {
     input_string: String,
@@ -44,8 +48,8 @@ pub struct Lexer {
 /// --- ---
 ///
 impl Lexer {
-    /// Create a new lexer instance 
-    /// 
+    /// Create a new lexer instance
+    ///
     /// Parameters:
     /// --- ---
     /// input_string -> The input string to convert into tokens
@@ -55,7 +59,7 @@ impl Lexer {
     /// --- ---
     /// Lexer -> The new lexer instance
     /// --- ---
-    /// 
+    ///
     pub fn new(input_string: String) -> Self {
         Lexer { input_string }
     }

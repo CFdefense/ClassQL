@@ -1,6 +1,42 @@
+/// src/dsl/token.rs
+/// 
+/// Token types for the DSL
+///
+/// Responsible for defining the token types for the DSL
+///
+/// Contains:
+/// --- ---
+/// TokenType -> Token type enum
+/// Token -> Token struct
+///      Methods:
+///      --- ---
+///      new -> Create a new token instance
+///      get_token_type -> Get the token type
+///      get_start -> Get the start position of the token
+///      get_end -> Get the end position of the token
+///      --- ---
+/// --- ---
+///
+
+/// Token types for the DSL
+///
+/// Token types:
+/// --- ---
+/// ... (see below)
+/// --- ---
+///
+/// Implemented Traits:
+/// --- ---
+/// Debug -> Debug trait for TokenType
+/// Clone -> Clone trait for TokenType
+/// PartialEq -> PartialEq trait for TokenType
+/// Copy -> Copy trait for TokenType
+/// Display -> Display trait for TokenType
+/// --- ---
+/// 
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub enum TokenType {
-    // Keywords
+    // keywords
     Term,
     Prof,
     Course,
@@ -15,7 +51,7 @@ pub enum TokenType {
     Corereqs,
     Email,
 
-    // New tokens for parser support
+    // new tokens for parser support
     Section,
     Number,
     Description,
@@ -29,7 +65,7 @@ pub enum TokenType {
     Start,
     End,
 
-    // Days
+    // days
     Monday,
     Tuesday,
     Wednesday,
@@ -38,7 +74,7 @@ pub enum TokenType {
     Saturday,
     Sunday,
 
-    // Operators
+    // operators
     Equals,
     NotEquals,
     LessThan,
@@ -46,12 +82,12 @@ pub enum TokenType {
     LessEqual,
     GreaterEqual,
 
-    // Logical
+    // logical
     And,
     Or,
     Not,
 
-    // Conditions
+    // conditions
     Has,
     Is,
     Starts,
@@ -61,7 +97,7 @@ pub enum TokenType {
     Equal,
     EqualsWord,
 
-    // Binary operators
+    // binary operators
     Less,
     Than,
     Greater,
@@ -72,61 +108,63 @@ pub enum TokenType {
     Fewer,
     To,
 
-    // Grouping
+    // grouping
     LeftParen,
     RightParen,
 
-    // Literals
+    // literals
     String,
     Integer,
     Time,
     Identifier,
 
-    // Special
+    // special
     Exclamation,
     Unrecognized,
 }
 
+/// TokenType Display Trait Implementation
+///
+/// Parameters:
+/// --- ---
+/// self -> The TokenType to display
+/// f -> The formatter to display the TokenType
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// std::fmt::Result -> The result of the display
+/// --- ---
+///
 impl std::fmt::Display for TokenType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "T_{}", format!("{:?}", self).to_uppercase())
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct Token {
-    token_type: TokenType,
-    start: usize,
-    end: usize,
-}
-
-impl Token {
-    pub fn new(token_type: TokenType, start: usize, end: usize) -> Self {
-        Token {
-            token_type,
-            start,
-            end,
-        }
-    }
-
-    pub fn get_token_type(&self) -> &TokenType {
-        &self.token_type
-    }
-
-    pub fn get_start(&self) -> usize {
-        self.start
-    }
-
-    pub fn get_end(&self) -> usize {
-        self.end
-    }
-}
-
+/// TokenType Implementation
+///
+/// Methods:
+/// --- ---
+/// all_patterns -> Get all token patterns in lexing order (longest/most specific first)
+/// --- ---
+///
 impl TokenType {
-    // Get all token patterns in lexing order (longest/most specific first)
+    /// Get all token patterns in lexing order (longest/most specific first)
+    ///
+    /// Parameters:
+    /// --- ---
+    /// None
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// Vec<(TokenType, &'static str)> -> All token patterns in lexing order (longest/most specific first)
+    /// --- ---
+    ///
     pub fn all_patterns() -> Vec<(TokenType, &'static str)> {
         vec![
-            // Multi-word operators
+            // multi-word operators
             (TokenType::EqualsWord, r"(?i)\bequals\b"),
             (TokenType::Starts, r"(?i)\bstarts\b"),
             (TokenType::With, r"(?i)\bwith\b"),
@@ -142,7 +180,7 @@ impl TokenType {
             (TokenType::More, r"(?i)\bmore\b"),
             (TokenType::Fewer, r"(?i)\bfewer\b"),
             (TokenType::To, r"(?i)\bto\b"),
-            // Days
+            // days
             (
                 TokenType::Wednesday,
                 r"(?i)\b(wednesday|wednesda|wednesd|wednes|wedne|wedn|wed|we|w)\b",
@@ -162,7 +200,7 @@ impl TokenType {
             (TokenType::Monday, r"(?i)\b(monday|monda|mond|mon|mo|m)\b"),
             (TokenType::Friday, r"(?i)\b(friday|frida|frid|fri|fr|f)\b"),
             (TokenType::Sunday, r"(?i)\b(sunday|sunda|sund|sun|su)\b"),
-            // Keywords - these must come before the general identifier pattern
+            // keywords - these must come before the general identifier pattern
             (TokenType::Contains, r"(?i)\bcontains\b"),
             (TokenType::Prereqs, r"(?i)\bprereqs\b"),
             (TokenType::Corereqs, r"(?i)\bcorereqs\b"),
@@ -188,14 +226,14 @@ impl TokenType {
             (TokenType::Start, r"(?i)\bstart\b"),
             (TokenType::End, r"(?i)\bend\b"),
             (TokenType::Email, r"(?i)\bemail\b"),
-            // Logical
+            // logical
             (TokenType::And, r"(?i)\band\b"),
             (TokenType::Or, r"(?i)\bor\b"),
             (TokenType::Not, r"(?i)\bnot\b"),
-            // Conditions
+            // conditions
             (TokenType::Has, r"(?i)\bhas\b"),
             (TokenType::Is, r"(?i)\bis\b"),
-            // Operators
+            // operators
             (TokenType::NotEquals, r"!="),
             (TokenType::LessEqual, r"<="),
             (TokenType::GreaterEqual, r">="),
@@ -205,17 +243,122 @@ impl TokenType {
             (TokenType::Exclamation, r"!"),
             (TokenType::LeftParen, r"\("),
             (TokenType::RightParen, r"\)"),
-            // Literals
+            // literals
             (TokenType::String, r#""[^"]*"?"#),
             (
                 TokenType::Time,
                 r"[0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)",
             ),
             (TokenType::Integer, r"[0-9]+"),
-            // General identifier pattern - must come last
+            // general identifier pattern - must come last
             (TokenType::Identifier, r"[a-zA-Z_][a-zA-Z0-9_]*"),
-            // Unrecognized characters - must come last to catch anything else
+            // unrecognized characters - must come last to catch anything else
             (TokenType::Unrecognized, r"[^\s]"),
         ]
+    }
+}
+
+/// Token for the DSL
+///
+/// Fields:
+/// --- ---
+/// token_type -> The type of the token
+/// start -> The start position of the token
+/// end -> The end position of the token
+/// --- ---
+///
+/// Implemented Traits:
+/// --- ---
+/// Debug -> Debug trait for Token
+/// Clone -> Clone trait for Token
+/// Copy -> Copy trait for Token
+/// --- ---
+///
+#[derive(Debug, Clone, Copy)]
+pub struct Token {
+    token_type: TokenType,
+    start: usize,
+    end: usize,
+}
+
+/// Token Implementation
+///
+/// Methods:
+/// --- ---
+/// new -> Create a new token instance
+/// get_token_type -> Get the token type
+/// get_start -> Get the start position of the token
+/// get_end -> Get the end position of the token
+/// --- ---
+///
+impl Token {
+    /// Create a new token instance
+    ///
+    /// Parameters:
+    /// --- ---
+    /// token_type -> The type of the token
+    /// start -> The start position of the token
+    /// end -> The end position of the token
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// Token -> The new token instance
+    /// --- ---
+    ///
+    pub fn new(token_type: TokenType, start: usize, end: usize) -> Self {
+        Token {
+            token_type,
+            start,
+            end,
+        }
+    }
+
+    /// Get the token type
+    ///
+    /// Parameters:
+    /// --- ---
+    /// self -> The Token to get the token type for
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// &TokenType -> The token type
+    /// --- ---
+    ///
+    pub fn get_token_type(&self) -> &TokenType {
+        &self.token_type
+    }
+
+    /// Get the start position of the token
+    ///
+    /// Parameters:
+    /// --- ---
+    /// self -> The Token to get the start position for
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// usize -> The start position of the token
+    /// --- ---
+    ///
+    pub fn get_start(&self) -> usize {
+        self.start
+    }
+
+    /// Get the end position of the token
+    ///
+    /// Parameters:
+    /// --- ---
+    /// self -> The Token to get the end position for
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// usize -> The end position of the token
+    /// --- ---
+    ///
+    pub fn get_end(&self) -> usize {
+        self.end
     }
 }

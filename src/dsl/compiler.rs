@@ -1,4 +1,5 @@
-///
+/// src/dsl/compiler.rs
+/// 
 /// Compiler for the DSL
 ///
 /// Responsible for compiling the DSL into a SQL query
@@ -13,6 +14,7 @@
 ///      run -> Compile the DSL into a SQL query
 ///      get_tab_completion -> Get tab completion suggestions for the current input
 ///      --- ---
+/// --- ---
 ///
 
 use super::lexer::Lexer;
