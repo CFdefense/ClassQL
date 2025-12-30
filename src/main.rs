@@ -1,16 +1,11 @@
 #![allow(dead_code)]
 use clap::Parser;
-use compiler::driver::{
+use classql::compiler::compiler::{
     Compiler,
     CompilerResult::{LexerError, ParserError, Success},
 };
-use tui::render::Tui;
-use utils::visualizetree::ast_to_dot;
-
-mod compiler;
-mod data;
-mod tui;
-mod utils;
+use classql::tui::render::Tui;
+use classql::utils::visualizetree::ast_to_dot;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
