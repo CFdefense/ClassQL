@@ -1,0 +1,88 @@
+[
+  {
+    "test_name": "semantic_numeric_queries_valid_basic",
+    "description": "Numeric semantics should accept simple numeric comparisons on credit hours and enrollment",
+    "input": "credit hours >= 3 and enrollment < 100",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_numeric_queries_valid_cap",
+    "description": "Numeric semantics should accept valid enrollment cap comparisons",
+    "input": "enrollment cap <= 50",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_numeric_queries_valid_mixed",
+    "description": "Numeric semantics should accept mixed numeric fields combined with logical operators",
+    "input": "credit hours = 3 or (enrollment > 40 and cap >= 45)",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_time_queries_valid_comparison",
+    "description": "Time semantics should accept valid start/end comparisons with time literals",
+    "input": "start >= 9:00am and end <= 5:00pm",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_time_queries_valid_range_single",
+    "description": "Time semantics should accept a single well-formed time range on start",
+    "input": "start 9:00 to 17:00",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_time_queries_valid_range_start_and_end",
+    "description": "Time semantics should accept separate start and end time ranges combined with and",
+    "input": "start 9:00 to 17:00 and end 8:00am to 4:00pm",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_day_query_valid_monday",
+    "description": "Day semantics should accept a simple monday predicate",
+    "input": "monday is true",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_day_query_valid_combined_days",
+    "description": "Day semantics should accept multiple day predicates combined with logical operators",
+    "input": "monday equals true and wednesday equals true or friday equals false",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_string_professor_query_valid",
+    "description": "String semantics should accept a simple professor name predicate",
+    "input": "prof contains smith",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_string_subject_query_valid",
+    "description": "String semantics should accept a simple subject predicate",
+    "input": "subject equals CS",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_string_number_query_valid",
+    "description": "String semantics should accept a course number predicate using number keyword",
+    "input": "number equals CS101",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_string_title_description_combined_valid",
+    "description": "String semantics should accept combined title and description predicates",
+    "input": "title contains calculus and description contains introduction",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_string_method_campus_full_valid",
+    "description": "String semantics should accept method, campus, and full predicates together",
+    "input": "method equals online and campus equals main and full equals true",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_string_meeting_type_query_valid",
+    "description": "String semantics should accept a meeting type predicate",
+    "input": "meeting type equals online",
+    "should_succeed": true
+  }
+]
+
+

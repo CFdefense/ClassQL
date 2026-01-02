@@ -1,0 +1,94 @@
+[
+  {
+    "test_name": "semantic_numeric_queries_invalid_credit_hours_time_literal",
+    "description": "Numeric semantics should reject using a time literal where an integer is expected for credit hours",
+    "input": "credit hours > 3pm",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_numeric_queries_invalid_enrollment_time_literal",
+    "description": "Numeric semantics should reject using a time literal where an integer is expected for enrollment",
+    "input": "enrollment <= 8:00am",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_numeric_queries_invalid_cap_identifier",
+    "description": "Numeric semantics should reject using an identifier where an integer is expected for enrollment cap",
+    "input": "enrollment cap >= CS101",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_numeric_queries_invalid_credit_hours_string_literal",
+    "description": "Numeric semantics should reject using a quoted string where an integer is expected for credit hours",
+    "input": "credit hours = \"three\"",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_numeric_queries_invalid_enrollment_day_identifier",
+    "description": "Numeric semantics should reject using a day keyword where an integer is expected for enrollment",
+    "input": "enrollment > monday",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_time_queries_invalid_integer_as_time",
+    "description": "Time semantics should reject using a bare integer where a time literal is expected",
+    "input": "start >= 3",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_time_queries_invalid_identifier_as_time",
+    "description": "Time semantics should reject using an identifier where a time literal is expected",
+    "input": "end <= CS101",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_time_queries_invalid_mixed_range",
+    "description": "Time semantics should reject a time range where only one side is a valid time literal",
+    "input": "start 9:00 to 5",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_time_queries_invalid_identifier_range",
+    "description": "Time semantics should reject a time range built from identifiers instead of time literals",
+    "input": "start foo to bar",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_string_professor_query_invalid_numeric_value",
+    "description": "String semantics should reject using a bare integer where a text value is expected for professor",
+    "input": "prof equals 3",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_string_subject_query_invalid_time_value",
+    "description": "String semantics should reject using a time literal where a text value is expected for subject",
+    "input": "subject equals 9:00am",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_string_number_query_invalid_numeric_value",
+    "description": "String semantics should reject using a bare integer where a course number string is expected",
+    "input": "number equals 101",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_string_method_query_invalid_numeric_value",
+    "description": "String semantics should reject using a bare integer where a method string is expected",
+    "input": "method equals 3",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_day_query_invalid_numeric_value",
+    "description": "Day semantics should reject using a bare integer where a boolean/text flag is expected",
+    "input": "monday equals 3",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_day_query_invalid_time_value",
+    "description": "Day semantics should reject using a time literal where a boolean/text flag is expected",
+    "input": "friday equals 9:00am",
+    "should_succeed": false
+  }
+]
+
+

@@ -9,6 +9,7 @@
 /// TUIError -> TUI error enum
 /// AppError -> Application error enum
 /// SyntaxError -> Syntax error enum
+/// SemanticError -> Semantic error enum
 /// Other helper functions:
 ///      --- ---
 ///      extract_user_text -> Extract the user text from the token
@@ -71,6 +72,7 @@ impl Display for TUIError {
 /// --- ---
 /// Empty -> Empty error
 /// SyntaxError -> Syntax error
+/// SemanticError -> Semantic error
 /// UnrecognizedTokens -> Unrecognized tokens
 /// --- ---
 ///
@@ -85,6 +87,7 @@ impl Display for TUIError {
 pub enum AppError {
     Empty,
     SyntaxError(SyntaxError),
+    SemanticError(SemanticError),
     UnrecognizedTokens(String, Vec<(usize, usize)>),
 }
 
@@ -106,7 +109,78 @@ impl Display for AppError {
         match self {
             AppError::Empty => write!(f, "No error"),
             AppError::SyntaxError(msg) => write!(f, "Syntax error: {}", msg),
+            AppError::SemanticError(msg) => write!(f, "Semantic error: {}", msg),
             AppError::UnrecognizedTokens(msg, _) => write!(f, "Unrecognized tokens: {}", msg),
+        }
+    }
+}
+
+/// SemanticError enum
+///
+/// SemanticError types:
+/// --- ---
+/// InvalidContext -> Invalid semantic context
+/// --- ---
+///
+/// Implemented Traits:
+/// --- ---
+/// Debug -> Debug trait for SemanticError
+/// PartialEq -> PartialEq trait for SemanticError
+/// Display -> Display trait for SemanticError
+/// --- ---
+///
+#[derive(Debug, PartialEq, Clone)]
+pub enum SemanticError {
+    InvalidContext {
+        token: String,
+        context: String,
+        suggestions: Vec<String>,
+    },
+}
+
+/// SemanticError Display Trait Implementation
+///
+/// Parameters:
+/// --- ---
+/// self -> The SemanticError to display
+/// f -> The formatter to display the SemanticError
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// std::fmt::Result -> The result of the display
+/// --- ---
+///
+impl Display for SemanticError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SemanticError::InvalidContext {
+                token,
+                context,
+                suggestions,
+            } => {
+                let clean_token = extract_user_text(token);
+                let user_friendly_context = make_user_friendly(context);
+
+                if suggestions.is_empty() {
+                    write!(
+                        f,
+                        "'{}' is not valid here ({})",
+                        clean_token, user_friendly_context
+                    )
+                } else {
+                    let user_friendly_suggestions: Vec<String> = suggestions
+                        .iter()
+                        .map(|s| format!("'{}'", make_user_friendly(s)))
+                        .collect();
+                    write!(
+                        f,
+                        "'{}' is not valid here. Try: {}",
+                        clean_token,
+                        user_friendly_suggestions.join(", ")
+                    )
+                }
+            }
         }
     }
 }
