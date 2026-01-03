@@ -25,7 +25,7 @@
 use classql::dsl::lexer::Lexer;
 use classql::dsl::parser::Parser;
 use classql::dsl::semantic::semantic_analysis;
-use classql::tui::errors::AppError;
+use classql::tui::errors::SemanticError;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
@@ -151,24 +151,36 @@ impl SemanticTestHelper {
                     println!("Semantic analysis succeeded as expected\n");
                 }
             }
-            Err(e) => {
+            Err((error, positions)) => {
                 if test_case.should_succeed {
                     panic!(
                         "Semantic analysis failed but was expected to succeed in test '{}': {:?}",
-                        test_case.test_name, e
+                        test_case.test_name, error
                     );
                 } else {
-                    // For now we only assert that we got some AppError; specific
-                    // semantic error shapes can be validated in future extensions
-                    match e {
-                        AppError::SemanticError(_) => {
-                            println!("Semantic analysis failed as expected: {:?}\n", e);
+                    // We currently expect all semantic failures to be InvalidContext.
+                    match error {
+                        SemanticError::InvalidContext { .. } => {
+                            println!(
+                                "Semantic analysis failed as expected with error: {:?}",
+                                error
+                            );
                         }
-                        _ => panic!(
-                            "Expected semantic error in test '{}', but got different AppError: {:?}",
-                            test_case.test_name, e
-                        ),
                     }
+
+                    // Basic sanity checks for reported positions: they must be within input bounds.
+                    for (start, end) in positions {
+                        assert!(
+                            end > start,
+                            "Semantic error position end should be greater than start"
+                        );
+                        assert!(
+                            end <= test_case.input.len(),
+                            "Semantic error position end should not exceed input length"
+                        );
+                    }
+
+                    println!();
                 }
             }
         }

@@ -53,6 +53,7 @@ use std::time::{Duration, Instant};
 pub enum ErrorType {
     Lexer,
     Parser,
+    Semantic,
 }
 
 /// Tui struct
@@ -240,17 +241,17 @@ impl Tui {
 
                         // run the compiler and handle the result
                         match self.compiler.run(&self.input) {
-                            CompilerResult::Success { message, ast } => {
+                            CompilerResult::Success { message, .. } => {
                                 // clear any error state
                                 self.toast_message = None;
                                 self.toast_start_time = None;
                                 self.error_type = None;
                                 self.problematic_tokens.clear();
-                                // show a brief success message
+
+                                // TODO: display results of database query instead of success message
                                 self.toast_message = Some(message);
                                 self.toast_start_time = Some(Instant::now());
-                                // TODO: process successful AST for semantic analysis or query execution
-                                println!("Parsed AST: {:?}", ast); // Debug output for now
+                                println!("success"); // Debug output for now
                             }
                             CompilerResult::LexerError {
                                 message,
@@ -266,6 +267,14 @@ impl Tui {
                             } => {
                                 // show error and highlight problematic tokens
                                 self.show_toast(message, ErrorType::Parser);
+                                self.problematic_tokens = problematic_tokens;
+                            }
+                            CompilerResult::SemanticError {
+                                message,
+                                problematic_tokens,
+                            } => {
+                                // show error and highlight problematic tokens
+                                self.show_toast(message, ErrorType::Semantic);
                                 self.problematic_tokens = problematic_tokens;
                             }
                         }

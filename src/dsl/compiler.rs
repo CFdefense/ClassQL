@@ -16,9 +16,13 @@
 ///      --- ---
 /// --- ---
 ///
-use super::lexer::Lexer;
-use super::parser::{Ast, Parser};
+use crate::dsl::{
+    lexer::Lexer,
+    semantic::semantic_analysis,
+    parser::{Ast, Parser},
+};
 use crate::tui::errors::AppError;
+use crate::data::sql::Class;
 
 /// Result Types for the Compiler
 ///
@@ -27,6 +31,7 @@ use crate::tui::errors::AppError;
 /// Sucess -> Compilation was successful, contains message and AST
 /// LexerError -> Lexical analysis failed, contains message and problematic tokens
 /// ParserError -> Parsing failed, contains message and problematic tokens
+/// SemanticError -> Semantic analysis failed, contains message and problematic tokens
 /// --- ---
 ///
 /// Implemented Traits:
@@ -39,6 +44,7 @@ use crate::tui::errors::AppError;
 pub enum CompilerResult {
     Success {
         message: String,
+        classes: Vec<Class>,
         ast: Ast,
     },
     LexerError {
@@ -46,6 +52,10 @@ pub enum CompilerResult {
         problematic_tokens: Vec<(usize, usize)>,
     },
     ParserError {
+        message: String,
+        problematic_tokens: Vec<(usize, usize)>,
+    },
+    SemanticError {
         message: String,
         problematic_tokens: Vec<(usize, usize)>,
     },
@@ -133,9 +143,10 @@ impl Compiler {
             }
         };
 
-        // parse the tokens
+        // perform parsing
         let mut parser = Parser::new(input.to_string());
 
+        // try to parse the tokens
         let ast = match parser.parse(&tokens) {
             Ok(ast) => ast,
             Err(error_tuple) => {
@@ -150,8 +161,22 @@ impl Compiler {
                 };
             }
         };
+
+        // perform semantic analysis
+        match semantic_analysis(&ast) {
+            Ok(()) => {}
+            Err((e, problematic_positions)) => {
+                return CompilerResult::SemanticError {
+                    message: e.to_string(),
+                    problematic_tokens: problematic_positions,
+                };
+            }
+        }
+
+        // return success if all operations were successful
         CompilerResult::Success {
             message: "Success".to_string(),
+            classes: Vec::new(),
             ast,
         }
     }

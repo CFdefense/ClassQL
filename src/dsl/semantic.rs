@@ -7,13 +7,13 @@
 /// Contains:
 /// --- ---
 /// semantic_analysis -> Run semantic analysis on a parsed AST
-/// invalid_context -> Helper to build a semantic error wrapped as an `AppError`
+/// invalid_context -> Helper to build a `SemanticError`
 /// analyze_node -> Analyze a node in the AST
 /// --- ---
 ///
 use crate::dsl::parser::{Ast, NodeType, TreeNode};
 use crate::dsl::token::TokenType;
-use crate::tui::errors::{AppError, SemanticError};
+use crate::tui::errors::SemanticError;
 
 /// Run semantic analysis on a parsed AST.
 ///
@@ -40,9 +40,12 @@ use crate::tui::errors::{AppError, SemanticError};
 ///
 /// Returns:
 /// --- ---
-/// Result<(), AppError> -> The result of the semantic analysis
+/// Result<(), (SemanticError, Vec<(usize, usize)>)> -> The result of the semantic analysis
+///     Ok(()) -> Semantic analysis succeeded
+///     Err((SemanticError, Vec<(usize, usize)>)) -> Semantic analysis failed, contains
+///         the `SemanticError` and byte‑range positions for the problematic input
 /// --- ---
-pub fn semantic_analysis(ast: &Ast) -> Result<(), AppError> {
+pub fn semantic_analysis(ast: &Ast) -> Result<(), (SemanticError, Vec<(usize, usize)>)> {
     if let Some(root) = &ast.head {
         analyze_node(root)
     } else {
@@ -52,7 +55,7 @@ pub fn semantic_analysis(ast: &Ast) -> Result<(), AppError> {
     }
 }
 
-/// Helper to build a semantic error wrapped as an `AppError`.
+/// Helper to build a semantic error.
 ///
 /// Parameters:
 /// --- ---
@@ -63,14 +66,14 @@ pub fn semantic_analysis(ast: &Ast) -> Result<(), AppError> {
 ///
 /// Returns:
 /// --- ---
-/// AppError -> The wrapped semantic error
+/// SemanticError -> The semantic error
 /// --- ---
-fn invalid_context(token: String, context: &str, suggestions: &[&str]) -> AppError {
-    AppError::SemanticError(SemanticError::InvalidContext {
+fn invalid_context(token: String, context: &str, suggestions: &[&str]) -> SemanticError {
+    SemanticError::InvalidContext {
         token,
         context: context.to_string(),
         suggestions: suggestions.iter().map(|s| (*s).to_string()).collect(),
-    })
+    }
 }
 
 /// Analyze a node in the AST.
@@ -85,36 +88,53 @@ fn invalid_context(token: String, context: &str, suggestions: &[&str]) -> AppErr
 ///
 /// Returns:
 /// --- ---
-/// Result<(), AppError> -> The result of the node analysis
+/// Result<(), (SemanticError, Vec<(usize, usize)>)> -> The result of the node analysis
 /// --- ---
-fn analyze_node(node: &TreeNode) -> Result<(), AppError> {
+fn analyze_node(node: &TreeNode) -> Result<(), (SemanticError, Vec<(usize, usize)>)> {
     use NodeType::*;
     // Node‑local checks
     match node.node_type {
         // Queries over numeric fields should have shape: <Binop> <Integer>
         CreditHoursQuery | EnrollmentQuery | EnrollmentCapQuery => {
             if node.children.len() != 2 {
-                return Err(invalid_context(
+                let err = invalid_context(
                     node.node_content.clone(),
                     "numeric field query",
                     &["<comparison>", "<number>"],
-                ));
+                );
+                let span = node
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
 
             if !matches!(node.children[0].node_type, Binop) {
-                return Err(invalid_context(
-                    node.children[0].node_content.clone(),
+                let child = &node.children[0];
+                let err = invalid_context(
+                    child.node_content.clone(),
                     "numeric comparison",
                     &["<comparison operator>"],
-                ));
+                );
+                let span = child
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
 
             if !matches!(node.children[1].node_type, Integer) {
-                return Err(invalid_context(
-                    node.children[1].node_content.clone(),
+                let child = &node.children[1];
+                let err = invalid_context(
+                    child.node_content.clone(),
                     "numeric comparison",
                     &["<number>"],
-                ));
+                );
+                let span = child
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
         }
 
@@ -123,56 +143,90 @@ fn analyze_node(node: &TreeNode) -> Result<(), AppError> {
         //   ("start" | "end") <time_range>
         TimeQuery => {
             if node.children.is_empty() {
-                return Err(invalid_context(
+                let err = invalid_context(
                     node.node_content.clone(),
                     "time query",
                     &["start", "end"],
-                ));
+                );
+                let span = node
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
 
             // First child encodes whether this is "start" or "end"
             if !matches!(node.children[0].node_type, String) {
-                return Err(invalid_context(
-                    node.children[0].node_content.clone(),
+                let child = &node.children[0];
+                let err = invalid_context(
+                    child.node_content.clone(),
                     "time query",
                     &["start", "end"],
-                ));
+                );
+                let span = child
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
 
             match node.children.len() {
                 // ("start" | "end") <time_range>
                 2 => {
                     if !matches!(node.children[1].node_type, TimeRange) {
-                        return Err(invalid_context(
-                            node.children[1].node_content.clone(),
+                        let child = &node.children[1];
+                        let err = invalid_context(
+                            child.node_content.clone(),
                             "time range query",
                             &["<time> to <time>"],
-                        ));
+                        );
+                        let span = child
+                            .lexical_token
+                            .map(|t| vec![(t.get_start(), t.get_end())])
+                            .unwrap_or_default();
+                        return Err((err, span));
                     }
                 }
                 // ("start" | "end") <binop> <time>
                 3 => {
                     if !matches!(node.children[1].node_type, Binop) {
-                        return Err(invalid_context(
-                            node.children[1].node_content.clone(),
+                        let child = &node.children[1];
+                        let err = invalid_context(
+                            child.node_content.clone(),
                             "time comparison",
                             &["<comparison operator>"],
-                        ));
+                        );
+                        let span = child
+                            .lexical_token
+                            .map(|t| vec![(t.get_start(), t.get_end())])
+                            .unwrap_or_default();
+                        return Err((err, span));
                     }
                     if !matches!(node.children[2].node_type, Time) {
-                        return Err(invalid_context(
-                            node.children[2].node_content.clone(),
+                        let child = &node.children[2];
+                        let err = invalid_context(
+                            child.node_content.clone(),
                             "time comparison",
                             &["<time value>"],
-                        ));
+                        );
+                        let span = child
+                            .lexical_token
+                            .map(|t| vec![(t.get_start(), t.get_end())])
+                            .unwrap_or_default();
+                        return Err((err, span));
                     }
                 }
                 _ => {
-                    return Err(invalid_context(
+                    let err = invalid_context(
                         node.node_content.clone(),
                         "time query",
                         &["<comparison> <time>", "<time> to <time>"],
-                    ));
+                    );
+                    let span = node
+                        .lexical_token
+                        .map(|t| vec![(t.get_start(), t.get_end())])
+                        .unwrap_or_default();
+                    return Err((err, span));
                 }
             }
         }
@@ -180,21 +234,31 @@ fn analyze_node(node: &TreeNode) -> Result<(), AppError> {
         // Time range must be exactly: <time>, <time>
         TimeRange => {
             if node.children.len() != 2 {
-                return Err(invalid_context(
+                let err = invalid_context(
                     node.node_content.clone(),
                     "time range",
                     &["<time> to <time>"],
-                ));
+                );
+                let span = node
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
 
             if !matches!(node.children[0].node_type, Time)
                 || !matches!(node.children[1].node_type, Time)
             {
-                return Err(invalid_context(
+                let err = invalid_context(
                     node.node_content.clone(),
                     "time range",
                     &["<time> to <time>"],
-                ));
+                );
+                let span = node
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
         }
 
@@ -208,30 +272,46 @@ fn analyze_node(node: &TreeNode) -> Result<(), AppError> {
             // where day_node is a `String` node whose children are
             //   [ <Condition>, <Identifier-or-email> ]
             if node.children.len() != 1 {
-                return Err(invalid_context(
+                let err = invalid_context(
                     node.node_content.clone(),
                     "day query",
                     &["monday <condition> <value>", "tuesday <condition> <value>"],
-                ));
+                );
+                let span = node
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
 
             let day_node = &node.children[0];
             // We don’t depend on the concrete day token here, only on shape.
             if day_node.children.len() != 2 {
-                return Err(invalid_context(
+                let err = invalid_context(
                     day_node.node_content.clone(),
                     "day query",
                     &["<day> <condition> <value>"],
-                ));
+                );
+                let span = day_node
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
 
             // First child must be a string condition node.
             if !matches!(day_node.children[0].node_type, Condition) {
-                return Err(invalid_context(
-                    day_node.children[0].node_content.clone(),
+                let child = &day_node.children[0];
+                let err = invalid_context(
+                    child.node_content.clone(),
                     "day condition",
                     &["is", "equals", "contains", "has", "starts with", "ends with"],
-                ));
+                );
+                let span = child
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
 
             // Second child must be a string-like value; we allow identifiers and
@@ -240,11 +320,17 @@ fn analyze_node(node: &TreeNode) -> Result<(), AppError> {
                 day_node.children[1].node_type,
                 Identifier | EmailIdentifier | String
             ) {
-                return Err(invalid_context(
-                    day_node.children[1].node_content.clone(),
+                let child = &day_node.children[1];
+                let err = invalid_context(
+                    child.node_content.clone(),
                     "day value",
                     &["true", "false", "<text value>"],
-                ));
+                );
+                let span = child
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
 
             // Additionally, reject obviously wrong literal categories such as
@@ -254,11 +340,13 @@ fn analyze_node(node: &TreeNode) -> Result<(), AppError> {
                     *tok.get_token_type(),
                     TokenType::Integer | TokenType::Time
                 ) {
-                    return Err(invalid_context(
+                    let err = invalid_context(
                         tok.get_token_type().to_string(),
                         "day value",
                         &["true", "false"],
-                    ));
+                    );
+                    let span = vec![(tok.get_start(), tok.get_end())];
+                    return Err((err, span));
                 }
             }
         }
@@ -277,21 +365,32 @@ fn analyze_node(node: &TreeNode) -> Result<(), AppError> {
         | FullQuery
         | MeetingTypeQuery => {
             if node.children.len() != 2 {
-                return Err(invalid_context(
+                let err = invalid_context(
                     node.node_content.clone(),
                     "string field query",
                     &["<condition> <value>"],
-                ));
+                );
+                let span = node
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
 
             // First child must be a condition node (parser already enforces the
             // token category; semantics assert the AST shape).
             if !matches!(node.children[0].node_type, Condition) {
-                return Err(invalid_context(
-                    node.children[0].node_content.clone(),
+                let child = &node.children[0];
+                let err = invalid_context(
+                    child.node_content.clone(),
                     "string condition",
                     &["is", "equals", "contains", "has", "starts with", "ends with"],
-                ));
+                );
+                let span = child
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
 
             // Second child must be a string-like value node; we allow both
@@ -301,11 +400,17 @@ fn analyze_node(node: &TreeNode) -> Result<(), AppError> {
                 node.children[1].node_type,
                 Identifier | EmailIdentifier | String
             ) {
-                return Err(invalid_context(
-                    node.children[1].node_content.clone(),
+                let child = &node.children[1];
+                let err = invalid_context(
+                    child.node_content.clone(),
                     "string field value",
                     &["<text value>", "quoted string"],
-                ));
+                );
+                let span = child
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
             }
 
             // Also reject clearly wrong literal categories such as numeric or
@@ -315,11 +420,13 @@ fn analyze_node(node: &TreeNode) -> Result<(), AppError> {
                     *tok.get_token_type(),
                     TokenType::Integer | TokenType::Time
                 ) {
-                    return Err(invalid_context(
+                    let err = invalid_context(
                         tok.get_token_type().to_string(),
                         "string field value",
                         &["<text value>", "quoted string"],
-                    ));
+                    );
+                    let span = vec![(tok.get_start(), tok.get_end())];
+                    return Err((err, span));
                 }
             }
         }
@@ -328,11 +435,13 @@ fn analyze_node(node: &TreeNode) -> Result<(), AppError> {
         Integer => {
             if let Some(tok) = node.lexical_token {
                 if *tok.get_token_type() != TokenType::Integer {
-                    return Err(invalid_context(
+                    let err = invalid_context(
                         tok.get_token_type().to_string(),
                         "integer literal",
                         &["<number>"],
-                    ));
+                    );
+                    let span = vec![(tok.get_start(), tok.get_end())];
+                    return Err((err, span));
                 }
             }
         }
@@ -340,11 +449,13 @@ fn analyze_node(node: &TreeNode) -> Result<(), AppError> {
         Time => {
             if let Some(tok) = node.lexical_token {
                 if *tok.get_token_type() != TokenType::Time {
-                    return Err(invalid_context(
+                    let err = invalid_context(
                         tok.get_token_type().to_string(),
                         "time literal",
                         &["<time value>"],
-                    ));
+                    );
+                    let span = vec![(tok.get_start(), tok.get_end())];
+                    return Err((err, span));
                 }
             }
         }
