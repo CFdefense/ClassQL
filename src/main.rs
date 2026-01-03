@@ -69,6 +69,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // if a query is provided, compile it and visualize the AST
     if let Some(query) = args.query {
         let mut compiler = Compiler::new();
+
+        // run the compiler and handle the result
         match compiler.run(&query) {
             CompilerResult::Success { ast, .. } => {
                 println!("{}", ast_to_dot(query, &ast))
