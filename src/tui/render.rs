@@ -27,7 +27,7 @@
 ///
 use crate::dsl::compiler::{Compiler, CompilerResult};
 use crate::tui::errors::TUIError;
-use crossterm::event::{self, Event, KeyCode};
+use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
@@ -53,6 +53,7 @@ use std::time::{Duration, Instant};
 pub enum ErrorType {
     Lexer,
     Parser,
+    Semantic,
 }
 
 /// Tui struct
@@ -65,7 +66,7 @@ pub enum ErrorType {
 /// toast_message -> The toast message
 /// toast_start_time -> The toast start time
 /// error_type -> The error type
-/// problematic_tokens -> The problematic tokens
+/// problematic_positions -> The problematic positions (byte ranges)
 /// compiler -> The compiler instance
 /// completions -> The completions
 /// completion_index -> The completion index
@@ -85,7 +86,7 @@ pub struct Tui {
     toast_message: Option<String>,
     toast_start_time: Option<Instant>,
     error_type: Option<ErrorType>,
-    problematic_tokens: Vec<(usize, usize)>,
+    problematic_positions: Vec<(usize, usize)>,
     compiler: Compiler,
     completions: Vec<String>,
     completion_index: Option<usize>,
@@ -126,7 +127,7 @@ impl Tui {
             toast_message: None,
             toast_start_time: None,
             error_type: None,
-            problematic_tokens: Vec::new(),
+            problematic_positions: Vec::new(),
             compiler,
             completions: Vec::new(),
             completion_index: None,
@@ -153,7 +154,7 @@ impl Tui {
 
             // extract render data to avoid borrow conflicts
             let input = self.input.clone();
-            let problematic_tokens = self.problematic_tokens.clone();
+            let problematic_positions = self.problematic_positions.clone();
             let toast_message = self.toast_message.clone();
             let error_type = self.error_type.clone();
             let completions = self.completions.clone();
@@ -166,7 +167,7 @@ impl Tui {
                 render_frame(
                     f,
                     &input,
-                    &problematic_tokens,
+                    &problematic_positions,
                     &toast_message,
                     &error_type,
                     &completions,
@@ -233,40 +234,51 @@ impl Tui {
                 }
 
                 match key.code {
+                    // exit the TUI if the user presses Ctrl+C or Esc
+                    KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => break Ok(()),
                     KeyCode::Esc => break Ok(()),
+
+                    // use compiler to process the query
                     KeyCode::Enter => {
                         // process the query here
                         self.user_query = self.input.clone();
 
                         // run the compiler and handle the result
                         match self.compiler.run(&self.input) {
-                            CompilerResult::Success { message, ast } => {
+                            CompilerResult::Success { .. } => {
                                 // clear any error state
                                 self.toast_message = None;
                                 self.toast_start_time = None;
                                 self.error_type = None;
-                                self.problematic_tokens.clear();
-                                // show a brief success message
-                                self.toast_message = Some(message);
+                                self.problematic_positions.clear();
+
+                                // TODO: display results of database query instead of success message
+                                self.toast_message = Some(String::from("success"));
                                 self.toast_start_time = Some(Instant::now());
-                                // TODO: process successful AST for semantic analysis or query execution
-                                println!("Parsed AST: {:?}", ast); // Debug output for now
                             }
                             CompilerResult::LexerError {
                                 message,
-                                problematic_tokens,
+                                problematic_positions,
                             } => {
                                 // show error and highlight problematic tokens
                                 self.show_toast(message, ErrorType::Lexer);
-                                self.problematic_tokens = problematic_tokens;
+                                self.problematic_positions = problematic_positions;
                             }
                             CompilerResult::ParserError {
                                 message,
-                                problematic_tokens,
+                                problematic_positions,
                             } => {
                                 // show error and highlight problematic tokens
                                 self.show_toast(message, ErrorType::Parser);
-                                self.problematic_tokens = problematic_tokens;
+                                self.problematic_positions = problematic_positions;
+                            }
+                            CompilerResult::SemanticError {
+                                message,
+                                problematic_positions,
+                            } => {
+                                // show error and highlight problematic tokens
+                                self.show_toast(message, ErrorType::Semantic);
+                                self.problematic_positions = problematic_positions;
                             }
                         }
                     }
@@ -306,7 +318,7 @@ impl Tui {
         self.toast_message = None;
         self.toast_start_time = None;
         self.error_type = None;
-        self.problematic_tokens.clear();
+        self.problematic_positions.clear();
     }
 
     /// Handle tab completion
@@ -394,7 +406,7 @@ impl Tui {
 /// --- ---
 /// frame -> The frame to render
 /// input -> The input string
-/// problematic_tokens -> The problematic tokens
+/// problematic_positions -> The problematic positions (byte ranges)
 /// toast_message -> The toast message
 /// error_type -> The error type
 /// completions -> The completions
@@ -411,7 +423,7 @@ impl Tui {
 fn render_frame(
     frame: &mut Frame,
     input: &str,
-    problematic_tokens: &[(usize, usize)],
+    problematic_positions: &[(usize, usize)],
     toast_message: &Option<String>,
     error_type: &Option<ErrorType>,
     completions: &[String],
@@ -419,7 +431,7 @@ fn render_frame(
     show_completions: bool,
 ) {
     render_logo(frame);
-    render_search_bar_with_data(frame, input, problematic_tokens);
+    render_search_bar_with_data(frame, input, problematic_positions);
     render_query_results(frame);
     render_search_helpers_with_data(frame, input, toast_message);
     render_syntax_highlighting(frame);
@@ -480,7 +492,7 @@ fn render_logo(frame: &mut Frame) {
 /// --- ---
 /// frame -> The frame to render
 /// input -> The input string
-/// problematic_tokens -> The problematic tokens
+/// problematic_positions -> The problematic positions (byte ranges)
 /// --- ---
 ///
 /// Returns:
@@ -491,7 +503,7 @@ fn render_logo(frame: &mut Frame) {
 fn render_search_bar_with_data(
     frame: &mut Frame,
     input: &str,
-    problematic_tokens: &[(usize, usize)],
+    problematic_positions: &[(usize, usize)],
 ) {
     let search_width = 50;
 
@@ -506,16 +518,16 @@ fn render_search_bar_with_data(
         height: 3,
     };
 
-    // create styled spans for the input with highlighted problematic tokens
+    // create styled spans for the input with highlighted problematic positions
     let mut styled_spans = Vec::new();
 
     // start with the "> " prefix
     styled_spans.push(Span::styled("> ", Style::default().fg(Color::White)));
 
-    // process the input character by character, highlighting problematic tokens
+    // process the input character by character, highlighting problematic positions
     for (i, ch) in input.chars().enumerate() {
-        let is_problematic = problematic_tokens.iter().any(|&(start, end)| {
-            // token positions are relative to the input string, so we need to match them correctly
+        let is_problematic = problematic_positions.iter().any(|&(start, end)| {
+            // positions are relative to the input string, so we need to match them correctly
             i >= start && i < end
         });
 

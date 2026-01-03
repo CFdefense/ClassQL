@@ -16,17 +16,22 @@
 ///      --- ---
 /// --- ---
 ///
-use super::lexer::Lexer;
-use super::parser::{Ast, Parser};
+use crate::dsl::{
+    lexer::Lexer,
+    semantic::semantic_analysis,
+    parser::{Ast, Parser},
+};
 use crate::tui::errors::AppError;
+use crate::data::sql::Class;
 
 /// Result Types for the Compiler
 ///
 /// Results:
 /// --- ---
-/// Sucess -> Compilation was successful, contains message and AST
-/// LexerError -> Lexical analysis failed, contains message and problematic tokens
-/// ParserError -> Parsing failed, contains message and problematic tokens
+/// Sucess -> Compilation was successful, contains message, positions and AST
+/// LexerError -> Lexical analysis failed, contains message and problematic positions
+/// ParserError -> Parsing failed, contains message and problematic positions
+/// SemanticError -> Semantic analysis failed, contains message and problematic positions
 /// --- ---
 ///
 /// Implemented Traits:
@@ -39,15 +44,20 @@ use crate::tui::errors::AppError;
 pub enum CompilerResult {
     Success {
         message: String,
+        classes: Vec<Class>,
         ast: Ast,
     },
     LexerError {
         message: String,
-        problematic_tokens: Vec<(usize, usize)>,
+        problematic_positions: Vec<(usize, usize)>,
     },
     ParserError {
         message: String,
-        problematic_tokens: Vec<(usize, usize)>,
+        problematic_positions: Vec<(usize, usize)>,
+    },
+    SemanticError {
+        message: String,
+        problematic_positions: Vec<(usize, usize)>,
     },
 }
 
@@ -119,23 +129,24 @@ impl Compiler {
         // perform lexical analysis
         let tokens = match lexer.analyze() {
             Ok(tokens) => tokens,
-            Err(AppError::UnrecognizedTokens(error_msg, problematic_tokens)) => {
+            Err(AppError::UnrecognizedTokens(error_msg, problematic_positions)) => {
                 return CompilerResult::LexerError {
                     message: error_msg,
-                    problematic_tokens,
+                    problematic_positions,
                 };
             }
             Err(_) => {
                 return CompilerResult::LexerError {
                     message: "Unknown lexer error".to_string(),
-                    problematic_tokens: Vec::new(),
+                    problematic_positions: Vec::new(),
                 };
             }
         };
 
-        // parse the tokens
+        // perform parsing
         let mut parser = Parser::new(input.to_string());
 
+        // try to parse the tokens
         let ast = match parser.parse(&tokens) {
             Ok(ast) => ast,
             Err(error_tuple) => {
@@ -146,12 +157,26 @@ impl Compiler {
                     .collect();
                 return CompilerResult::ParserError {
                     message: e.to_string(),
-                    problematic_tokens: problematic_positions,
+                    problematic_positions,
                 };
             }
         };
+
+        // perform semantic analysis
+        match semantic_analysis(&ast) {
+            Ok(()) => {}
+            Err((e, problematic_positions)) => {
+                return CompilerResult::SemanticError {
+                    message: e.to_string(),
+                    problematic_positions,
+                };
+            }
+        }
+
+        // return success if all operations were successful
         CompilerResult::Success {
             message: "Success".to_string(),
+            classes: Vec::new(),
             ast,
         }
     }

@@ -17,7 +17,7 @@ use clap::Parser;
 
 use classql::dsl::compiler::{
     Compiler,
-    CompilerResult::{LexerError, ParserError, Success},
+    CompilerResult,
 };
 use classql::tui::render::Tui;
 use classql::utils::visualizetree::ast_to_dot;
@@ -69,15 +69,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // if a query is provided, compile it and visualize the AST
     if let Some(query) = args.query {
         let mut compiler = Compiler::new();
+
+        // run the compiler and handle the result
         match compiler.run(&query) {
-            Success { ast, .. } => {
+            CompilerResult::Success { ast, .. } => {
                 println!("{}", ast_to_dot(query, &ast))
             }
-            LexerError { message, .. } => {
+            CompilerResult::LexerError { message, .. } => {
                 println!("{}", message);
                 std::process::exit(1);
             }
-            ParserError { message, .. } => {
+            CompilerResult::ParserError { message, .. } => {
+                println!("{}", message);
+                std::process::exit(1);
+            }
+            CompilerResult::SemanticError { message, .. } => {
                 println!("{}", message);
                 std::process::exit(1);
             }
