@@ -27,7 +27,7 @@
 ///
 use crate::dsl::compiler::{Compiler, CompilerResult};
 use crate::tui::errors::TUIError;
-use crossterm::event::{self, Event, KeyCode};
+use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
@@ -234,6 +234,7 @@ impl Tui {
                 }
 
                 match key.code {
+                    KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => break Ok(()),
                     KeyCode::Esc => break Ok(()),
                     KeyCode::Enter => {
                         // process the query here
@@ -241,7 +242,7 @@ impl Tui {
 
                         // run the compiler and handle the result
                         match self.compiler.run(&self.input) {
-                            CompilerResult::Success { message, .. } => {
+                            CompilerResult::Success { .. } => {
                                 // clear any error state
                                 self.toast_message = None;
                                 self.toast_start_time = None;
@@ -249,9 +250,8 @@ impl Tui {
                                 self.problematic_tokens.clear();
 
                                 // TODO: display results of database query instead of success message
-                                self.toast_message = Some(message);
+                                self.toast_message = Some(String::from("success"));
                                 self.toast_start_time = Some(Instant::now());
-                                println!("success"); // Debug output for now
                             }
                             CompilerResult::LexerError {
                                 message,
