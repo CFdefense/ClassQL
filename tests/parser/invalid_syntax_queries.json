@@ -5,7 +5,7 @@
     "input": "prof is",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Missing: Expected identifier",
+    "expected_error_message": "Missing: professor name or email",
     "expected_problematic_tokens": []
   },
   {
@@ -125,7 +125,7 @@
     "input": "prof starts with",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Missing: Expected identifier",
+    "expected_error_message": "Missing: professor name or email",
     "expected_problematic_tokens": []
   },
   {
@@ -134,7 +134,7 @@
     "input": "prof ends with",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Missing: Expected identifier",
+    "expected_error_message": "Missing: professor name or email",
     "expected_problematic_tokens": []
   },
   {

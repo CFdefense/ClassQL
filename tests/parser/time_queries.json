@@ -61,7 +61,7 @@
     "input": "start 9:00",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Missing: Expected comparison operator after start/end",
+    "expected_error_message": "Missing: comparison (like '>', '<', '=') and a time (e.g., '9:00am')",
     "expected_problematic_tokens": null
   },
   {
@@ -70,7 +70,7 @@
     "input": "end >",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Missing: Expected time",
+    "expected_error_message": "Missing: time (e.g., '9:00am', '2:30pm')",
     "expected_problematic_tokens": null
   },
   {
@@ -94,7 +94,7 @@
     "input": "start 9:00 17:00",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Missing: Expected comparison operator after start/end",
+    "expected_error_message": "Missing: comparison (like '>', '<', '=') and a time (e.g., '9:00am')",
     "expected_problematic_tokens": null
   },
   {
@@ -103,7 +103,7 @@
     "input": "start 9:00 to",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Missing: Expected time",
+    "expected_error_message": "Missing: time (e.g., '9:00am', '2:30pm')",
     "expected_problematic_tokens": null
   }
 ] 

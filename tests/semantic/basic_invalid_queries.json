@@ -88,6 +88,18 @@
     "description": "Day semantics should reject using a time literal where a boolean/text flag is expected",
     "input": "friday equals 9:00am",
     "should_succeed": false
+  },
+  {
+    "test_name": "semantic_day_query_invalid_monday",
+    "description": "Day semantics should reject using a time literal where a boolean flag is expected for monday",
+    "input": "monday equals 9:00am",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_day_query_invalid_string_monday",
+    "description": "Day semantics should reject using a string value where a boolean flag is expected for monday",
+    "input": "monday equals yolo",
+    "should_succeed": false
   }
 ]
 
