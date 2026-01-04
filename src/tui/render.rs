@@ -751,13 +751,18 @@ fn render_completion_dropdown(
     }
 
     let dropdown_width = 50;
-    let dropdown_height = (completions.len() as u16).min(8) + 2; // dynamic height based on completions, max 8 items + borders
 
     // position below the search bar
     let logo_height = 7; // height of the ASCII art logo
     let search_y = logo_height + 2; // search bar position
     let search_height = 3; // search bar height
     let dropdown_y = search_y + search_height + 1; // 1 line below search bar
+
+    // calculate max available height (leave some space at bottom)
+    let max_available_height = frame.area().height.saturating_sub(dropdown_y + 2);
+    
+    // height = number of completions + 2 for borders, capped by available space
+    let dropdown_height = (completions.len() as u16 + 2).min(max_available_height);
 
     let dropdown_area = Rect {
         x: frame.area().width.saturating_sub(dropdown_width) / 2,
