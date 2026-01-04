@@ -196,6 +196,8 @@ impl Tui {
                             if let Some(index) = self.completion_index {
                                 if index < self.completions.len() - 1 {
                                     self.completion_index = Some(index + 1);
+                                } else {
+                                    self.completion_index = Some(0);
                                 }
                             }
                         }
@@ -221,8 +223,14 @@ impl Tui {
                             self.completion_index = None;
                         }
                         KeyCode::Tab => {
-                            // refresh completions on tab
-                            self.handle_tab_completion();
+                            // Tab moves down through completions (same as Down arrow)
+                            if let Some(index) = self.completion_index {
+                                if index < self.completions.len() - 1 {
+                                    self.completion_index = Some(index + 1);
+                                } else {
+                                    self.completion_index = Some(0);
+                                }
+                            }
                         }
                         _ => {
                             // any other key hides completions
