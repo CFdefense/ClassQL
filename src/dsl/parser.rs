@@ -338,6 +338,39 @@ impl Parser {
     /// --- ---
     ///
     fn get_context_suggestions(&self, tokens: &[Token]) -> Vec<String> {
+        // Full condition operators from grammar:
+        // <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal"
+        let string_conditions = vec![
+            "is".to_string(),
+            "equals".to_string(),
+            "=".to_string(),
+            "!=".to_string(),
+            "contains".to_string(),
+            "has".to_string(),
+            "starts with".to_string(),
+            "ends with".to_string(),
+            "does not equal".to_string(),
+        ];
+
+        // Binary operators for numeric comparisons from grammar:
+        // <binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "equals" | "is" | "less than" | "greater than" | "at least" | "at most" | "more than" | "fewer than"
+        let numeric_binops = vec![
+            "=".to_string(),
+            "!=".to_string(),
+            "<".to_string(),
+            ">".to_string(),
+            "<=".to_string(),
+            ">=".to_string(),
+            "is".to_string(),
+            "equals".to_string(),
+            "less than".to_string(),
+            "greater than".to_string(),
+            "at least".to_string(),
+            "at most".to_string(),
+            "more than".to_string(),
+            "fewer than".to_string(),
+        ];
+
         if tokens.is_empty() {
             // start of query
             vec![
@@ -350,32 +383,92 @@ impl Parser {
         } else {
             let last_token = &tokens[tokens.len() - 1];
             match *last_token.get_token_type() {
-                TokenType::Prof => vec![
-                    "is".to_string(),
-                    "equals".to_string(),
-                    "contains".to_string(),
-                ],
-                TokenType::Course => vec![
+                // Entities followed by <condition>
+                TokenType::Prof
+                | TokenType::Subject
+                | TokenType::Title
+                | TokenType::Description
+                | TokenType::Number
+                | TokenType::Campus
+                | TokenType::Method
+                | TokenType::Full
+                | TokenType::Type => string_conditions,
+
+                // Days are followed by <condition>
+                TokenType::Monday
+                | TokenType::Tuesday
+                | TokenType::Wednesday
+                | TokenType::Thursday
+                | TokenType::Friday
+                | TokenType::Saturday
+                | TokenType::Sunday => string_conditions,
+
+                // Prereqs/Corereqs followed by <condition>
+                TokenType::Prereqs | TokenType::Corereqs => string_conditions,
+
+                // Course can be followed by condition OR sub-queries
+                TokenType::Course => {
+                    let mut suggestions = vec![
+                        "subject".to_string(),
+                        "number".to_string(),
+                        "title".to_string(),
+                        "description".to_string(),
+                        "credit".to_string(),
+                        "prereqs".to_string(),
+                        "corereqs".to_string(),
+                    ];
+                    suggestions.extend(string_conditions);
+                    suggestions
+                }
+
+                // Section can be followed by sub-queries
+                TokenType::Section => vec![
                     "subject".to_string(),
                     "number".to_string(),
-                    "title".to_string(),
+                    "enrollment".to_string(),
+                    "cap".to_string(),
+                    "method".to_string(),
+                    "campus".to_string(),
+                    "full".to_string(),
                 ],
+
+                // Credit must be followed by "hours"
                 TokenType::Credit => vec!["hours".to_string()],
+
+                // Credit hours followed by <binop>
+                TokenType::Hours => numeric_binops.clone(),
+
+                // Meeting must be followed by "type"
                 TokenType::Meeting => vec!["type".to_string()],
-                TokenType::Size | TokenType::Enrollment => {
-                    vec!["=".to_string(), ">".to_string(), "<".to_string()]
-                }
-                TokenType::Start | TokenType::End => {
-                    vec!["=".to_string(), ">".to_string(), "<".to_string()]
-                }
-                // string condition operators
-                TokenType::Is | TokenType::Equals | TokenType::Contains => {
-                    vec!["<value>".to_string()] // placeholder for user input
-                }
-                // after values
-                TokenType::Identifier | TokenType::String => {
+
+                // Numeric entities followed by <binop>
+                TokenType::Size | TokenType::Enrollment | TokenType::Cap => numeric_binops.clone(),
+
+                // Time entities followed by <binop> or time value
+                TokenType::Start | TokenType::End => numeric_binops,
+
+                // After values, suggest logical operators
+                TokenType::Identifier | TokenType::String | TokenType::Integer | TokenType::Time => {
                     vec!["and".to_string(), "or".to_string()]
                 }
+
+                // After logical operators, suggest entities
+                TokenType::And | TokenType::Or => vec![
+                    "professor".to_string(),
+                    "course".to_string(),
+                    "subject".to_string(),
+                    "title".to_string(),
+                    "section".to_string(),
+                    "number".to_string(),
+                    "description".to_string(),
+                    "credit".to_string(),
+                    "prereqs".to_string(),
+                    "corereqs".to_string(),
+                    "enrollment".to_string(),
+                    "campus".to_string(),
+                    "meeting".to_string(),
+                ],
+
                 _ => vec![],
             }
         }

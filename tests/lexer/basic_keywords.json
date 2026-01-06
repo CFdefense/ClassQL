@@ -27,6 +27,20 @@
         ]
     },
     {
+        "test_name": "Prerequisites and Corequisites Long Form",
+        "description": "Test full-length prerequisites and corequisites keywords",
+        "code": "prerequisites contains CS101 and corequisites contains MATH200",
+        "result": [
+            {"token_type": "T_PREREQS", "content": "prerequisites"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_IDENTIFIER", "content": "CS101"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_COREREQS", "content": "corequisites"},
+            {"token_type": "T_CONTAINS", "content": "contains"},
+            {"token_type": "T_IDENTIFIER", "content": "MATH200"}
+        ]
+    },
+    {
         "test_name": "Keywords with Parentheses Grouping",
         "description": "Test keyword expressions with parentheses for logical grouping",
         "code": "(term = \"Fall2024\") and (prof contains \"Smith\")",

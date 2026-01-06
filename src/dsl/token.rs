@@ -202,8 +202,8 @@ impl TokenType {
             (TokenType::Sunday, r"(?i)\b(sunday|sunda|sund|sun|su)\b"),
             // keywords - these must come before the general identifier pattern
             (TokenType::Contains, r"(?i)\bcontains\b"),
-            (TokenType::Prereqs, r"(?i)\bprereqs\b"),
-            (TokenType::Corereqs, r"(?i)\bcorereqs\b"),
+            (TokenType::Prereqs, r"(?i)\b(?:prerequisites|prereqs)\b"),
+            (TokenType::Corereqs, r"(?i)\b(?:corequisites|corereqs)\b"),
             (TokenType::Subject, r"(?i)\b(subject|sub)\b"),
             (TokenType::Course, r"(?i)\bcourse\b"),
             (TokenType::Method, r"(?i)\bmethod\b"),
