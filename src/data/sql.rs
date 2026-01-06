@@ -29,7 +29,7 @@ use std::path::Path;
 /// professor_name -> Professor's name
 /// professor_email -> Professor's email address
 /// meeting_type -> Type of meeting (e.g., "Lecture", "Lab")
-/// days -> Days the class meets (formatted string like "MWF" or "TR")
+/// days -> Days the class meets (formatted string like "MWF" or "TTH")
 /// --- ---
 ///
 /// Implemented Traits:
@@ -181,7 +181,7 @@ fn format_time_short(time: &str) -> String {
     }
 }
 
-/// Format days from boolean flags into a compact string like "MWF" or "TR"
+/// Format days from boolean flags into a compact string like "MWF" or "TTH"
 ///
 /// Parameters:
 /// --- ---
@@ -196,7 +196,7 @@ fn format_time_short(time: &str) -> String {
 ///
 /// Returns:
 /// --- ---
-/// String -> Compact day string (e.g., "MWF", "TR", "TBA")
+/// String -> Compact day string (e.g., "MWF", "TTH", "TBA")
 /// --- ---
 ///
 fn format_days(
@@ -219,7 +219,7 @@ fn format_days(
         days.push('W');
     }
     if is_thursday {
-        days.push('R');
+        days.push_str("TH");
     }
     if is_friday {
         days.push('F');

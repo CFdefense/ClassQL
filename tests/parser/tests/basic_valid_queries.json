@@ -118,5 +118,37 @@
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "not_subject_query",
+    "description": "NOT operator with subject query",
+    "input": "not subject = CMPT",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "not_professor_query",
+    "description": "NOT operator with professor query",
+    "input": "not prof contains Alan",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "not_with_parentheses",
+    "description": "NOT operator with parenthesized expression",
+    "input": "not (subject = CMPT and course = 424N)",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "not_and_combination",
+    "description": "NOT operator combined with AND",
+    "input": "not subject = CMPT and credit hours >= 3",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
   }
 ] 

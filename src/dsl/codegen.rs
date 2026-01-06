@@ -129,7 +129,7 @@ pub fn generate_sql(ast: &Ast) -> CodeGenResult {
                 (CASE WHEN mt.is_monday = 1 THEN 'M' ELSE '' END || \
                  CASE WHEN mt.is_tuesday = 1 THEN 'T' ELSE '' END || \
                  CASE WHEN mt.is_wednesday = 1 THEN 'W' ELSE '' END || \
-                 CASE WHEN mt.is_thursday = 1 THEN 'R' ELSE '' END || \
+                 CASE WHEN mt.is_thursday = 1 THEN 'TH' ELSE '' END || \
                  CASE WHEN mt.is_friday = 1 THEN 'F' ELSE '' END || \
                  CASE WHEN mt.is_saturday = 1 THEN 'S' ELSE '' END || \
                  CASE WHEN mt.is_sunday = 1 THEN 'U' ELSE '' END) || \
@@ -202,6 +202,7 @@ fn generate_node(node: &TreeNode) -> CodeGenResult {
         NodeType::EntityQuery => generate_entity_query(node),
         NodeType::T(TokenType::And) => generate_and(node),
         NodeType::T(TokenType::Or) => generate_or(node),
+        NodeType::T(TokenType::Not) => generate_not(node),
         NodeType::ProfessorQuery => generate_professor_query(node),
         NodeType::CourseQuery => generate_course_query(node),
         NodeType::SubjectQuery => generate_subject_query(node),
@@ -398,6 +399,28 @@ fn generate_or(node: &TreeNode) -> CodeGenResult {
     let left = generate_node(&node.children[0])?;
     let right = generate_node(&node.children[1])?;
     Ok(format!("({} OR {})", left, right))
+}
+
+/// Generate SQL for NOT operation
+///
+/// Parameters:
+/// --- ---
+/// node -> The NOT node to generate SQL for (must have 1 child)
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// CodeGenResult -> The generated SQL fragment with NOT condition or an error
+/// --- ---
+///
+fn generate_not(node: &TreeNode) -> CodeGenResult {
+    if node.children.is_empty() {
+        return Err(CodeGenError::InvalidStructure {
+            message: "NOT node must have at least 1 child".to_string(),
+        });
+    }
+    let child = generate_node(&node.children[0])?;
+    Ok(format!("NOT ({})", child))
 }
 
 /// Generate SQL for ProfessorQuery node
