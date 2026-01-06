@@ -69,7 +69,7 @@
     "input": "size 25",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Missing: Expected comparison operator after size/enrollment",
+    "expected_error_message": "Missing: comparison like '>', '<', '=' followed by a number",
     "expected_problematic_tokens": null
   },
   {
@@ -78,7 +78,7 @@
     "input": "size >",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Missing: Expected number",
+    "expected_error_message": "Missing: enrollment count (e.g., 20, 50)",
     "expected_problematic_tokens": null
   },
   {

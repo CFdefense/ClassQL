@@ -14,7 +14,7 @@
     "input": "prof is",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Missing: Expected identifier",
+    "expected_error_message": "Missing: professor name or email",
     "expected_problematic_tokens": []
   },
   {
@@ -92,7 +92,7 @@
     "input": "prof is Alan or",
     "should_succeed": false,
     "expected_error_type": "ExpectedAfter",
-    "expected_error_message": "Please start with one of: 'professor', 'course', 'subject', 'title', 'section'",
+    "expected_error_message": "Please start with one of: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
     "expected_problematic_tokens": []
   },
   {

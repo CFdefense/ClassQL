@@ -121,6 +121,7 @@ pub enum TokenType {
     // special
     Exclamation,
     Unrecognized,
+    UnclosedString,
 }
 
 /// TokenType Display Trait Implementation
@@ -202,8 +203,8 @@ impl TokenType {
             (TokenType::Sunday, r"(?i)\b(sunday|sunda|sund|sun|su)\b"),
             // keywords - these must come before the general identifier pattern
             (TokenType::Contains, r"(?i)\bcontains\b"),
-            (TokenType::Prereqs, r"(?i)\bprereqs\b"),
-            (TokenType::Corereqs, r"(?i)\bcorereqs\b"),
+            (TokenType::Prereqs, r"(?i)\b(?:prerequisites|prereqs)\b"),
+            (TokenType::Corereqs, r"(?i)\b(?:corequisites|corereqs)\b"),
             (TokenType::Subject, r"(?i)\b(subject|sub)\b"),
             (TokenType::Course, r"(?i)\bcourse\b"),
             (TokenType::Method, r"(?i)\bmethod\b"),
@@ -244,7 +245,8 @@ impl TokenType {
             (TokenType::LeftParen, r"\("),
             (TokenType::RightParen, r"\)"),
             // literals
-            (TokenType::String, r#""[^"]*"?"#),
+            (TokenType::String, r#""[^"]*""#),
+            (TokenType::UnclosedString, r#""[^"]*$"#),
             (
                 TokenType::Time,
                 r"[0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)",

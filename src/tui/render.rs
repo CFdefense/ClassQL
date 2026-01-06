@@ -91,6 +91,8 @@ pub struct Tui {
     completions: Vec<String>,
     completion_index: Option<usize>,
     show_completions: bool,
+    /// The partial word being completed (for replacement on selection)
+    partial_word: String,
 }
 
 /// Tui Implementation
@@ -132,6 +134,7 @@ impl Tui {
             completions: Vec::new(),
             completion_index: None,
             show_completions: false,
+            partial_word: String::new(),
         })
     }
 
@@ -184,6 +187,7 @@ impl Tui {
                         KeyCode::Esc => {
                             self.show_completions = false;
                             self.completion_index = None;
+                            self.partial_word.clear();
                         }
                         KeyCode::Up => {
                             if let Some(index) = self.completion_index {
@@ -196,6 +200,8 @@ impl Tui {
                             if let Some(index) = self.completion_index {
                                 if index < self.completions.len() - 1 {
                                     self.completion_index = Some(index + 1);
+                                } else {
+                                    self.completion_index = Some(0);
                                 }
                             }
                         }
@@ -206,12 +212,23 @@ impl Tui {
                                     let completion = &self.completions[index];
                                     // don't add placeholders like <value>
                                     if !completion.starts_with('<') {
-                                        if !self.input.is_empty() && !self.input.ends_with(' ') {
-                                            self.input.push(' ');
+                                        // only replace if there's a partial word that matches
+                                        if !self.partial_word.is_empty()
+                                            && completion.to_lowercase().starts_with(&self.partial_word)
+                                        {
+                                            // remove the partial word from input
+                                            let trim_len = self.partial_word.len();
+                                            let new_len = self.input.len().saturating_sub(trim_len);
+                                            self.input.truncate(new_len);
+                                        } else {
+                                            // no partial word - just append with space
+                                            if !self.input.is_empty() && !self.input.ends_with(' ') {
+                                                self.input.push(' ');
+                                            }
                                         }
                                         self.input.push_str(completion);
                                         if !completion.starts_with('"') {
-                                            // don't add space after quoted strings
+                                            // add space after completion for next word
                                             self.input.push(' ');
                                         }
                                     }
@@ -219,15 +236,23 @@ impl Tui {
                             }
                             self.show_completions = false;
                             self.completion_index = None;
+                            self.partial_word.clear();
                         }
                         KeyCode::Tab => {
-                            // refresh completions on tab
-                            self.handle_tab_completion();
+                            // Tab moves down through completions (same as Down arrow)
+                            if let Some(index) = self.completion_index {
+                                if index < self.completions.len() - 1 {
+                                    self.completion_index = Some(index + 1);
+                                } else {
+                                    self.completion_index = Some(0);
+                                }
+                            }
                         }
                         _ => {
                             // any other key hides completions
                             self.show_completions = false;
                             self.completion_index = None;
+                            self.partial_word.clear();
                         }
                     }
                     continue; // skip normal key handling when completions are shown
@@ -334,12 +359,88 @@ impl Tui {
     /// --- ---
     ///
     fn handle_tab_completion(&mut self) {
+        // check if input ends with space (no partial word to complete)
+        let has_partial = !self.input.is_empty() && !self.input.ends_with(' ');
+
+        // extract the potential partial word (last word after space)
+        let potential_partial = if has_partial {
+            self.input
+                .split_whitespace()
+                .last()
+                .unwrap_or("")
+                .to_lowercase()
+        } else {
+            String::new()
+        };
+
         // get completion suggestions from compiler
-        self.completions = self.compiler.get_tab_completion(self.input.clone());
+        let suggestions = self.compiler.get_tab_completion(self.input.clone());
+
+        // if there's a potential partial word, check if any suggestions match it
+        // if matches exist, filter to those; otherwise it's a complete value, show all
+        if !potential_partial.is_empty() {
+            let matching: Vec<String> = suggestions
+                .iter()
+                .filter(|s| s.to_lowercase().starts_with(&potential_partial))
+                .cloned()
+                .collect();
+
+            if !matching.is_empty() {
+                // partial word matches some suggestions - filter to those
+                self.partial_word = potential_partial;
+                self.completions = matching;
+            } else {
+                // no matches - the "partial" is actually a complete value
+                // show all suggestions without replacement
+                self.partial_word = String::new();
+                self.completions = suggestions;
+            }
+        } else {
+            self.partial_word = String::new();
+            self.completions = suggestions;
+        };
 
         if !self.completions.is_empty() {
             self.show_completions = true;
             self.completion_index = Some(0);
+        } else if !self.input.trim().is_empty() {
+            // no completions available - show helpful hint based on context
+            let hint = self.get_completion_hint();
+            if !hint.is_empty() {
+                self.toast_message = Some(hint);
+                self.toast_start_time = Some(Instant::now());
+                self.error_type = None; // not an error, just a hint
+            }
+        }
+    }
+
+    /// Get a helpful hint when no completions are available
+    fn get_completion_hint(&self) -> String {
+        let last_word = self.input.split_whitespace().last().unwrap_or("");
+        let last_word_lower = last_word.to_lowercase();
+
+        // check if last word is a condition operator that expects a value
+        match last_word_lower.as_str() {
+            "contains" | "is" | "equals" | "has" => {
+                "Enter a value in quotes, e.g. \"Computer Science\"".to_string()
+            }
+            "=" | "!=" => {
+                "Enter a value, e.g. \"CS\" or 101".to_string()
+            }
+            "<" | ">" | "<=" | ">=" => {
+                "Enter a number, e.g. 3 or 100".to_string()
+            }
+            "with" => {
+                // "starts with" or "ends with"
+                "Enter a value in quotes, e.g. \"Intro\"".to_string()
+            }
+            "hours" => {
+                "Enter an operator (=, <, >, etc.) then a number".to_string()
+            }
+            "type" => {
+                "Enter a condition (is, equals, contains) then a value".to_string()
+            }
+            _ => String::new(),
         }
     }
 
@@ -518,14 +619,34 @@ fn render_search_bar_with_data(
         height: 3,
     };
 
+    // calculate visible width (minus borders and "> " prefix)
+    let visible_width = search_width.saturating_sub(4) as usize; // 2 for borders, 2 for "> "
+    let input_len = input.chars().count();
+
+    // calculate scroll offset to keep cursor (end of input) visible
+    let scroll_offset = if input_len > visible_width {
+        input_len - visible_width
+    } else {
+        0
+    };
+
     // create styled spans for the input with highlighted problematic positions
     let mut styled_spans = Vec::new();
 
-    // start with the "> " prefix
-    styled_spans.push(Span::styled("> ", Style::default().fg(Color::White)));
+    // start with the "> " prefix (or "…" if scrolled)
+    if scroll_offset > 0 {
+        styled_spans.push(Span::styled("…", Style::default().fg(Color::DarkGray)));
+    } else {
+        styled_spans.push(Span::styled("> ", Style::default().fg(Color::White)));
+    }
 
-    // process the input character by character, highlighting problematic positions
-    for (i, ch) in input.chars().enumerate() {
+    // process only the visible portion of the input
+    for (i, ch) in input.chars().enumerate().skip(scroll_offset) {
+        // stop if we've filled the visible width
+        if i - scroll_offset >= visible_width {
+            break;
+        }
+
         let is_problematic = problematic_positions.iter().any(|&(start, end)| {
             // positions are relative to the input string, so we need to match them correctly
             i >= start && i < end
@@ -743,13 +864,18 @@ fn render_completion_dropdown(
     }
 
     let dropdown_width = 50;
-    let dropdown_height = (completions.len() as u16).min(8) + 2; // dynamic height based on completions, max 8 items + borders
 
     // position below the search bar
     let logo_height = 7; // height of the ASCII art logo
     let search_y = logo_height + 2; // search bar position
     let search_height = 3; // search bar height
     let dropdown_y = search_y + search_height + 1; // 1 line below search bar
+
+    // calculate max available height (leave some space at bottom)
+    let max_available_height = frame.area().height.saturating_sub(dropdown_y + 2);
+    
+    // height = number of completions + 2 for borders, capped by available space
+    let dropdown_height = (completions.len() as u16 + 2).min(max_available_height);
 
     let dropdown_area = Rect {
         x: frame.area().width.saturating_sub(dropdown_width) / 2,

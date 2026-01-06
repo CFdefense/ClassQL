@@ -82,6 +82,12 @@
     "description": "String semantics should accept a meeting type predicate",
     "input": "meeting type equals online",
     "should_succeed": true
+  },
+  {
+    "test_name": "semantic_day_query_valid_monday",
+    "description": "Day semantics should accept a monday predicate",
+    "input": "monday is true",
+    "should_succeed": true
   }
 ]
 

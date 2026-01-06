@@ -5,7 +5,7 @@
     "input": "prof is Alan and course contains",
     "should_succeed": false,
     "expected_error_type": "MissingToken",
-    "expected_error_message": "Missing: Expected identifier",
+    "expected_error_message": "Missing: a value to search for",
     "expected_problematic_tokens": []
   },
   {

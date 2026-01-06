@@ -349,6 +349,20 @@ fn analyze_node(node: &TreeNode) -> Result<(), (SemanticError, Vec<(usize, usize
                     return Err((err, span));
                 }
             }
+
+            // Finally, day predicates are intended to behave like booleans:
+            // the value should be something like "true" or "false".
+            let value_node = &day_node.children[1];
+            let value_text = value_node.node_content.to_lowercase();
+            if value_text != "true" && value_text != "false" {
+                let err =
+                    invalid_context(value_node.node_content.clone(), "day value", &["true", "false"]);
+                let span = value_node
+                    .lexical_token
+                    .map(|t| vec![(t.get_start(), t.get_end())])
+                    .unwrap_or_default();
+                return Err((err, span));
+            }
         }
 
         // String-based field queries (professor, subject, number, title,
