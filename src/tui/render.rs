@@ -305,6 +305,11 @@ impl Tui {
                                 self.show_toast(message, ErrorType::Semantic);
                                 self.problematic_positions = problematic_positions;
                             }
+                            CompilerResult::CodeGenError { message } => {
+                                // show code generation error
+                                self.show_toast(message, ErrorType::Semantic);
+                                self.problematic_positions.clear();
+                            }
                         }
                     }
                     KeyCode::Backspace => {

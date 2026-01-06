@@ -17,6 +17,7 @@
 /// --- ---
 ///
 use crate::dsl::{
+    codegen::generate_sql,
     lexer::Lexer,
     semantic::semantic_analysis,
     parser::{Ast, Parser},
@@ -28,10 +29,11 @@ use crate::data::sql::Class;
 ///
 /// Results:
 /// --- ---
-/// Sucess -> Compilation was successful, contains message, positions and AST
+/// Sucess -> Compilation was successful, contains message, generated SQL, positions and AST
 /// LexerError -> Lexical analysis failed, contains message and problematic positions
 /// ParserError -> Parsing failed, contains message and problematic positions
 /// SemanticError -> Semantic analysis failed, contains message and problematic positions
+/// CodeGenError -> Code generation failed, contains message
 /// --- ---
 ///
 /// Implemented Traits:
@@ -44,6 +46,7 @@ use crate::data::sql::Class;
 pub enum CompilerResult {
     Success {
         message: String,
+        sql: String,
         classes: Vec<Class>,
         ast: Ast,
     },
@@ -58,6 +61,9 @@ pub enum CompilerResult {
     SemanticError {
         message: String,
         problematic_positions: Vec<(usize, usize)>,
+    },
+    CodeGenError {
+        message: String,
     },
 }
 
@@ -173,9 +179,20 @@ impl Compiler {
             }
         }
 
+        // perform code generation
+        let sql = match generate_sql(&ast) {
+            Ok(sql) => sql,
+            Err(e) => {
+                return CompilerResult::CodeGenError {
+                    message: e.to_string(),
+                };
+            }
+        };
+
         // return success if all operations were successful
         CompilerResult::Success {
             message: "Success".to_string(),
+            sql,
             classes: Vec::new(),
             ast,
         }

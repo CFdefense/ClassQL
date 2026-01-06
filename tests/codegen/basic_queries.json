@@ -1,0 +1,75 @@
+[
+  {
+    "test_name": "codegen_professor_query_contains",
+    "description": "Generate SQL for a professor query with contains condition",
+    "input": "prof contains smith",
+    "should_succeed": true,
+    "expected_fragments": ["p.name LIKE '%smith%'", "p.email_address LIKE '%smith%'", "SELECT DISTINCT"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_professor_query_equals",
+    "description": "Generate SQL for a professor query with equals condition",
+    "input": "prof equals smith",
+    "should_succeed": true,
+    "expected_fragments": ["LOWER(p.name) = LOWER('smith')", "SELECT DISTINCT"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_subject_query",
+    "description": "Generate SQL for a subject query",
+    "input": "subject equals CS",
+    "should_succeed": true,
+    "expected_fragments": ["c.subject_code", "LOWER('CS')"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_title_query",
+    "description": "Generate SQL for a title query with contains",
+    "input": "title contains calculus",
+    "should_succeed": true,
+    "expected_fragments": ["c.title LIKE '%calculus%'"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_number_query",
+    "description": "Generate SQL for a course number query",
+    "input": "number equals CS101",
+    "should_succeed": true,
+    "expected_fragments": ["c.number", "LOWER('CS101')"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_description_query",
+    "description": "Generate SQL for a description query",
+    "input": "description contains introduction",
+    "should_succeed": true,
+    "expected_fragments": ["c.description LIKE '%introduction%'"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_campus_query",
+    "description": "Generate SQL for a campus query",
+    "input": "campus equals main",
+    "should_succeed": true,
+    "expected_fragments": ["s.campus", "LOWER('main')"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_method_query",
+    "description": "Generate SQL for an instruction method query",
+    "input": "method equals online",
+    "should_succeed": true,
+    "expected_fragments": ["s.instruction_method", "LOWER('online')"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_meeting_type_query",
+    "description": "Generate SQL for a meeting type query",
+    "input": "meeting type equals lecture",
+    "should_succeed": true,
+    "expected_fragments": ["mt.meeting_type", "LOWER('lecture')"],
+    "forbidden_fragments": []
+  }
+]
+

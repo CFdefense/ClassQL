@@ -1,0 +1,83 @@
+[
+  {
+    "test_name": "codegen_credit_hours_equals",
+    "description": "Generate SQL for credit hours equals comparison",
+    "input": "credit hours = 3",
+    "should_succeed": true,
+    "expected_fragments": ["c.credit_hours = 3"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_credit_hours_greater_than",
+    "description": "Generate SQL for credit hours greater than comparison",
+    "input": "credit hours > 3",
+    "should_succeed": true,
+    "expected_fragments": ["c.credit_hours > 3"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_credit_hours_greater_equal",
+    "description": "Generate SQL for credit hours greater or equal comparison",
+    "input": "credit hours >= 3",
+    "should_succeed": true,
+    "expected_fragments": ["c.credit_hours >= 3"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_credit_hours_less_than",
+    "description": "Generate SQL for credit hours less than comparison",
+    "input": "credit hours < 4",
+    "should_succeed": true,
+    "expected_fragments": ["c.credit_hours < 4"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_credit_hours_less_equal",
+    "description": "Generate SQL for credit hours less or equal comparison",
+    "input": "credit hours <= 4",
+    "should_succeed": true,
+    "expected_fragments": ["c.credit_hours <= 4"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_enrollment_query",
+    "description": "Generate SQL for enrollment comparison",
+    "input": "enrollment < 100",
+    "should_succeed": true,
+    "expected_fragments": ["s.enrollment < 100"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_enrollment_cap_query",
+    "description": "Generate SQL for enrollment cap comparison",
+    "input": "enrollment cap <= 50",
+    "should_succeed": true,
+    "expected_fragments": ["s.max_enrollment <= 50"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_cap_query_shorthand",
+    "description": "Generate SQL for cap comparison (shorthand)",
+    "input": "cap >= 30",
+    "should_succeed": true,
+    "expected_fragments": ["s.max_enrollment >= 30"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_full_query_true",
+    "description": "Generate SQL for full equals true (section is full)",
+    "input": "full equals true",
+    "should_succeed": true,
+    "expected_fragments": ["s.enrollment >= s.max_enrollment"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_full_query_false",
+    "description": "Generate SQL for full equals false (section not full)",
+    "input": "full equals false",
+    "should_succeed": true,
+    "expected_fragments": ["s.enrollment < s.max_enrollment"],
+    "forbidden_fragments": []
+  }
+]
+

@@ -25,14 +25,14 @@
   },
   {
     "test_name": "semantic_time_queries_valid_range_single",
-    "description": "Time semantics should accept a single well-formed time range on start",
-    "input": "start 9:00 to 17:00",
+    "description": "Time semantics should accept a single well-formed time range on start with am/pm",
+    "input": "start 9:00am to 5:00pm",
     "should_succeed": true
   },
   {
     "test_name": "semantic_time_queries_valid_range_start_and_end",
     "description": "Time semantics should accept separate start and end time ranges combined with and",
-    "input": "start 9:00 to 17:00 and end 8:00am to 4:00pm",
+    "input": "start 9:00am to 5:00pm and end 8:00am to 4:00pm",
     "should_succeed": true
   },
   {
@@ -81,6 +81,30 @@
     "test_name": "semantic_string_meeting_type_query_valid",
     "description": "String semantics should accept a meeting type predicate",
     "input": "meeting type equals online",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_string_prereqs_query_valid",
+    "description": "String semantics should accept a prerequisites predicate with contains",
+    "input": "prereqs contains MATH",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_string_prereqs_has_valid",
+    "description": "String semantics should accept a prerequisites predicate with has",
+    "input": "prereqs has CS100",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_string_coreqs_query_valid",
+    "description": "String semantics should accept a corequisites predicate with contains",
+    "input": "corereqs contains LAB",
+    "should_succeed": true
+  },
+  {
+    "test_name": "semantic_string_coreqs_equals_valid",
+    "description": "String semantics should accept a corequisites predicate with equals",
+    "input": "corereqs equals PHYS101L",
     "should_succeed": true
   },
   {

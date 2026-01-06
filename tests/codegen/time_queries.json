@@ -1,0 +1,75 @@
+[
+  {
+    "test_name": "codegen_start_time_greater_equal",
+    "description": "Generate SQL for start time >= comparison",
+    "input": "start >= 9:00am",
+    "should_succeed": true,
+    "expected_fragments": ["mt.start_minutes >= '09:00:00'"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_start_time_greater",
+    "description": "Generate SQL for start time > comparison",
+    "input": "start > 8:00am",
+    "should_succeed": true,
+    "expected_fragments": ["mt.start_minutes > '08:00:00'"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_end_time_less_equal",
+    "description": "Generate SQL for end time <= comparison",
+    "input": "end <= 5:00pm",
+    "should_succeed": true,
+    "expected_fragments": ["mt.end_minutes <= '17:00:00'"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_end_time_less",
+    "description": "Generate SQL for end time < comparison",
+    "input": "end < 6:00pm",
+    "should_succeed": true,
+    "expected_fragments": ["mt.end_minutes < '18:00:00'"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_time_range_start",
+    "description": "Generate SQL for start time range",
+    "input": "start 9:00am to 5:00pm",
+    "should_succeed": true,
+    "expected_fragments": ["mt.start_minutes >= '09:00:00'", "mt.start_minutes <= '17:00:00'", "AND"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_time_range_end",
+    "description": "Generate SQL for end time range",
+    "input": "end 8:00am to 4:00pm",
+    "should_succeed": true,
+    "expected_fragments": ["mt.end_minutes >= '08:00:00'", "mt.end_minutes <= '16:00:00'", "AND"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_time_afternoon",
+    "description": "Generate SQL for afternoon time with pm",
+    "input": "start >= 2:30pm",
+    "should_succeed": true,
+    "expected_fragments": ["mt.start_minutes >= '14:30:00'"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_time_noon",
+    "description": "Generate SQL for 12pm (noon)",
+    "input": "start >= 12:00pm",
+    "should_succeed": true,
+    "expected_fragments": ["mt.start_minutes >= '12:00:00'"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_time_midnight",
+    "description": "Generate SQL for 12am (midnight)",
+    "input": "end <= 12:00am",
+    "should_succeed": true,
+    "expected_fragments": ["mt.end_minutes <= '00:00:00'"],
+    "forbidden_fragments": []
+  }
+]
+

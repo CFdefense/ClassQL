@@ -29,8 +29,8 @@ courses
     title                   V           "contains" || "title" <str>
     description             V           "contains" || "course desription" <str>
     credit_hours            N           "credit hours" {|binop|} <int>
-    prerequisites           V           "prereqs" <str> | <strs>
-    corequisites            V           "corereqs" <str> | <strs>
+    prerequisites           V           "prereqs" {|condition|} <str>
+    corequisites            V           "corereqs" {|condition|} <str>
     other (JSON)            V            No?
 
 sections
@@ -88,7 +88,7 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 
 ### Literals
 - **Strings**: `"[^"]*"?` (supports unclosed strings)
-- **Times**: `[0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)`
+- **Times**: `[0-9]+:[0-9]+\s?(?:am|pm)|[0-9]+\s?(?:am|pm)` (am/pm suffix required)
 - **Integers**: `[0-9]+`
 - **General Identifiers**: `[a-zA-Z_][a-zA-Z0-9_]*`
 
@@ -116,14 +116,14 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 
 <professor_query> ::= "prof" <condition> <string>
 
-<course_query> ::= "course" (<condition> <string> | <subject_query> | <number_query> | <title_query> | <description_query> | <credit_hours_query> | <prereqs_query> | <coreqs_query>)
+<course_query> ::= "course" (<condition> <string> | <subject_query> | <number_query> | <title_query> | <description_query> | <credit_hours_query> | <prereqs_query> | <corereqs_query>)
 <subject_query> ::= ("subject" | "sub") <condition> <string>
 <number_query> ::= "number" <condition> <string>
 <title_query> ::= "title" <condition> <string>
 <description_query> ::= "description" <condition> <string>
 <credit_hours_query> ::= "credit hours" <binop> <integer>
-<prereqs_query> ::= "prereqs" <string_list>
-<coreqs_query> ::= "corereqs" <string_list>
+<prereqs_query> ::= "prereqs" <condition> <string>
+<corereqs_query> ::= "corereqs" <condition> <string>
 
 <section_query> ::= "section" <subject_query> | <course_query> | <enrollment_cap_query> | <instruction_method_query> | <campus_query> | <enrollment_query> | <full_query>
 <enrollment_query> ::= "size" <binop> <integer> | "enrollment" <binop> <integer>
@@ -144,7 +144,7 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 <saturday_query> ::= ("sat" | "saturday" | "sa") <condition> <string>
 <sunday_query> ::= ("sun" | "sunday" | "su") <condition> <string>
 
-<time> ::= [0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)
+<time> ::= [0-9]+:[0-9]+\s?(?:am|pm)|[0-9]+\s?(?:am|pm)  ; am/pm suffix required
 <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal"
 <binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "equals" | "is" | "not equals" | "not" | "does not equal" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at least" | "at most" | "more than" | "fewer than"
 
