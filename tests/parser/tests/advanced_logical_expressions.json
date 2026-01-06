@@ -39,27 +39,27 @@
     ]
   },
   {
-    "test_name": "not_operator_precedence",
-    "description": "Test NOT operator precedence and placement",
+    "test_name": "is_not_condition",
+    "description": "Test IS NOT condition in various contexts",
     "queries": [
       {
-        "input": "not prof is John and subject is CS",
+        "input": "prof is not John and subject is CS",
         "expected_result": "success",
         "expected_ast_type": "Query",
-        "description": "Should be parsed as: (NOT prof is John) AND subject is CS"
+        "description": "IS NOT condition combined with AND"
       },
       {
-        "input": "prof is John and not subject is CS",
+        "input": "prof is John and subject is not CS",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "not (prof is John and subject is CS)",
+        "input": "prof is not John and subject is not CS",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "not not prof is John",
+        "input": "prof is not John or prof is not Jane",
         "expected_result": "success",
         "expected_ast_type": "Query"
       }

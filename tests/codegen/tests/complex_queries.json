@@ -125,69 +125,54 @@
     "forbidden_fragments": []
   },
   {
-    "test_name": "codegen_not_subject_query",
-    "description": "Generate SQL for NOT subject query",
-    "input": "not subject = CMPT",
+    "test_name": "codegen_subject_is_not_query",
+    "description": "Generate SQL for subject is not query",
+    "input": "subject is not CMPT",
     "should_succeed": true,
     "expected_fragments": [
-      "NOT (",
       "c.subject_code",
-      "LOWER('CMPT')"
-    ],
-    "forbidden_fragments": []
-  },
-  {
-    "test_name": "codegen_not_professor_query",
-    "description": "Generate SQL for NOT professor query",
-    "input": "not prof contains Alan",
-    "should_succeed": true,
-    "expected_fragments": [
-      "NOT (",
-      "p.name LIKE '%Alan%'",
-      "p.email_address LIKE '%Alan%'"
-    ],
-    "forbidden_fragments": []
-  },
-  {
-    "test_name": "codegen_not_with_parentheses",
-    "description": "Generate SQL for NOT with parenthesized expression",
-    "input": "not (subject = CMPT and course = 424N)",
-    "should_succeed": true,
-    "expected_fragments": [
-      "NOT (",
-      "c.subject_code",
-      "c.number",
       "LOWER('CMPT')",
+      "!="
+    ],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_professor_is_not_query",
+    "description": "Generate SQL for professor is not query",
+    "input": "prof is not Alan",
+    "should_succeed": true,
+    "expected_fragments": [
+      "p.name",
+      "p.email_address",
+      "LOWER('Alan')",
+      "!="
+    ],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_course_is_not_query",
+    "description": "Generate SQL for course is not query",
+    "input": "course is not 424N",
+    "should_succeed": true,
+    "expected_fragments": [
+      "c.title",
+      "c.subject_code",
       "LOWER('424N')",
-      "AND"
+      "!="
     ],
     "forbidden_fragments": []
   },
   {
-    "test_name": "codegen_not_and_combination",
-    "description": "Generate SQL for NOT combined with AND",
-    "input": "not subject = CMPT and credit hours >= 3",
+    "test_name": "codegen_is_not_and_combination",
+    "description": "Generate SQL for is not combined with AND",
+    "input": "subject is not CMPT and credit hours >= 3",
     "should_succeed": true,
     "expected_fragments": [
-      "NOT (",
       "c.subject_code",
       "LOWER('CMPT')",
+      "!=",
       "c.credit_hours >= 3",
       "AND"
-    ],
-    "forbidden_fragments": []
-  },
-  {
-    "test_name": "codegen_not_or_combination",
-    "description": "Generate SQL for NOT combined with OR",
-    "input": "not subject = CMPT or subject = MATH",
-    "should_succeed": true,
-    "expected_fragments": [
-      "NOT (",
-      "c.subject_code",
-      "LOWER('CMPT')",
-      "LOWER('MATH')",
-      "OR"
     ],
     "forbidden_fragments": []
   }

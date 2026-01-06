@@ -231,6 +231,7 @@ impl TokenType {
             // logical
             (TokenType::And, r"(?i)\band\b"),
             (TokenType::Or, r"(?i)\bor\b"),
+            (TokenType::Not, r"(?i)\bn't\b"),
             (TokenType::Not, r"(?i)\bnot\b"),
             // conditions
             (TokenType::Has, r"(?i)\bhas\b"),

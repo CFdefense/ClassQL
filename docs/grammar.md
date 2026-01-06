@@ -83,7 +83,7 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 
 ### Operators
 - **Comparison**: `!=`, `<=`, `>=`, `=`, `<`, `>`, `!`
-- **Logical**: `\band\b`, `\bor\b`, `\bnot\b`
+- **Logical**: `\band\b`, `\bor\b`
 - **Grouping**: `\(`, `\)`
 
 ### Literals
@@ -111,7 +111,7 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 
 <logical_term> ::= <logical_factor> ("and" <logical_factor>)*
 
-<logical_factor> ::= <entity_query> | "(" <query> ")" | "not" <logical_factor>
+<logical_factor> ::= <entity_query> | "(" <query> ")"
 
 <entity_query> ::= <professor_query> | <course_query> | <section_query> | <meeting_type_query> | <time_query> | <day_query>
 
@@ -153,8 +153,8 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
                     If condition is omitted, defaults to "= true"
 
 <time> ::= [0-9]+:[0-9]+\s?(?:am|pm)|[0-9]+\s?(?:am|pm)  ; am/pm suffix required
-<condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal"
-<binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "equals" | "is" | "not equals" | "not" | "does not equal" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at least" | "at most" | "more than" | "fewer than"
+<condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "is not" | "equals" | "not equals" | "does not equal"
+<binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "equals" | "is" | "is not" | "not equals" | "does not equal" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at least" | "at most" | "more than" | "fewer than"
 
 <string> ::= "[^"]*"?
 <integer> ::= [0-9]+

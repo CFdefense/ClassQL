@@ -342,9 +342,10 @@ impl Parser {
     ///
     fn get_context_suggestions(&self, tokens: &[Token]) -> Vec<String> {
         // Full condition operators from grammar:
-        // <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal"
+        // <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "is not" | "equals" | "not equals" | "does not equal" | "doesn't equal" | "doesn't contain"
         let string_conditions = vec![
             "is".to_string(),
+            "is not".to_string(),
             "equals".to_string(),
             "=".to_string(),
             "!=".to_string(),
@@ -353,6 +354,8 @@ impl Parser {
             "starts with".to_string(),
             "ends with".to_string(),
             "does not equal".to_string(),
+            "doesn't equal".to_string(),
+            "doesn't contain".to_string(),
         ];
 
         // Binary operators for numeric comparisons from grammar:
@@ -2475,6 +2478,7 @@ impl Parser {
                 SyntaxError::ExpectedAfter {
                     expected: vec![
                         "is".to_string(),
+                        "is not".to_string(),
                         "equals".to_string(),
                         "contains".to_string(),
                         "has".to_string(),
@@ -2482,6 +2486,8 @@ impl Parser {
                         "ends".to_string(),
                         "=".to_string(),
                         "!=".to_string(),
+                        "doesn't equal".to_string(),
+                        "doesn't contain".to_string(),
                     ],
                     after: "entity keyword".to_string(),
                     position: self.token_pointer,
@@ -2501,11 +2507,70 @@ impl Parser {
             | TokenType::NotEquals
             | TokenType::Contains
             | TokenType::Has
-            | TokenType::Is
-            | TokenType::Equal
+            |             TokenType::Equal
             | TokenType::EqualsWord
             | TokenType::Does => {
-                // valid standalone condition
+                // "DOES" can be followed by "NOT" to form "does not" / "doesn't"
+                // then it can be followed by "EQUAL" or "CONTAINS"
+                if *condition_token.get_token_type() == TokenType::Does
+                    && self.token_pointer < tokens.len()
+                    && *tokens[self.token_pointer].get_token_type() == TokenType::Not
+                {
+                    // consume the "not" token
+                    self.next_token(tokens).map_err(|_| {
+                        (
+                            SyntaxError::MissingToken("Expected 'not' after 'does'".into()),
+                            vec![],
+                        )
+                    })?;
+                    
+                    // check if followed by "equal" or "contains"
+                    if self.token_pointer < tokens.len() {
+                        let next_type = *tokens[self.token_pointer].get_token_type();
+                        if next_type == TokenType::Equal || next_type == TokenType::EqualsWord {
+                            // consume "equal"
+                            self.next_token(tokens).map_err(|_| {
+                                (
+                                    SyntaxError::MissingToken("Expected 'equal' after 'does not'".into()),
+                                    vec![],
+                                )
+                            })?;
+                            condition_node.node_content = "does not equal".to_string();
+                        } else if next_type == TokenType::Contains {
+                            // consume "contains"
+                            self.next_token(tokens).map_err(|_| {
+                                (
+                                    SyntaxError::MissingToken("Expected 'contains' after 'does not'".into()),
+                                    vec![],
+                                )
+                            })?;
+                            condition_node.node_content = "does not contain".to_string();
+                        } else {
+                            // "does not" without "equal" or "contains" - treat as "does not equal"
+                            condition_node.node_content = "does not equal".to_string();
+                        }
+                    } else {
+                        // "does not" at end - treat as "does not equal"
+                        condition_node.node_content = "does not equal".to_string();
+                    }
+                }
+                // else, it's a valid standalone condition
+            }
+            TokenType::Is => {
+                // "IS" can be followed by "NOT" to form "is not"
+                if self.token_pointer < tokens.len()
+                    && *tokens[self.token_pointer].get_token_type() == TokenType::Not
+                {
+                    // consume the "not" token
+                    self.next_token(tokens).map_err(|_| {
+                        (
+                            SyntaxError::MissingToken("Expected 'not' after 'is'".into()),
+                            vec![],
+                        )
+                    })?;
+                    // update condition node content to reflect "is not"
+                    condition_node.node_content = "is not".to_string();
+                }
             }
             TokenType::Starts => {
                 // "STARTS" must be followed by "WITH"
@@ -2570,11 +2635,14 @@ impl Parser {
                             context: "string condition".to_string(),
                             suggestions: vec![
                                 "is".to_string(),
+                                "is not".to_string(),
                                 "equals".to_string(),
                                 "contains".to_string(),
                                 "has".to_string(),
                                 "starts".to_string(),
                                 "ends".to_string(),
+                                "doesn't equal".to_string(),
+                                "doesn't contain".to_string(),
                             ],
                         },
                         vec![condition_token],
@@ -2590,11 +2658,14 @@ impl Parser {
                             context: "string condition".to_string(),
                             suggestions: vec![
                                 "is".to_string(),
+                                "is not".to_string(),
                                 "equals".to_string(),
                                 "contains".to_string(),
                                 "has".to_string(),
                                 "starts".to_string(),
                                 "ends".to_string(),
+                                "doesn't equal".to_string(),
+                                "doesn't contain".to_string(),
                             ],
                         },
                         vec![condition_token],

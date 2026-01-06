@@ -202,7 +202,6 @@ fn generate_node(node: &TreeNode) -> CodeGenResult {
         NodeType::EntityQuery => generate_entity_query(node),
         NodeType::T(TokenType::And) => generate_and(node),
         NodeType::T(TokenType::Or) => generate_or(node),
-        NodeType::T(TokenType::Not) => generate_not(node),
         NodeType::ProfessorQuery => generate_professor_query(node),
         NodeType::CourseQuery => generate_course_query(node),
         NodeType::SubjectQuery => generate_subject_query(node),
@@ -399,28 +398,6 @@ fn generate_or(node: &TreeNode) -> CodeGenResult {
     let left = generate_node(&node.children[0])?;
     let right = generate_node(&node.children[1])?;
     Ok(format!("({} OR {})", left, right))
-}
-
-/// Generate SQL for NOT operation
-///
-/// Parameters:
-/// --- ---
-/// node -> The NOT node to generate SQL for (must have 1 child)
-/// --- ---
-///
-/// Returns:
-/// --- ---
-/// CodeGenResult -> The generated SQL fragment with NOT condition or an error
-/// --- ---
-///
-fn generate_not(node: &TreeNode) -> CodeGenResult {
-    if node.children.is_empty() {
-        return Err(CodeGenError::InvalidStructure {
-            message: "NOT node must have at least 1 child".to_string(),
-        });
-    }
-    let child = generate_node(&node.children[0])?;
-    Ok(format!("NOT ({})", child))
 }
 
 /// Generate SQL for ProfessorQuery node
@@ -970,8 +947,11 @@ fn extract_condition(node: &TreeNode) -> CodeGenResult {
         });
     }
     
-    // the condition type is stored in the first child's node_content
-    if let Some(child) = node.children.first() {
+    // for "is not", the condition node's node_content is set to "is not"
+    // otherwise, the condition type is stored in the first child's node_content
+    if !node.node_content.is_empty() && node.node_content == "is not" {
+        Ok("is not".to_string())
+    } else if let Some(child) = node.children.first() {
         let token_str = &child.node_content;
         Ok(token_str.clone())
     } else if let Some(token) = node.lexical_token {
@@ -1181,11 +1161,18 @@ fn build_string_condition(column: &str, condition: &str, value: &str) -> String 
     let upper = condition.to_uppercase();
     
     match upper.as_str() {
+        s if s == "IS NOT" || s.contains("IS NOT") => {
+            format!("LOWER({}) != LOWER('{}')", column, escaped_value)
+        }
+        // check "DOES NOT CONTAIN" / "DOESN'T CONTAIN" before "CONTAINS" since it contains "CONTAINS"
+        s if s.contains("DOES NOT CONTAIN") || s.contains("DOESN'T CONTAIN") || s.contains("DOESNT CONTAIN") => {
+            format!("{} NOT LIKE '%{}%' COLLATE NOCASE", column, escaped_value)
+        }
+        s if s.contains("NOTEQUALS") || (s.contains("NOT") && !s.contains("IS NOT") && !s.contains("DOES NOT")) => {
+            format!("LOWER({}) != LOWER('{}')", column, escaped_value)
+        }
         s if s.contains("EQUALS") || s.contains("IS") || s.contains("EQUAL") => {
             format!("LOWER({}) = LOWER('{}')", column, escaped_value)
-        }
-        s if s.contains("NOTEQUALS") || s.contains("NOT") => {
-            format!("LOWER({}) != LOWER('{}')", column, escaped_value)
         }
         s if s.contains("CONTAINS") || s.contains("HAS") => {
             format!("{} LIKE '%{}%' COLLATE NOCASE", column, escaped_value)

@@ -120,33 +120,33 @@
     "expected_problematic_tokens": null
   },
   {
-    "test_name": "not_subject_query",
-    "description": "NOT operator with subject query",
-    "input": "not subject = CMPT",
+    "test_name": "subject_is_not_query",
+    "description": "IS NOT condition with subject query",
+    "input": "subject is not CMPT",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null
   },
   {
-    "test_name": "not_professor_query",
-    "description": "NOT operator with professor query",
-    "input": "not prof contains Alan",
+    "test_name": "professor_is_not_query",
+    "description": "IS NOT condition with professor query",
+    "input": "prof is not Alan",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null
   },
   {
-    "test_name": "not_with_parentheses",
-    "description": "NOT operator with parenthesized expression",
-    "input": "not (subject = CMPT and course = 424N)",
+    "test_name": "course_is_not_query",
+    "description": "IS NOT condition with course query",
+    "input": "course is not 424N",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null
   },
   {
-    "test_name": "not_and_combination",
-    "description": "NOT operator combined with AND",
-    "input": "not subject = CMPT and credit hours >= 3",
+    "test_name": "is_not_and_combination",
+    "description": "IS NOT condition combined with AND",
+    "input": "subject is not CMPT and credit hours >= 3",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null
