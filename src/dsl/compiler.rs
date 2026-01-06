@@ -23,7 +23,7 @@ use crate::dsl::{
     parser::{Ast, Parser},
 };
 use crate::tui::errors::AppError;
-use crate::data::sql::Class;
+use crate::data::sql::{Class, execute_query, get_default_db_path};
 
 /// Result Types for the Compiler
 ///
@@ -189,11 +189,22 @@ impl Compiler {
             }
         };
 
+        // execute the SQL query against the database
+        let db_path = get_default_db_path();
+        let classes = match execute_query(&sql, &db_path) {
+            Ok(classes) => classes,
+            Err(e) => {
+                return CompilerResult::CodeGenError {
+                    message: format!("Database query error: {}", e),
+                };
+            }
+        };
+
         // return success if all operations were successful
         CompilerResult::Success {
             message: "Success".to_string(),
             sql,
-            classes: Vec::new(),
+            classes,
             ast,
         }
     }

@@ -25,11 +25,12 @@
 ///      --- ---
 /// --- ---
 ///
+use crate::data::sql::Class;
 use crate::dsl::compiler::{Compiler, CompilerResult};
 use crate::tui::errors::TUIError;
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Style};
+use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::{DefaultTerminal, Frame};
@@ -93,6 +94,10 @@ pub struct Tui {
     show_completions: bool,
     /// The partial word being completed (for replacement on selection)
     partial_word: String,
+    /// The query results (classes) to display
+    query_results: Vec<Class>,
+    /// Scroll offset for results (how many rows to skip)
+    results_scroll: usize,
 }
 
 /// Tui Implementation
@@ -135,6 +140,8 @@ impl Tui {
             completion_index: None,
             show_completions: false,
             partial_word: String::new(),
+            query_results: Vec::new(),
+            results_scroll: 0,
         })
     }
 
@@ -163,6 +170,8 @@ impl Tui {
             let completions = self.completions.clone();
             let completion_index = self.completion_index;
             let show_completions = self.show_completions;
+            let query_results = self.query_results.clone();
+            let results_scroll = self.results_scroll;
 
             // draw the current state
             let terminal = &mut self.terminal;
@@ -176,6 +185,8 @@ impl Tui {
                     &completions,
                     completion_index,
                     show_completions,
+                    &query_results,
+                    results_scroll,
                 );
             })?;
 
@@ -270,15 +281,24 @@ impl Tui {
 
                         // run the compiler and handle the result
                         match self.compiler.run(&self.input) {
-                            CompilerResult::Success { .. } => {
+                            CompilerResult::Success { classes, .. } => {
                                 // clear any error state
                                 self.toast_message = None;
                                 self.toast_start_time = None;
                                 self.error_type = None;
                                 self.problematic_positions.clear();
 
-                                // TODO: display results of database query instead of success message
-                                self.toast_message = Some(String::from("success"));
+                                // store the query results
+                                let count = classes.len();
+                                self.query_results = classes;
+                                self.results_scroll = 0;
+
+                                // show success message with count
+                                if count == 0 {
+                                    self.toast_message = Some("No results found".to_string());
+                                } else {
+                                    self.toast_message = Some(format!("Found {} class{}", count, if count == 1 { "" } else { "es" }));
+                                }
                                 self.toast_start_time = Some(Instant::now());
                             }
                             CompilerResult::LexerError {
@@ -325,6 +345,23 @@ impl Tui {
                         // clear any previous toasts and problematic tokens when user starts typing
                         self.clear_error_state();
                         self.input.push(c);
+                    }
+                    KeyCode::Up | KeyCode::PageUp => {
+                        // scroll results up (show earlier classes)
+                        if self.results_scroll >= 3 {
+                            self.results_scroll -= 3;
+                        } else {
+                            self.results_scroll = 0;
+                        }
+                    }
+                    KeyCode::Down | KeyCode::PageDown => {
+                        // scroll results down (show later classes)
+                        let max_scroll = self.query_results.len().saturating_sub(3);
+                        if self.results_scroll + 3 < max_scroll {
+                            self.results_scroll += 3;
+                        } else {
+                            self.results_scroll = max_scroll;
+                        }
                     }
                     _ => {}
                 }
@@ -518,6 +555,8 @@ impl Tui {
 /// completions -> The completions
 /// completion_index -> The completion index
 /// show_completions -> Whether to show completions
+/// query_results -> The query results (classes) to display
+/// results_scroll -> The scroll offset for results
 /// --- ---
 ///
 /// Returns:
@@ -535,11 +574,13 @@ fn render_frame(
     completions: &[String],
     completion_index: Option<usize>,
     show_completions: bool,
+    query_results: &[Class],
+    results_scroll: usize,
 ) {
     render_logo(frame);
     render_search_bar_with_data(frame, input, problematic_positions);
-    render_query_results(frame);
-    render_search_helpers_with_data(frame, input, toast_message);
+    render_query_results(frame, query_results, results_scroll);
+    render_search_helpers_with_data(frame, input, toast_message, query_results);
     render_syntax_highlighting(frame);
     render_toast_with_data(frame, toast_message, error_type);
     render_completion_dropdown(frame, completions, completion_index, show_completions);
@@ -687,6 +728,7 @@ fn render_search_bar_with_data(
 /// frame -> The frame to render
 /// input -> The input string
 /// toast_message -> The toast message
+/// query_results -> The query results for showing navigation hints
 /// --- ---
 ///
 /// Returns:
@@ -694,13 +736,20 @@ fn render_search_bar_with_data(
 /// None
 /// --- ---
 ///
-fn render_search_helpers_with_data(frame: &mut Frame, input: &str, toast_message: &Option<String>) {
+fn render_search_helpers_with_data(
+    frame: &mut Frame,
+    input: &str,
+    toast_message: &Option<String>,
+    query_results: &[Class],
+) {
     // don't show help text if there's an active toast
     if toast_message.is_some() {
         return;
     }
 
-    let help_text = if input.is_empty() {
+    let help_text = if !query_results.is_empty() {
+        "↑↓ Scroll Results | Enter to Search | Esc to Exit"
+    } else if input.is_empty() {
         "Type a ClassQL query (e.g., 'prof is Brian')"
     } else {
         "Press Enter to Search, Esc to Exit"
@@ -721,11 +770,13 @@ fn render_search_helpers_with_data(frame: &mut Frame, input: &str, toast_message
     frame.render_widget(help_paragraph, help_area);
 }
 
-/// TODO: Render the query results
+/// Render the query results in a 3-column grid below the search bar
 ///
 /// Parameters:
 /// --- ---
 /// frame -> The frame to render
+/// classes -> The classes to display
+/// scroll -> The scroll offset (number of classes to skip)
 /// --- ---
 ///
 /// Returns:
@@ -733,8 +784,102 @@ fn render_search_helpers_with_data(frame: &mut Frame, input: &str, toast_message
 /// None
 /// --- ---
 ///
-fn render_query_results(frame: &mut Frame) {
-    let _ = frame;
+fn render_query_results(frame: &mut Frame, classes: &[Class], scroll: usize) {
+    if classes.is_empty() {
+        return;
+    }
+
+    // Position the results grid below the search bar
+    let logo_height = 7; // Height of the ASCII art logo
+    let search_y = logo_height + 2; // search bar position
+    let search_height = 3; // search bar height
+    let results_y = search_y + search_height + 1; // 1 line below search bar
+
+    // Calculate available space for results
+    let available_height = frame.area().height.saturating_sub(results_y + 10); // leave room for help text and logo
+    let cell_height = 7_u16; // height per class box
+    let rows_to_show = (available_height / cell_height).max(1) as usize;
+
+    // Calculate grid dimensions
+    let cell_width = 26_u16;
+    let cols = 3_usize;
+    let grid_width = cell_width * cols as u16 + (cols as u16 - 1) * 2; // cells + gaps
+    let grid_x = frame.area().width.saturating_sub(grid_width) / 2;
+
+    // Apply scroll offset and get visible classes
+    let visible_classes: Vec<&Class> = classes.iter().skip(scroll).take(rows_to_show * cols).collect();
+
+    // Render each class in a 3-column grid
+    for (idx, class) in visible_classes.iter().enumerate() {
+        let row = idx / cols;
+        let col = idx % cols;
+
+        let cell_x = grid_x + (col as u16 * (cell_width + 2));
+        let cell_y = results_y + (row as u16 * cell_height);
+
+        // Create the class card
+        let display_lines = class.format_for_display();
+
+        // Build styled lines for the card
+        let mut styled_lines: Vec<Line> = Vec::new();
+
+        // Line 1: Course code (bold cyan)
+        if let Some(line) = display_lines.first() {
+            styled_lines.push(Line::from(Span::styled(
+                line.clone(),
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            )));
+        }
+
+        // Line 2: Title (white)
+        if let Some(line) = display_lines.get(1) {
+            styled_lines.push(Line::from(Span::styled(
+                line.clone(),
+                Style::default().fg(Color::White),
+            )));
+        }
+
+        // Line 3: Professor (yellow)
+        if let Some(line) = display_lines.get(2) {
+            styled_lines.push(Line::from(Span::styled(
+                line.clone(),
+                Style::default().fg(Color::Yellow),
+            )));
+        }
+
+        // Line 4: Days/Time (green)
+        if let Some(line) = display_lines.get(3) {
+            styled_lines.push(Line::from(Span::styled(
+                line.clone(),
+                Style::default().fg(Color::Green),
+            )));
+        }
+
+        // Line 5: Enrollment (gray)
+        if let Some(line) = display_lines.get(4) {
+            styled_lines.push(Line::from(Span::styled(
+                line.clone(),
+                Style::default().fg(Color::DarkGray),
+            )));
+        }
+
+        let cell_area = Rect {
+            x: cell_x,
+            y: cell_y,
+            width: cell_width,
+            height: cell_height,
+        };
+
+        let card = Paragraph::new(styled_lines).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Rgb(70, 70, 90))),
+        );
+
+        frame.render_widget(card, cell_area);
+    }
 }
 
 /// TODO:Render the syntax highlighting
