@@ -104,6 +104,7 @@ pub enum FocusMode {
 /// selected_result -> Index of currently selected result in browse mode
 /// cursor_visible -> Whether the input cursor is visible (for blinking)
 /// last_cursor_blink -> Timestamp of last cursor blink toggle
+/// max_items_that_fit -> Maximum number of items that fit on the screen
 /// --- ---
 ///
 pub struct Tui {
@@ -125,6 +126,7 @@ pub struct Tui {
     selected_result: usize,
     cursor_visible: bool,
     last_cursor_blink: Instant,
+    max_items_that_fit: usize,
 }
 
 /// Tui Implementation
@@ -173,6 +175,7 @@ impl Tui {
             selected_result: 0,
             cursor_visible: true,
             last_cursor_blink: Instant::now(),
+            max_items_that_fit: 0,
         })
     }
 
@@ -216,7 +219,7 @@ impl Tui {
             // draw the current state
             let terminal = &mut self.terminal;
             terminal.draw(|f| {
-                render_frame(
+                let (_, max_items) = render_frame(
                     f,
                     &input,
                     &problematic_positions,
@@ -231,6 +234,8 @@ impl Tui {
                     selected_result,
                     cursor_visible,
                 );
+                // update max_items_that_fit based on actual rendering
+                self.max_items_that_fit = max_items;
             })?;
 
             // handle input events with timeout for cursor blinking
@@ -336,33 +341,41 @@ impl Tui {
                                 if self.selected_result == 0 {
                                     self.focus_mode = FocusMode::QueryInput;
                                 } else {
-                                    // move selection up (3 items per row)
-                                    if self.selected_result >= 3 {
-                                        self.selected_result -= 3;
-                                        // adjust scroll if needed
-                                        if self.selected_result < self.results_scroll {
-                                            self.results_scroll = self.selected_result;
-                                        }
-                                    } else {
-                                        // can't go up more, go to query input
-                                        self.focus_mode = FocusMode::QueryInput;
+                                // move selection up (3 items per row)
+                                let cols = 3;
+                                if self.selected_result >= cols {
+                                    self.selected_result -= cols;
+                                    // adjust scroll if needed
+                                    if self.selected_result < self.results_scroll {
+                                        // align scroll to row boundaries (multiples of cols) to preserve columns
+                                        let target_row = self.selected_result / cols;
+                                        self.results_scroll = target_row * cols;
                                     }
+                                } else {
+                                    // can't go up more, go to query input
+                                    self.focus_mode = FocusMode::QueryInput;
                                 }
+                            }
                             }
                             KeyCode::Down => {
                                 // move selection down (3 items per row)
-                                if self.selected_result + 3 < self.query_results.len() {
-                                    self.selected_result += 3;
+                                let cols = 3;
+                                if self.selected_result + cols < self.query_results.len() {
+                                    self.selected_result += cols;
                                     // only scroll if result is not already visible
-                                    // estimate visible items: typically 2-3 rows = 6-9 items
                                     let total_results = self.query_results.len();
-                                    let estimated_visible = 9; // conservative estimate (3 rows * 3 cols)
+                                    let max_visible = self.max_items_that_fit;
                                     // if all results fit on screen, don't scroll
-                                    if total_results <= estimated_visible {
+                                    if total_results <= max_visible {
                                         // all results visible, don't scroll
-                                    } else if self.selected_result >= self.results_scroll + estimated_visible {
+                                        self.results_scroll = 0; // ensure scroll is reset
+                                    } else if self.selected_result >= self.results_scroll + max_visible {
                                         // result is beyond visible window, scroll to show it
-                                        self.results_scroll = self.selected_result.saturating_sub(estimated_visible - 1);
+                                        // align scroll to row boundaries (multiples of cols) to preserve columns
+                                        let rows_visible = max_visible / cols;
+                                        let current_row = self.selected_result / cols;
+                                        let scroll_row = current_row.saturating_sub(rows_visible - 1);
+                                        self.results_scroll = (scroll_row * cols).max(0);
                                     }
                                 }
                             }
@@ -381,15 +394,15 @@ impl Tui {
                                 if self.selected_result + 1 < self.query_results.len() {
                                     self.selected_result += 1;
                                     // only scroll if result is not already visible
-                                    // estimate visible items: typically 2-3 rows = 6-9 items
                                     let total_results = self.query_results.len();
-                                    let estimated_visible = 9; // conservative estimate (3 rows * 3 cols)
+                                    let max_visible = self.max_items_that_fit;
                                     // if all results fit on screen, don't scroll
-                                    if total_results <= estimated_visible {
+                                    if total_results <= max_visible {
                                         // all results visible, don't scroll
-                                    } else if self.selected_result >= self.results_scroll + estimated_visible {
+                                        self.results_scroll = 0; // ensure scroll is reset
+                                    } else if self.selected_result >= self.results_scroll + max_visible {
                                         // result is beyond visible window, scroll to show it
-                                        self.results_scroll = self.selected_result.saturating_sub(estimated_visible - 1);
+                                        self.results_scroll = self.selected_result.saturating_sub(max_visible - 1);
                                     }
                                 }
                             }
@@ -744,10 +757,10 @@ fn render_frame(
     focus_mode: &FocusMode,
     selected_result: usize,
     cursor_visible: bool,
-) {
+) -> (usize, usize) {
     render_logo(frame);
     render_search_bar_with_data(frame, input, problematic_positions, focus_mode, cursor_visible);
-    render_query_results(frame, query_results, results_scroll, focus_mode, selected_result);
+    let (_items_rendered, max_items_that_fit) = render_query_results(frame, query_results, results_scroll, focus_mode, selected_result);
     render_search_helpers_with_data(frame, input, toast_message, query_results, focus_mode);
     render_syntax_highlighting(frame);
     render_toast_with_data(frame, toast_message, error_type);
@@ -757,6 +770,8 @@ fn render_frame(
     if *focus_mode == FocusMode::DetailView && selected_result < query_results.len() {
         render_detail_view(frame, &query_results[selected_result]);
     }
+    
+    (0, max_items_that_fit)
 }
 
 /// Render the logo
@@ -990,7 +1005,7 @@ fn render_search_helpers_with_data(
 ///
 /// Returns:
 /// --- ---
-/// None
+/// (usize, usize) -> (number_of_items_rendered, max_items_that_fit)
 /// --- ---
 ///
 fn render_query_results(
@@ -999,9 +1014,9 @@ fn render_query_results(
     scroll: usize,
     focus_mode: &FocusMode,
     selected_result: usize,
-) {
+) -> (usize, usize) {
     if classes.is_empty() {
-        return;
+        return (0, 0);
     }
 
     let is_browse_mode = *focus_mode == FocusMode::ResultsBrowse || *focus_mode == FocusMode::DetailView;
@@ -1023,13 +1038,18 @@ fn render_query_results(
     let grid_width = cell_width * cols as u16 + (cols as u16 - 1) * 2; // cells + gaps
     let grid_x = frame.area().width.saturating_sub(grid_width) / 2;
 
+    // calculate how many items can actually fit
+    let max_items_that_fit = rows_to_show * cols;
+
     // apply scroll offset and get visible classes
     let visible_classes: Vec<(usize, &Class)> = classes
         .iter()
         .enumerate()
         .skip(scroll)
-        .take(rows_to_show * cols)
+        .take(max_items_that_fit)
         .collect();
+    
+    let items_rendered = visible_classes.len();
 
     // render each class in a 3-column grid
     for (global_idx, class) in visible_classes.iter() {
@@ -1051,7 +1071,7 @@ fn render_query_results(
         // line 1: course code (bold cyan)
         if let Some(line) = display_lines.first() {
             let style = Style::default()
-                .fg(Color::Cyan)
+                    .fg(Color::Cyan)
                 .add_modifier(Modifier::BOLD);
             styled_lines.push(Line::from(Span::styled(line.clone(), style)));
         }
@@ -1102,6 +1122,8 @@ fn render_query_results(
 
         frame.render_widget(card, cell_area);
     }
+    
+    (items_rendered, max_items_that_fit)
 }
 
 /// Render detailed view of a selected class as an overlay
@@ -1193,7 +1215,7 @@ fn render_detail_view(frame: &mut Frame, class: &Class) {
     let max_height = 35_u16; // maximum height
     let calculated_height = (total_content_lines as u16 + 3).min(max_height).max(min_height);
     let detail_height = calculated_height;
-    
+
     let detail_area = Rect {
         x: (frame.area().width.saturating_sub(detail_width)) / 2,
         y: (frame.area().height.saturating_sub(detail_height)) / 2,
@@ -1279,7 +1301,7 @@ fn render_detail_view(frame: &mut Frame, class: &Class) {
                         let start = format_time(&time_part[..dash_pos]);
                         let end = format_time(&time_part[dash_pos + 1..]);
                         if !days_part.is_empty() && !start.is_empty() && !end.is_empty() {
-                            lines.push(Line::from(vec![
+    lines.push(Line::from(vec![
                                 Span::styled("    ", Style::default().fg(Color::Rgb(0, 0, 0))), // 4 spaces for indentation
                                 Span::styled(format!("{} {}-{}", days_part, start, end), Style::default().fg(Color::Rgb(0, 0, 0))),
                             ]));
@@ -1299,7 +1321,7 @@ fn render_detail_view(frame: &mut Frame, class: &Class) {
         lines.push(Line::from(vec![
             Span::styled("    ", Style::default().fg(Color::Rgb(0, 0, 0))), // 4 spaces for indentation
             Span::styled("TBD", Style::default().fg(Color::Rgb(0, 0, 0))),
-        ]));
+    ]));
     }
 
     // meeting type
@@ -1319,13 +1341,13 @@ fn render_detail_view(frame: &mut Frame, class: &Class) {
     }
 
     // instruction method
-    lines.push(Line::from(vec![
-        Span::styled("Method: ", Style::default().fg(Color::Green)),
+        lines.push(Line::from(vec![
+            Span::styled("Method: ", Style::default().fg(Color::Green)),
         Span::styled(
             class.instruction_method.as_deref().unwrap_or("N/A"),
             Style::default().fg(Color::Rgb(0, 0, 0)), // Black text on white
         ),
-    ]));
+        ]));
 
     lines.push(Line::from("")); // blank line
 
@@ -1346,7 +1368,7 @@ fn render_detail_view(frame: &mut Frame, class: &Class) {
     ]));
 
     // description
-    lines.push(Line::from("")); // blank line
+        lines.push(Line::from("")); // blank line
     lines.push(Line::from(vec![
         Span::styled("Description: ", Style::default().fg(Color::Green)),
     ]));
@@ -1363,7 +1385,7 @@ fn render_detail_view(frame: &mut Frame, class: &Class) {
                 if remaining.len() <= content_width {
                     lines.push(Line::from(Span::styled(remaining.to_string(), Style::default().fg(Color::Rgb(60, 60, 60)))));
                     break;
-                } else {
+        } else {
                     // find a good break point (space, comma, period, etc.)
                     let mut break_point = content_width;
                     if let Some(space_pos) = remaining[..content_width.min(remaining.len())].rfind(' ') {
@@ -1601,7 +1623,7 @@ fn render_completion_dropdown(
     frame.render_widget(Clear, dropdown_area);
 
     let white_bg = Color::Rgb(255, 255, 255); // True white
-    
+
     let dropdown_paragraph = Paragraph::new(styled_lines)
         .block(
             Block::default()

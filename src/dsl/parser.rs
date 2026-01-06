@@ -459,7 +459,7 @@ impl Parser {
                 TokenType::Start | TokenType::End => numeric_binops,
 
                 // After values, suggest logical operators
-                TokenType::Identifier | TokenType::String | TokenType::Integer | TokenType::Time => {
+                TokenType::Identifier | TokenType::Alphanumeric | TokenType::String | TokenType::Integer | TokenType::Time => {
                     vec!["and".to_string(), "or".to_string()]
                 }
 
@@ -2156,11 +2156,76 @@ impl Parser {
         Ok(day_node)
     }
 
+    /// Parse a day query with optional condition (defaults to "= true" if condition is missing)
+    ///
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser
+    /// tokens -> The tokens to parse
+    /// day_name -> The name of the day (e.g., "monday")
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// ParseResult -> The parsed day query node
+    /// --- ---
+    ///
+    fn parse_day_query_helper(
+        &mut self,
+        tokens: &[Token],
+        day_name: &str,
+    ) -> ParseResult {
+        let day_token = tokens[self.token_pointer - 1];
+        let mut day_node = TreeNode::new(NodeType::String, day_name.to_string(), Some(day_token));
+
+        // check if next token is a logical operator (and/or) or end of input
+        // if so, default to "= true" for convenience
+        let condition_query = if self.token_pointer < tokens.len() {
+            let next_token = &tokens[self.token_pointer];
+            match *next_token.get_token_type() {
+                TokenType::And | TokenType::Or => {
+                    // default to "= true" when followed by logical operator
+                    let equals_token = Token::new(TokenType::Equals, 0, 0);
+                    TreeNode::new(NodeType::Condition, "=".to_string(), Some(equals_token))
+                }
+                _ => self.parse_condition(tokens)?,
+            }
+        } else {
+            // end of input, default to "= true"
+            let equals_token = Token::new(TokenType::Equals, 0, 0);
+            TreeNode::new(NodeType::Condition, "=".to_string(), Some(equals_token))
+        };
+
+        // for day queries, we typically expect a boolean-style value (like true/false)
+        // after the condition. If we defaulted to "=", also default the value to "true"
+        let string_query = if self.token_pointer < tokens.len() {
+            let next_token = &tokens[self.token_pointer];
+            match *next_token.get_token_type() {
+                TokenType::And | TokenType::Or => {
+                    // Default to "true" when followed by logical operator
+                    let true_token = Token::new(TokenType::Identifier, 0, 0);
+                    TreeNode::new(NodeType::Identifier, "true".to_string(), Some(true_token))
+                }
+                _ => self.parse_string(tokens)?,
+            }
+        } else {
+            // end of input, default to "true"
+            let true_token = Token::new(TokenType::Identifier, 0, 0);
+            TreeNode::new(NodeType::Identifier, "true".to_string(), Some(true_token))
+        };
+
+        day_node.children.push(condition_query);
+        day_node.children.push(string_query);
+
+        Ok(day_node)
+    }
+
     /// Parse the monday query into a TreeNode
     ///
     /// Syntax:
     /// --- ---
-    /// <monday_query> ::= "monday" <condition> <string>
+    /// <monday_query> ::= "monday" [<condition> <string>]
+    ///                     If condition is omitted, defaults to "= true"
     /// --- ---
     ///
     /// Parameters:
@@ -2180,27 +2245,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut monday_node =
-            TreeNode::new(NodeType::String, "monday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        // For day queries, we typically expect a boolean-style value (like true/false)
-        // after the condition. Make that explicit when the value is missing.
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        monday_node.children.push(condition_query);
-        monday_node.children.push(string_query);
-
-        Ok(monday_node)
+        self.parse_day_query_helper(tokens, "monday")
     }
 
     /// Parse the tuesday query into a TreeNode
@@ -2227,25 +2272,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut tuesday_node =
-            TreeNode::new(NodeType::String, "tuesday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        tuesday_node.children.push(condition_query);
-        tuesday_node.children.push(string_query);
-
-        Ok(tuesday_node)
+        self.parse_day_query_helper(tokens, "tuesday")
     }
 
     /// Parse the wednesday query into a TreeNode
@@ -2272,25 +2299,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut wednesday_node =
-            TreeNode::new(NodeType::String, "wednesday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        wednesday_node.children.push(condition_query);
-        wednesday_node.children.push(string_query);
-
-        Ok(wednesday_node)
+        self.parse_day_query_helper(tokens, "wednesday")
     }
 
     /// Parse the thursday query into a TreeNode
@@ -2317,25 +2326,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut thursday_node =
-            TreeNode::new(NodeType::String, "thursday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        thursday_node.children.push(condition_query);
-        thursday_node.children.push(string_query);
-
-        Ok(thursday_node)
+        self.parse_day_query_helper(tokens, "thursday")
     }
 
     /// Parse the friday query into a TreeNode
@@ -2362,25 +2353,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut friday_node =
-            TreeNode::new(NodeType::String, "friday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        friday_node.children.push(condition_query);
-        friday_node.children.push(string_query);
-
-        Ok(friday_node)
+        self.parse_day_query_helper(tokens, "friday")
     }
 
     /// Parse the saturday query into a TreeNode
@@ -2407,25 +2380,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut saturday_node =
-            TreeNode::new(NodeType::String, "saturday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        saturday_node.children.push(condition_query);
-        saturday_node.children.push(string_query);
-
-        Ok(saturday_node)
+        self.parse_day_query_helper(tokens, "saturday")
     }
 
     /// Parse the sunday query into a TreeNode
@@ -2452,25 +2407,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut sunday_node =
-            TreeNode::new(NodeType::String, "sunday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        sunday_node.children.push(condition_query);
-        sunday_node.children.push(string_query);
-
-        Ok(sunday_node)
+        self.parse_day_query_helper(tokens, "sunday")
     }
 
     /// Parse the time into a TreeNode
@@ -2804,6 +2741,7 @@ impl Parser {
             if next_token.get_token_type().to_string().contains("@") {
                 self.parse_email_identifier(tokens)
             } else {
+                // Alphanumeric tokens (like "424N") should be parsed as identifiers
                 self.parse_identifier(tokens)
             }
         } else {

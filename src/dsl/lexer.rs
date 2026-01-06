@@ -187,14 +187,20 @@ impl Lexer {
                 .map(|token| format!("'{}'", self.get_lexeme(token)))
                 .collect();
 
+            // get the actual character(s) for the example
+            let example_char = unrecognized_tokens.first()
+                .map(|token| self.get_lexeme(token))
+                .unwrap_or("");
+            
             let message = format!(
-                "Unrecognized character{}: {}",
+                "Unrecognized character{}: {}. Try wrapping in quotes if this is part of a value (e.g., \"{}\")",
                 if unrecognized_chars.len() > 1 {
                     "s"
                 } else {
                     ""
                 },
-                unrecognized_chars.join(", ")
+                unrecognized_chars.join(", "),
+                example_char
             );
 
             return Err(AppError::UnrecognizedTokens(message, problematic_positions));

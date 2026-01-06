@@ -24,6 +24,30 @@
     "expected_problematic_tokens": null
   },
   {
+    "test_name": "course_with_alphanumeric_number",
+    "description": "Course query with alphanumeric course number like 424N",
+    "input": "course = 424N",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "subject_and_alphanumeric_course",
+    "description": "Subject and alphanumeric course number query",
+    "input": "subject = CMPT and course = 424N",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "course_number_query_with_alphanumeric",
+    "description": "Course number query with alphanumeric value",
+    "input": "course number = 203N",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
     "test_name": "simple_credit_hours_query",
     "description": "Basic credit hours query with greater than operator",
     "input": "credit hours > 3",
@@ -59,6 +83,38 @@
     "test_name": "title_ends_with",
     "description": "Title query with 'ends with' operator", 
     "input": "title ends with Analysis",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "day_query_without_condition",
+    "description": "Day query without explicit condition defaults to = true",
+    "input": "monday",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "day_query_with_and",
+    "description": "Day query followed by and defaults to = true",
+    "input": "monday and wednesday",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "day_query_with_explicit_condition",
+    "description": "Day query with explicit condition still works",
+    "input": "monday = true",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "complex_query_with_days",
+    "description": "Complex query with type and multiple days without conditions",
+    "input": "type = WEB and monday and wednesday",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null

@@ -89,6 +89,7 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 ### Literals
 - **Strings**: `"[^"]*"?` (supports unclosed strings)
 - **Times**: `[0-9]+:[0-9]+\s?(?:am|pm)|[0-9]+\s?(?:am|pm)` (am/pm suffix required)
+- **Alphanumeric**: `[0-9]+[A-Za-z]+` (course numbers like "424N", "101L" - digits followed by letters)
 - **Integers**: `[0-9]+`
 - **General Identifiers**: `[a-zA-Z_][a-zA-Z0-9_]*`
 
@@ -100,7 +101,7 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 5. Single operators
 6. Logical operators
 7. Conditions
-8. Literals (strings, times, integers)
+8. Literals (strings, times, alphanumeric, integers)
 9. General identifiers (lowest priority)
 
 ## Formal BNF Grammar
@@ -136,13 +137,20 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 <time_query> ::= ("start" | "end") (<binop> <time> | <time_range>)
 <time_range> ::= <time> "to" <time>
 <day_query> ::= <monday_query> | <tuesday_query> | <wednesday_query> | <thursday_query> | <friday_query> | <saturday_query> | <sunday_query>
-<monday_query> ::= ("mon" | "monday" | "m") <condition> <string>
-<tuesday_query> ::= ("tues" | "tuesday" | "tu") <condition> <string>
-<wednesday_query> ::= ("wen" | "wednesday" | "w") <condition> <string>
-<thursday_query> ::= ("thur" | "thursday" | "th") <condition> <string>
-<friday_query> ::= ("fri" | "friday" | "f") <condition> <string>
-<saturday_query> ::= ("sat" | "saturday" | "sa") <condition> <string>
-<sunday_query> ::= ("sun" | "sunday" | "su") <condition> <string>
+<monday_query> ::= ("mon" | "monday" | "m") [<condition> <string>]
+                    If condition is omitted, defaults to "= true"
+<tuesday_query> ::= ("tues" | "tuesday" | "tu") [<condition> <string>]
+                     If condition is omitted, defaults to "= true"
+<wednesday_query> ::= ("wen" | "wednesday" | "w") [<condition> <string>]
+                      If condition is omitted, defaults to "= true"
+<thursday_query> ::= ("thur" | "thursday" | "th") [<condition> <string>]
+                     If condition is omitted, defaults to "= true"
+<friday_query> ::= ("fri" | "friday" | "f") [<condition> <string>]
+                    If condition is omitted, defaults to "= true"
+<saturday_query> ::= ("sat" | "saturday" | "sa") [<condition> <string>]
+                      If condition is omitted, defaults to "= true"
+<sunday_query> ::= ("sun" | "sunday" | "su") [<condition> <string>]
+                    If condition is omitted, defaults to "= true"
 
 <time> ::= [0-9]+:[0-9]+\s?(?:am|pm)|[0-9]+\s?(?:am|pm)  ; am/pm suffix required
 <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal"

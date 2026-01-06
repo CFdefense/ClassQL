@@ -21,6 +21,18 @@
         ]
     },
     {
+        "test_name": "Alphanumeric Course Numbers",
+        "description": "Test alphanumeric course numbers (digits followed by letters)",
+        "code": "424N 101L 203N 300L 435L",
+        "result": [
+            {"token_type": "T_ALPHANUMERIC", "content": "424N"},
+            {"token_type": "T_ALPHANUMERIC", "content": "101L"},
+            {"token_type": "T_ALPHANUMERIC", "content": "203N"},
+            {"token_type": "T_ALPHANUMERIC", "content": "300L"},
+            {"token_type": "T_ALPHANUMERIC", "content": "435L"}
+        ]
+    },
+    {
         "test_name": "Integer Numbers",
         "description": "Test integer literals",
         "code": "0 3 15 101 2024",
@@ -30,6 +42,21 @@
             {"token_type": "T_INTEGER", "content": "15"},
             {"token_type": "T_INTEGER", "content": "101"},
             {"token_type": "T_INTEGER", "content": "2024"}
+        ]
+    },
+    {
+        "test_name": "Alphanumeric vs Integer",
+        "description": "Test that alphanumeric tokens are recognized before integers",
+        "code": "course = 424N and credit hours = 4",
+        "result": [
+            {"token_type": "T_COURSE", "content": "course"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_ALPHANUMERIC", "content": "424N"},
+            {"token_type": "T_AND", "content": "and"},
+            {"token_type": "T_CREDIT", "content": "credit"},
+            {"token_type": "T_HOURS", "content": "hours"},
+            {"token_type": "T_EQUALS", "content": "="},
+            {"token_type": "T_INTEGER", "content": "4"}
         ]
     },
     {

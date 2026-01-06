@@ -72,11 +72,13 @@
     },
     {
         "test_name": "Numbers in Strange Places",
-        "description": "Test numbers embedded in weird contexts",
+        "description": "Test numbers embedded in weird contexts - alphanumeric tokens are recognized",
         "code": "123subject456prof789and000",
         "result": [
-            {"token_type": "T_INTEGER", "content": "123"},
-            {"token_type": "T_IDENTIFIER", "content": "subject456prof789and000"}
+            {"token_type": "T_ALPHANUMERIC", "content": "123subject"},
+            {"token_type": "T_ALPHANUMERIC", "content": "456prof"},
+            {"token_type": "T_ALPHANUMERIC", "content": "789and"},
+            {"token_type": "T_INTEGER", "content": "000"}
         ]
     },
     {

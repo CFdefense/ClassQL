@@ -105,6 +105,7 @@ pub fn generate_sql(ast: &Ast) -> CodeGenResult {
         .as_ref()
         .ok_or(CodeGenError::EmptyAst)?;
 
+    // generate WHERE clause - day queries use the joined mt table directly
     let where_clause = generate_node(root)?;
 
     // build the full SQL query with joins and aggregation
@@ -264,7 +265,43 @@ fn generate_logical_term(node: &TreeNode) -> CodeGenResult {
             message: "LogicalTerm node has no children".to_string(),
         });
     }
-    generate_node(&node.children[0])
+    
+    // collect all conditions from the AND chain
+    let mut conditions = Vec::new();
+    let mut current = &node.children[0];
+    
+    // traverse the AND chain to collect all conditions
+    loop {
+        match &current.node_type {
+            NodeType::T(TokenType::And) => {
+                if current.children.len() >= 2 {
+                    conditions.push(generate_node(&current.children[0])?);
+                    current = &current.children[1];
+                } else {
+                    break;
+                }
+            }
+            _ => {
+                conditions.push(generate_node(current)?);
+                break;
+            }
+        }
+    }
+    
+    // sort: non-EXISTS conditions first, then EXISTS subqueries
+    // this ensures more selective filters (like professor) are evaluated before
+    // expensive EXISTS subqueries (like day queries)
+    conditions.sort_by(|a, b| {
+        let a_is_exists = a.starts_with("EXISTS");
+        let b_is_exists = b.starts_with("EXISTS");
+        match (a_is_exists, b_is_exists) {
+            (true, false) => std::cmp::Ordering::Greater,  // exists goes after
+            (false, true) => std::cmp::Ordering::Less,     // non-exists goes first
+            _ => std::cmp::Ordering::Equal,                // keep original order
+        }
+    });
+    
+    Ok(conditions.join(" AND "))
 }
 
 /// Generate SQL for a LogicalFactor node
@@ -329,7 +366,15 @@ fn generate_and(node: &TreeNode) -> CodeGenResult {
     }
     let left = generate_node(&node.children[0])?;
     let right = generate_node(&node.children[1])?;
-    Ok(format!("({} AND {})", left, right))
+    
+    // put non-EXISTS conditions first so they filter rows before EXISTS subqueries
+    let (first, second) = if right.starts_with("EXISTS") && !left.starts_with("EXISTS") {
+        (left, right)  // non-exists first
+    } else {
+        (left, right)  // keep original order if both are exists or left is exists
+    };
+    
+    Ok(format!("({} AND {})", first, second))
 }
 
 /// Generate SQL for OR operation
@@ -868,7 +913,6 @@ fn generate_day_query(node: &TreeNode) -> CodeGenResult {
         }
     };
 
-    // get the boolean value
     if day_node.children.len() < 2 {
         return Err(CodeGenError::InvalidStructure {
             message: "Day node missing condition and value".to_string(),
@@ -877,9 +921,11 @@ fn generate_day_query(node: &TreeNode) -> CodeGenResult {
     
     let value = extract_string_value(&day_node.children[1])?;
     let is_true = value.to_lowercase() == "true";
+    let day_value = if is_true { 1 } else { 0 };
     
-    // SQLite uses 0/1 for booleans
-    Ok(format!("{} = {}", column, if is_true { 1 } else { 0 }))
+    // use the joined mt table directly in WHERE clause
+    // this is efficient because we're already joining meeting_times
+    Ok(format!("{} = {}", column, day_value))
 }
 
 /// Extract the condition type from a Condition node
