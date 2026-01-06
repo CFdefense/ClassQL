@@ -8,12 +8,22 @@
 /// --- ---
 /// semantic_analysis -> Run semantic analysis on a parsed AST
 /// invalid_context -> Helper to build a `SemanticError`
-/// analyze_node -> Analyze a node in the AST
+/// analyze_node -> Analyze a node in the AST (dispatches to specialized analyzers)
+/// analyze_numeric_query -> Validate numeric field queries
+/// analyze_time_query -> Validate time queries
+/// analyze_time_range -> Validate time range nodes
+/// analyze_day_query -> Validate day queries
+/// analyze_string_field_query -> Validate string-based field queries
+/// analyze_integer -> Validate integer literals
+/// analyze_time -> Validate time literals
 /// --- ---
 ///
 use crate::dsl::parser::{Ast, NodeType, TreeNode};
 use crate::dsl::token::TokenType;
 use crate::tui::errors::SemanticError;
+
+/// Type alias for semantic analysis results
+type SemanticResult = Result<(), (SemanticError, Vec<(usize, usize)>)>;
 
 /// Run semantic analysis on a parsed AST.
 ///
@@ -45,7 +55,7 @@ use crate::tui::errors::SemanticError;
 ///     Err((SemanticError, Vec<(usize, usize)>)) -> Semantic analysis failed, contains
 ///         the `SemanticError` and byte‑range positions for the problematic input
 /// --- ---
-pub fn semantic_analysis(ast: &Ast) -> Result<(), (SemanticError, Vec<(usize, usize)>)> {
+pub fn semantic_analysis(ast: &Ast) -> SemanticResult {
     if let Some(root) = &ast.head {
         analyze_node(root)
     } else {
@@ -56,18 +66,6 @@ pub fn semantic_analysis(ast: &Ast) -> Result<(), (SemanticError, Vec<(usize, us
 }
 
 /// Helper to build a semantic error.
-///
-/// Parameters:
-/// --- ---
-/// token -> The token or node description associated with the error
-/// context -> A short description of where the token is invalid
-/// suggestions -> Suggested replacements or valid alternatives
-/// --- ---
-///
-/// Returns:
-/// --- ---
-/// SemanticError -> The semantic error
-/// --- ---
 fn invalid_context(token: String, context: &str, suggestions: &[&str]) -> SemanticError {
     SemanticError::InvalidContext {
         token,
@@ -76,413 +74,367 @@ fn invalid_context(token: String, context: &str, suggestions: &[&str]) -> Semant
     }
 }
 
+/// Extract span from a node's lexical token
+fn get_span(node: &TreeNode) -> Vec<(usize, usize)> {
+    node.lexical_token
+        .map(|t| vec![(t.get_start(), t.get_end())])
+        .unwrap_or_default()
+}
+
 /// Analyze a node in the AST.
 ///
-/// Responsible for applying node‑local semantic checks and recursively
-/// analyzing all descendant nodes.
-///
-/// Parameters:
-/// --- ---
-/// node -> The node to analyze
-/// --- ---
-///
-/// Returns:
-/// --- ---
-/// Result<(), (SemanticError, Vec<(usize, usize)>)> -> The result of the node analysis
-/// --- ---
-fn analyze_node(node: &TreeNode) -> Result<(), (SemanticError, Vec<(usize, usize)>)> {
+/// Dispatches to specialized analyzers based on node type, then recursively
+/// analyzes all children.
+fn analyze_node(node: &TreeNode) -> SemanticResult {
     use NodeType::*;
-    // Node‑local checks
+
     match node.node_type {
-        // Queries over numeric fields should have shape: <Binop> <Integer>
         CreditHoursQuery | EnrollmentQuery | EnrollmentCapQuery => {
-            if node.children.len() != 2 {
-                let err = invalid_context(
-                    node.node_content.clone(),
-                    "numeric field query",
-                    &["<comparison>", "<number>"],
-                );
-                let span = node
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
-
-            if !matches!(node.children[0].node_type, Binop) {
-                let child = &node.children[0];
-                let err = invalid_context(
-                    child.node_content.clone(),
-                    "numeric comparison",
-                    &["<comparison operator>"],
-                );
-                let span = child
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
-
-            if !matches!(node.children[1].node_type, Integer) {
-                let child = &node.children[1];
-                let err = invalid_context(
-                    child.node_content.clone(),
-                    "numeric comparison",
-                    &["<number>"],
-                );
-                let span = child
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
+            analyze_numeric_query(node)?;
         }
 
-        // Time queries:
-        //   ("start" | "end") <binop> <time>
-        //   ("start" | "end") <time_range>
         TimeQuery => {
-            if node.children.is_empty() {
-                let err = invalid_context(
-                    node.node_content.clone(),
-                    "time query",
-                    &["start", "end"],
-                );
-                let span = node
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
-
-            // First child encodes whether this is "start" or "end"
-            if !matches!(node.children[0].node_type, String) {
-                let child = &node.children[0];
-                let err = invalid_context(
-                    child.node_content.clone(),
-                    "time query",
-                    &["start", "end"],
-                );
-                let span = child
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
-
-            match node.children.len() {
-                // ("start" | "end") <time_range>
-                2 => {
-                    if !matches!(node.children[1].node_type, TimeRange) {
-                        let child = &node.children[1];
-                        let err = invalid_context(
-                            child.node_content.clone(),
-                            "time range query",
-                            &["<time> to <time>"],
-                        );
-                        let span = child
-                            .lexical_token
-                            .map(|t| vec![(t.get_start(), t.get_end())])
-                            .unwrap_or_default();
-                        return Err((err, span));
-                    }
-                }
-                // ("start" | "end") <binop> <time>
-                3 => {
-                    if !matches!(node.children[1].node_type, Binop) {
-                        let child = &node.children[1];
-                        let err = invalid_context(
-                            child.node_content.clone(),
-                            "time comparison",
-                            &["<comparison operator>"],
-                        );
-                        let span = child
-                            .lexical_token
-                            .map(|t| vec![(t.get_start(), t.get_end())])
-                            .unwrap_or_default();
-                        return Err((err, span));
-                    }
-                    if !matches!(node.children[2].node_type, Time) {
-                        let child = &node.children[2];
-                        let err = invalid_context(
-                            child.node_content.clone(),
-                            "time comparison",
-                            &["<time value>"],
-                        );
-                        let span = child
-                            .lexical_token
-                            .map(|t| vec![(t.get_start(), t.get_end())])
-                            .unwrap_or_default();
-                        return Err((err, span));
-                    }
-                }
-                _ => {
-                    let err = invalid_context(
-                        node.node_content.clone(),
-                        "time query",
-                        &["<comparison> <time>", "<time> to <time>"],
-                    );
-                    let span = node
-                        .lexical_token
-                        .map(|t| vec![(t.get_start(), t.get_end())])
-                        .unwrap_or_default();
-                    return Err((err, span));
-                }
-            }
+            analyze_time_query(node)?;
         }
 
-        // Time range must be exactly: <time>, <time>
         TimeRange => {
-            if node.children.len() != 2 {
-                let err = invalid_context(
-                    node.node_content.clone(),
-                    "time range",
-                    &["<time> to <time>"],
-                );
-                let span = node
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
-
-            if !matches!(node.children[0].node_type, Time)
-                || !matches!(node.children[1].node_type, Time)
-            {
-                let err = invalid_context(
-                    node.node_content.clone(),
-                    "time range",
-                    &["<time> to <time>"],
-                );
-                let span = node
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
+            analyze_time_range(node)?;
         }
 
-        // Day queries wrap a specific day node; the parser currently encodes
-        // each day as a `String` node with children describing the condition
-        // and value. Here we just assert there is exactly one child so the
-        // downstream SQL builder can rely on that shape.
         DayQuery => {
-            // The parser builds day queries as:
-            //   DayQuery -> [ day_node ]
-            // where day_node is a `String` node whose children are
-            //   [ <Condition>, <Identifier-or-email> ]
-            if node.children.len() != 1 {
-                let err = invalid_context(
-                    node.node_content.clone(),
-                    "day query",
-                    &["monday <condition> <value>", "tuesday <condition> <value>"],
-                );
-                let span = node
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
-
-            let day_node = &node.children[0];
-            // We don’t depend on the concrete day token here, only on shape.
-            if day_node.children.len() != 2 {
-                let err = invalid_context(
-                    day_node.node_content.clone(),
-                    "day query",
-                    &["<day> <condition> <value>"],
-                );
-                let span = day_node
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
-
-            // First child must be a string condition node.
-            if !matches!(day_node.children[0].node_type, Condition) {
-                let child = &day_node.children[0];
-                let err = invalid_context(
-                    child.node_content.clone(),
-                    "day condition",
-                    &["is", "equals", "contains", "has", "starts with", "ends with"],
-                );
-                let span = child
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
-
-            // Second child must be a string-like value; we allow identifiers and
-            // generic string nodes so future lexer refinements keep working.
-            if !matches!(
-                day_node.children[1].node_type,
-                Identifier | EmailIdentifier | String
-            ) {
-                let child = &day_node.children[1];
-                let err = invalid_context(
-                    child.node_content.clone(),
-                    "day value",
-                    &["true", "false", "<text value>"],
-                );
-                let span = child
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
-
-            // Additionally, reject obviously wrong literal categories such as
-            // bare numbers or times in place of a boolean/textual day flag.
-            if let Some(tok) = day_node.children[1].lexical_token {
-                if matches!(
-                    *tok.get_token_type(),
-                    TokenType::Integer | TokenType::Time
-                ) {
-                    let err = invalid_context(
-                        tok.get_token_type().to_string(),
-                        "day value",
-                        &["true", "false"],
-                    );
-                    let span = vec![(tok.get_start(), tok.get_end())];
-                    return Err((err, span));
-                }
-            }
-
-            // Finally, day predicates are intended to behave like booleans:
-            // the value should be something like "true" or "false".
-            let value_node = &day_node.children[1];
-            let value_text = value_node.node_content.to_lowercase();
-            if value_text != "true" && value_text != "false" {
-                let err =
-                    invalid_context(value_node.node_content.clone(), "day value", &["true", "false"]);
-                let span = value_node
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
+            analyze_day_query(node)?;
         }
 
-        // String-based field queries (professor, subject, number, title,
-        // description, method, campus, full, meeting type) should all have a
-        // consistent shape:
-        //   <EntityQuery> -> [ <Condition>, <Identifier-or-email> ]
         ProfessorQuery
         | SubjectQuery
         | NumberQuery
         | TitleQuery
         | DescriptionQuery
+        | PrereqsQuery
+        | CoreqsQuery
         | InstructionMethodQuery
         | CampusQuery
         | FullQuery
         | MeetingTypeQuery => {
-            if node.children.len() != 2 {
-                let err = invalid_context(
-                    node.node_content.clone(),
-                    "string field query",
-                    &["<condition> <value>"],
-                );
-                let span = node
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
-
-            // First child must be a condition node (parser already enforces the
-            // token category; semantics assert the AST shape).
-            if !matches!(node.children[0].node_type, Condition) {
-                let child = &node.children[0];
-                let err = invalid_context(
-                    child.node_content.clone(),
-                    "string condition",
-                    &["is", "equals", "contains", "has", "starts with", "ends with"],
-                );
-                let span = child
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
-
-            // Second child must be a string-like value node; we allow both
-            // identifiers and email identifiers (once the parser distinguishes
-            // them) as well as generic string nodes.
-            if !matches!(
-                node.children[1].node_type,
-                Identifier | EmailIdentifier | String
-            ) {
-                let child = &node.children[1];
-                let err = invalid_context(
-                    child.node_content.clone(),
-                    "string field value",
-                    &["<text value>", "quoted string"],
-                );
-                let span = child
-                    .lexical_token
-                    .map(|t| vec![(t.get_start(), t.get_end())])
-                    .unwrap_or_default();
-                return Err((err, span));
-            }
-
-            // Also reject clearly wrong literal categories such as numeric or
-            // time values in string fields (e.g. "prof equals 3").
-            if let Some(tok) = node.children[1].lexical_token {
-                if matches!(
-                    *tok.get_token_type(),
-                    TokenType::Integer | TokenType::Time
-                ) {
-                    let err = invalid_context(
-                        tok.get_token_type().to_string(),
-                        "string field value",
-                        &["<text value>", "quoted string"],
-                    );
-                    let span = vec![(tok.get_start(), tok.get_end())];
-                    return Err((err, span));
-                }
-            }
+            analyze_string_field_query(node)?;
         }
 
-        // Leaf typing checks – ensure lexer categories line up with node types.
         Integer => {
-            if let Some(tok) = node.lexical_token {
-                if *tok.get_token_type() != TokenType::Integer {
-                    let err = invalid_context(
-                        tok.get_token_type().to_string(),
-                        "integer literal",
-                        &["<number>"],
-                    );
-                    let span = vec![(tok.get_start(), tok.get_end())];
-                    return Err((err, span));
-                }
-            }
+            analyze_integer(node)?;
         }
 
         Time => {
-            if let Some(tok) = node.lexical_token {
-                if *tok.get_token_type() != TokenType::Time {
-                    let err = invalid_context(
-                        tok.get_token_type().to_string(),
-                        "time literal",
-                        &["<time value>"],
-                    );
-                    let span = vec![(tok.get_start(), tok.get_end())];
-                    return Err((err, span));
-                }
-            }
+            analyze_time(node)?;
         }
 
-        // Other node types currently have no extra semantic rules beyond what
-        // the parser already guarantees; they are still traversed recursively
-        // below.
+        // Other node types have no extra semantic rules beyond what
+        // the parser already guarantees
         _ => {}
     }
 
     // Recursively analyze children
     for child in &node.children {
         analyze_node(child)?;
+    }
+
+    Ok(())
+}
+
+/// Validate numeric field queries (credit hours, enrollment, caps).
+///
+/// Expected shape: <Binop> <Integer>
+fn analyze_numeric_query(node: &TreeNode) -> SemanticResult {
+    if node.children.len() != 2 {
+        let err = invalid_context(
+            node.node_content.clone(),
+            "numeric field query",
+            &["<comparison>", "<number>"],
+        );
+        return Err((err, get_span(node)));
+    }
+
+    if !matches!(node.children[0].node_type, NodeType::Binop) {
+        let child = &node.children[0];
+        let err = invalid_context(
+            child.node_content.clone(),
+            "numeric comparison",
+            &["<comparison operator>"],
+        );
+        return Err((err, get_span(child)));
+    }
+
+    if !matches!(node.children[1].node_type, NodeType::Integer) {
+        let child = &node.children[1];
+        let err = invalid_context(
+            child.node_content.clone(),
+            "numeric comparison",
+            &["<number>"],
+        );
+        return Err((err, get_span(child)));
+    }
+
+    Ok(())
+}
+
+/// Validate time queries.
+///
+/// Expected shapes:
+/// - ("start" | "end") <binop> <time>
+/// - ("start" | "end") <time_range>
+fn analyze_time_query(node: &TreeNode) -> SemanticResult {
+    if node.children.is_empty() {
+        let err = invalid_context(node.node_content.clone(), "time query", &["start", "end"]);
+        return Err((err, get_span(node)));
+    }
+
+    // First child encodes whether this is "start" or "end"
+    if !matches!(node.children[0].node_type, NodeType::String) {
+        let child = &node.children[0];
+        let err = invalid_context(child.node_content.clone(), "time query", &["start", "end"]);
+        return Err((err, get_span(child)));
+    }
+
+    match node.children.len() {
+        // ("start" | "end") <time_range>
+        2 => {
+            if !matches!(node.children[1].node_type, NodeType::TimeRange) {
+                let child = &node.children[1];
+                let err = invalid_context(
+                    child.node_content.clone(),
+                    "time range query",
+                    &["<time> to <time>"],
+                );
+                return Err((err, get_span(child)));
+            }
+        }
+        // ("start" | "end") <binop> <time>
+        3 => {
+            if !matches!(node.children[1].node_type, NodeType::Binop) {
+                let child = &node.children[1];
+                let err = invalid_context(
+                    child.node_content.clone(),
+                    "time comparison",
+                    &["<comparison operator>"],
+                );
+                return Err((err, get_span(child)));
+            }
+            if !matches!(node.children[2].node_type, NodeType::Time) {
+                let child = &node.children[2];
+                let err = invalid_context(
+                    child.node_content.clone(),
+                    "time comparison",
+                    &["<time value>"],
+                );
+                return Err((err, get_span(child)));
+            }
+        }
+        _ => {
+            let err = invalid_context(
+                node.node_content.clone(),
+                "time query",
+                &["<comparison> <time>", "<time> to <time>"],
+            );
+            return Err((err, get_span(node)));
+        }
+    }
+
+    Ok(())
+}
+
+/// Validate time range nodes.
+///
+/// Expected shape: <time> to <time>
+fn analyze_time_range(node: &TreeNode) -> SemanticResult {
+    if node.children.len() != 2 {
+        let err = invalid_context(node.node_content.clone(), "time range", &["<time> to <time>"]);
+        return Err((err, get_span(node)));
+    }
+
+    if !matches!(node.children[0].node_type, NodeType::Time)
+        || !matches!(node.children[1].node_type, NodeType::Time)
+    {
+        let err = invalid_context(node.node_content.clone(), "time range", &["<time> to <time>"]);
+        return Err((err, get_span(node)));
+    }
+
+    Ok(())
+}
+
+/// Validate day queries.
+///
+/// Expected shape: DayQuery -> [ day_node ]
+/// where day_node has children [ <Condition>, <value> ]
+fn analyze_day_query(node: &TreeNode) -> SemanticResult {
+    if node.children.len() != 1 {
+        let err = invalid_context(
+            node.node_content.clone(),
+            "day query",
+            &["monday <condition> <value>", "tuesday <condition> <value>"],
+        );
+        return Err((err, get_span(node)));
+    }
+
+    let day_node = &node.children[0];
+
+    // Validate day node has exactly 2 children
+    if day_node.children.len() != 2 {
+        let err = invalid_context(
+            day_node.node_content.clone(),
+            "day query",
+            &["<day> <condition> <value>"],
+        );
+        return Err((err, get_span(day_node)));
+    }
+
+    // First child must be a condition node
+    if !matches!(day_node.children[0].node_type, NodeType::Condition) {
+        let child = &day_node.children[0];
+        let err = invalid_context(
+            child.node_content.clone(),
+            "day condition",
+            &["is", "equals", "contains", "has", "starts with", "ends with"],
+        );
+        return Err((err, get_span(child)));
+    }
+
+    // Second child must be a string-like value
+    let value_node = &day_node.children[1];
+    if !matches!(
+        value_node.node_type,
+        NodeType::Identifier | NodeType::EmailIdentifier | NodeType::String
+    ) {
+        let err = invalid_context(
+            value_node.node_content.clone(),
+            "day value",
+            &["true", "false", "<text value>"],
+        );
+        return Err((err, get_span(value_node)));
+    }
+
+    // Reject numeric or time values
+    if let Some(tok) = value_node.lexical_token {
+        if matches!(
+            *tok.get_token_type(),
+            TokenType::Integer | TokenType::Time
+        ) {
+            let err = invalid_context(
+                tok.get_token_type().to_string(),
+                "day value",
+                &["true", "false"],
+            );
+            return Err((err, vec![(tok.get_start(), tok.get_end())]));
+        }
+    }
+
+    // Day predicates should be boolean: "true" or "false"
+    let value_text = value_node.node_content.to_lowercase();
+    if value_text != "true" && value_text != "false" {
+        let err = invalid_context(
+            value_node.node_content.clone(),
+            "day value",
+            &["true", "false"],
+        );
+        return Err((err, get_span(value_node)));
+    }
+
+    Ok(())
+}
+
+/// Validate string-based field queries.
+///
+/// Expected shape: [ <Condition>, <Identifier-or-email> ]
+fn analyze_string_field_query(node: &TreeNode) -> SemanticResult {
+    if node.children.len() != 2 {
+        let err = invalid_context(
+            node.node_content.clone(),
+            "string field query",
+            &["<condition> <value>"],
+        );
+        return Err((err, get_span(node)));
+    }
+
+    // First child must be a condition node
+    if !matches!(node.children[0].node_type, NodeType::Condition) {
+        let child = &node.children[0];
+        let err = invalid_context(
+            child.node_content.clone(),
+            "string condition",
+            &["is", "equals", "contains", "has", "starts with", "ends with"],
+        );
+        return Err((err, get_span(child)));
+    }
+
+    // Second child must be a string-like value node
+    let value_node = &node.children[1];
+    if !matches!(
+        value_node.node_type,
+        NodeType::Identifier | NodeType::EmailIdentifier | NodeType::String
+    ) {
+        let err = invalid_context(
+            value_node.node_content.clone(),
+            "string field value",
+            &["<text value>", "quoted string"],
+        );
+        return Err((err, get_span(value_node)));
+    }
+
+    // Reject numeric or time values in string fields
+    if let Some(tok) = value_node.lexical_token {
+        if matches!(
+            *tok.get_token_type(),
+            TokenType::Integer | TokenType::Time
+        ) {
+            let err = invalid_context(
+                tok.get_token_type().to_string(),
+                "string field value",
+                &["<text value>", "quoted string"],
+            );
+            return Err((err, vec![(tok.get_start(), tok.get_end())]));
+        }
+    }
+
+    Ok(())
+}
+
+/// Validate integer literals.
+fn analyze_integer(node: &TreeNode) -> SemanticResult {
+    if let Some(tok) = node.lexical_token {
+        if *tok.get_token_type() != TokenType::Integer {
+            let err = invalid_context(
+                tok.get_token_type().to_string(),
+                "integer literal",
+                &["<number>"],
+            );
+            return Err((err, vec![(tok.get_start(), tok.get_end())]));
+        }
+    }
+    Ok(())
+}
+
+/// Validate time literals.
+///
+/// Ensures the time token is correct and includes am/pm suffix.
+fn analyze_time(node: &TreeNode) -> SemanticResult {
+    if let Some(tok) = node.lexical_token {
+        if *tok.get_token_type() != TokenType::Time {
+            let err = invalid_context(
+                tok.get_token_type().to_string(),
+                "time literal",
+                &["<time value>"],
+            );
+            return Err((err, vec![(tok.get_start(), tok.get_end())]));
+        }
+    }
+
+    // Validate that time includes am/pm suffix for clarity
+    let time_str = node.node_content.to_lowercase();
+    if !time_str.contains("am") && !time_str.contains("pm") {
+        let err = invalid_context(
+            node.node_content.clone(),
+            "time literal",
+            &["9:00am", "2:30pm", "12:00pm"],
+        );
+        return Err((err, get_span(node)));
     }
 
     Ok(())

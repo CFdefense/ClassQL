@@ -1,0 +1,67 @@
+[
+  {
+    "test_name": "codegen_condition_equals",
+    "description": "Generate SQL for equals condition",
+    "input": "subject equals CS",
+    "should_succeed": true,
+    "expected_fragments": ["LOWER(c.subject_code) = LOWER('CS')"],
+    "forbidden_fragments": ["LIKE"]
+  },
+  {
+    "test_name": "codegen_condition_is",
+    "description": "Generate SQL for is condition (same as equals)",
+    "input": "subject is CS",
+    "should_succeed": true,
+    "expected_fragments": ["LOWER(c.subject_code) = LOWER('CS')"],
+    "forbidden_fragments": ["LIKE"]
+  },
+  {
+    "test_name": "codegen_condition_contains",
+    "description": "Generate SQL for contains condition",
+    "input": "title contains intro",
+    "should_succeed": true,
+    "expected_fragments": ["c.title LIKE '%intro%'", "COLLATE NOCASE"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_condition_has",
+    "description": "Generate SQL for has condition (same as contains)",
+    "input": "title has intro",
+    "should_succeed": true,
+    "expected_fragments": ["c.title LIKE '%intro%'", "COLLATE NOCASE"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_condition_starts_with",
+    "description": "Generate SQL for starts with condition",
+    "input": "title starts with intro",
+    "should_succeed": true,
+    "expected_fragments": ["c.title LIKE 'intro%'", "COLLATE NOCASE"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_condition_ends_with",
+    "description": "Generate SQL for ends with condition",
+    "input": "title ends with tion",
+    "should_succeed": true,
+    "expected_fragments": ["c.title LIKE '%tion'", "COLLATE NOCASE"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_prereqs_query",
+    "description": "Generate SQL for prerequisites query",
+    "input": "prereqs contains MATH",
+    "should_succeed": true,
+    "expected_fragments": ["c.prerequisites LIKE '%MATH%'"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_coreqs_query",
+    "description": "Generate SQL for corequisites query",
+    "input": "corereqs contains LAB",
+    "should_succeed": true,
+    "expected_fragments": ["c.corequisites LIKE '%LAB%'"],
+    "forbidden_fragments": []
+  }
+]
+

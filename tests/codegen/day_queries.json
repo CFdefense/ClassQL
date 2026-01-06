@@ -1,0 +1,67 @@
+[
+  {
+    "test_name": "codegen_monday_true",
+    "description": "Generate SQL for monday is true",
+    "input": "monday is true",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_monday = 1"],
+    "forbidden_fragments": ["= 0"]
+  },
+  {
+    "test_name": "codegen_monday_false",
+    "description": "Generate SQL for monday is false",
+    "input": "monday is false",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_monday = 0"],
+    "forbidden_fragments": ["= 1"]
+  },
+  {
+    "test_name": "codegen_tuesday_true",
+    "description": "Generate SQL for tuesday equals true",
+    "input": "tuesday equals true",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_tuesday = 1"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_wednesday_true",
+    "description": "Generate SQL for wednesday is true",
+    "input": "wednesday is true",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_wednesday = 1"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_thursday_true",
+    "description": "Generate SQL for thursday is true",
+    "input": "thursday is true",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_thursday = 1"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_friday_true",
+    "description": "Generate SQL for friday equals true",
+    "input": "friday equals true",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_friday = 1"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_saturday_false",
+    "description": "Generate SQL for saturday is false",
+    "input": "saturday is false",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_saturday = 0"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_sunday_false",
+    "description": "Generate SQL for sunday is false",
+    "input": "sunday is false",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_sunday = 0"],
+    "forbidden_fragments": []
+  }
+]
+

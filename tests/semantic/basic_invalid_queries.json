@@ -36,6 +36,24 @@
     "should_succeed": false
   },
   {
+    "test_name": "semantic_time_queries_invalid_missing_ampm",
+    "description": "Time semantics should reject times without am/pm suffix",
+    "input": "start >= 9:00",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_time_queries_invalid_24h_format",
+    "description": "Time semantics should reject 24-hour format times (require am/pm)",
+    "input": "start >= 14:30",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_time_queries_invalid_range_missing_ampm",
+    "description": "Time semantics should reject time ranges without am/pm suffix",
+    "input": "start 9:00 to 17:00",
+    "should_succeed": false
+  },
+  {
     "test_name": "semantic_time_queries_invalid_identifier_as_time",
     "description": "Time semantics should reject using an identifier where a time literal is expected",
     "input": "end <= CS101",
@@ -99,6 +117,30 @@
     "test_name": "semantic_day_query_invalid_string_monday",
     "description": "Day semantics should reject using a string value where a boolean flag is expected for monday",
     "input": "monday equals yolo",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_string_prereqs_query_invalid_numeric_value",
+    "description": "String semantics should reject using a bare integer where a text value is expected for prereqs",
+    "input": "prereqs contains 101",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_string_prereqs_query_invalid_time_value",
+    "description": "String semantics should reject using a time literal where a text value is expected for prereqs",
+    "input": "prereqs has 9:00am",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_string_coreqs_query_invalid_numeric_value",
+    "description": "String semantics should reject using a bare integer where a text value is expected for coreqs",
+    "input": "corereqs equals 200",
+    "should_succeed": false
+  },
+  {
+    "test_name": "semantic_string_coreqs_query_invalid_time_value",
+    "description": "String semantics should reject using a time literal where a text value is expected for coreqs",
+    "input": "corereqs contains 10:30am",
     "should_succeed": false
   }
 ]

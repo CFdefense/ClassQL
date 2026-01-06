@@ -70,12 +70,12 @@
         "expected_ast_type": "Query"
       },
       {
-        "input": "course prereqs CS100",
+        "input": "course prereqs contains CS100",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "course corereqs MATH101",
+        "input": "course corereqs has MATH101",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
@@ -432,16 +432,31 @@
     ]
   },
   {
-    "test_name": "string_lists",
-    "description": "Test string list syntax for prereqs and corereqs",
+    "test_name": "prereqs_coreqs_conditions",
+    "description": "Test prereqs and corereqs with condition syntax",
     "queries": [
       {
-        "input": "prereqs CS100",
+        "input": "prereqs contains CS100",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "corereqs MATH101",
+        "input": "prereqs has MATH200",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "prereqs equals CS101",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "corereqs contains MATH101",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "corereqs has LAB101",
         "expected_result": "success",
         "expected_ast_type": "Query"
       }

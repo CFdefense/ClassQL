@@ -87,6 +87,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("{}", message);
                 std::process::exit(1);
             }
+            CompilerResult::CodeGenError { message } => {
+                println!("{}", message);
+                std::process::exit(1);
+            }
         }
     } else {
         let compiler = Compiler::new();
