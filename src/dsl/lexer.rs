@@ -148,6 +148,26 @@ impl Lexer {
             }
         }
 
+        // Check if we found any unclosed string tokens
+        let unclosed_strings: Vec<Token> = all_tokens
+            .iter()
+            .filter(|token| matches!(token.get_token_type(), TokenType::UnclosedString))
+            .cloned()
+            .collect();
+
+        // If we found any unclosed strings, return an error
+        if !unclosed_strings.is_empty() {
+            let problematic_positions: Vec<(usize, usize)> = unclosed_strings
+                .iter()
+                .map(|token| (token.get_start(), token.get_end()))
+                .collect();
+
+            return Err(AppError::UnrecognizedTokens(
+                "Unclosed string - add closing quote \"".to_string(),
+                problematic_positions,
+            ));
+        }
+
         // Check if we found any unrecognized tokens
         let unrecognized_tokens: Vec<Token> = all_tokens
             .iter()

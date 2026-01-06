@@ -1,12 +1,36 @@
 [
     {
         "test_name": "Unclosed String",
-        "description": "Test string that never closes",
+        "description": "Test string that never closes - should error",
         "code": "title = \"Computer Science",
+        "should_succeed": false,
+        "expected_error": "Unclosed string",
+        "result": []
+    },
+    {
+        "test_name": "Unclosed String at Start",
+        "description": "Test unclosed string at the beginning",
+        "code": "\"hello world",
+        "should_succeed": false,
+        "expected_error": "Unclosed string",
+        "result": []
+    },
+    {
+        "test_name": "Unclosed String After Valid Tokens",
+        "description": "Test unclosed string after valid query tokens",
+        "code": "prof contains \"Smith and course is CS",
+        "should_succeed": false,
+        "expected_error": "Unclosed string",
+        "result": []
+    },
+    {
+        "test_name": "Closed String Works",
+        "description": "Test that properly closed strings work",
+        "code": "title = \"Computer Science\"",
         "result": [
             {"token_type": "T_TITLE", "content": "title"},
             {"token_type": "T_EQUALS", "content": "="},
-            {"token_type": "T_STRING", "content": "\"Computer Science"}
+            {"token_type": "T_STRING", "content": "\"Computer Science\""}
         ]
     },
     {

@@ -121,6 +121,7 @@ pub enum TokenType {
     // special
     Exclamation,
     Unrecognized,
+    UnclosedString,
 }
 
 /// TokenType Display Trait Implementation
@@ -244,7 +245,8 @@ impl TokenType {
             (TokenType::LeftParen, r"\("),
             (TokenType::RightParen, r"\)"),
             // literals
-            (TokenType::String, r#""[^"]*"?"#),
+            (TokenType::String, r#""[^"]*""#),
+            (TokenType::UnclosedString, r#""[^"]*$"#),
             (
                 TokenType::Time,
                 r"[0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)",

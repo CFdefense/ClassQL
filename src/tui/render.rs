@@ -403,6 +403,44 @@ impl Tui {
         if !self.completions.is_empty() {
             self.show_completions = true;
             self.completion_index = Some(0);
+        } else if !self.input.trim().is_empty() {
+            // no completions available - show helpful hint based on context
+            let hint = self.get_completion_hint();
+            if !hint.is_empty() {
+                self.toast_message = Some(hint);
+                self.toast_start_time = Some(Instant::now());
+                self.error_type = None; // not an error, just a hint
+            }
+        }
+    }
+
+    /// Get a helpful hint when no completions are available
+    fn get_completion_hint(&self) -> String {
+        let last_word = self.input.split_whitespace().last().unwrap_or("");
+        let last_word_lower = last_word.to_lowercase();
+
+        // check if last word is a condition operator that expects a value
+        match last_word_lower.as_str() {
+            "contains" | "is" | "equals" | "has" => {
+                "Enter a value in quotes, e.g. \"Computer Science\"".to_string()
+            }
+            "=" | "!=" => {
+                "Enter a value, e.g. \"CS\" or 101".to_string()
+            }
+            "<" | ">" | "<=" | ">=" => {
+                "Enter a number, e.g. 3 or 100".to_string()
+            }
+            "with" => {
+                // "starts with" or "ends with"
+                "Enter a value in quotes, e.g. \"Intro\"".to_string()
+            }
+            "hours" => {
+                "Enter an operator (=, <, >, etc.) then a number".to_string()
+            }
+            "type" => {
+                "Enter a condition (is, equals, contains) then a value".to_string()
+            }
+            _ => String::new(),
         }
     }
 
