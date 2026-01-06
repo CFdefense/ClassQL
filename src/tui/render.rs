@@ -1119,8 +1119,81 @@ fn render_query_results(
 ///
 fn render_detail_view(frame: &mut Frame, class: &Class) {
     let detail_width = 60_u16;
-    let detail_height = 18_u16;
-
+    
+    // calculate description lines needed (before building content)
+    let content_width = (detail_width.saturating_sub(4)) as usize; // -4 for borders and padding
+    let desc_lines = if let Some(desc) = &class.description {
+        if !desc.trim().is_empty() {
+            // calculate how many lines the description will take
+            let mut remaining = desc.as_str();
+            let mut lines_count = 0;
+            let max_desc_lines = 8; // maximum description lines
+            
+            while !remaining.is_empty() && lines_count < max_desc_lines {
+                if remaining.len() <= content_width {
+                    lines_count += 1;
+                    break;
+                } else {
+                    let mut break_point = content_width;
+                    if let Some(space_pos) = remaining[..content_width.min(remaining.len())].rfind(' ') {
+                        break_point = space_pos;
+                    } else if let Some(comma_pos) = remaining[..content_width.min(remaining.len())].rfind(',') {
+                        break_point = comma_pos + 1;
+                    } else if let Some(period_pos) = remaining[..content_width.min(remaining.len())].rfind('.') {
+                        break_point = period_pos + 1;
+                    }
+                    remaining = remaining[break_point..].trim_start();
+                    lines_count += 1;
+                }
+            }
+            lines_count
+        } else {
+            1 // "(No description available)" line
+        }
+    } else {
+        1 // "(No description available)" line
+    };
+    
+    // calculate base content lines (without description)
+    let mut base_lines = 2; // course code + title
+    base_lines += 1; // blank line
+    base_lines += 1; // professor
+    if class.professor_email.is_some() {
+        base_lines += 1; // email
+    }
+    base_lines += 1; // blank line
+    base_lines += 1; // "Schedule:" label
+    // count schedule lines
+    if let Some(meeting_times_str) = &class.meeting_times {
+        if !meeting_times_str.is_empty() {
+            base_lines += meeting_times_str.split('|').filter(|mt| !mt.is_empty()).count();
+        } else {
+            base_lines += 1; // "TBD"
+        }
+    } else {
+        base_lines += 1; // "TBD"
+    }
+    if class.meeting_type.is_some() {
+        base_lines += 1; // type
+    }
+    if class.campus.is_some() {
+        base_lines += 1; // campus
+    }
+    base_lines += 1; // method
+    base_lines += 1; // blank line
+    base_lines += 1; // enrollment
+    base_lines += 1; // credits
+    base_lines += 2; // blank line + "Description:" label
+    
+    // total content lines = base + description lines
+    let total_content_lines = base_lines + desc_lines;
+    
+    // calculate height: content + borders (2) + title (1)
+    let min_height = 20_u16; // minimum height when no description
+    let max_height = 35_u16; // maximum height
+    let calculated_height = (total_content_lines as u16 + 3).min(max_height).max(min_height);
+    let detail_height = calculated_height;
+    
     let detail_area = Rect {
         x: (frame.area().width.saturating_sub(detail_width)) / 2,
         y: (frame.area().height.saturating_sub(detail_height)) / 2,
@@ -1135,7 +1208,7 @@ fn render_detail_view(frame: &mut Frame, class: &Class) {
     lines.push(Line::from(vec![
         Span::styled(
             format!("{} {} - {}", class.subject_code, class.course_number, class.section_sequence),
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+            Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD),
         ),
     ]));
     lines.push(Line::from(Span::styled(
@@ -1246,12 +1319,13 @@ fn render_detail_view(frame: &mut Frame, class: &Class) {
     }
 
     // instruction method
-    if let Some(method) = &class.instruction_method {
-        lines.push(Line::from(vec![
-            Span::styled("Method: ", Style::default().fg(Color::Green)),
-            Span::styled(method, Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
-        ]));
-    }
+    lines.push(Line::from(vec![
+        Span::styled("Method: ", Style::default().fg(Color::Green)),
+        Span::styled(
+            class.instruction_method.as_deref().unwrap_or("N/A"),
+            Style::default().fg(Color::Rgb(0, 0, 0)), // Black text on white
+        ),
+    ]));
 
     lines.push(Line::from("")); // blank line
 
@@ -1271,15 +1345,58 @@ fn render_detail_view(frame: &mut Frame, class: &Class) {
         Span::styled(format!("{}", class.credit_hours), Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
     ]));
 
-    // description (truncated)
+    // description
+    lines.push(Line::from("")); // blank line
+    lines.push(Line::from(vec![
+        Span::styled("Description: ", Style::default().fg(Color::Green)),
+    ]));
+    
     if let Some(desc) = &class.description {
-        lines.push(Line::from("")); // blank line
-        let truncated = if desc.len() > 100 {
-            format!("{}...", &desc[..97])
+        if !desc.trim().is_empty() {
+            // wrap description to fit within detail width (account for borders and padding)
+            let content_width = (detail_width.saturating_sub(4)) as usize; // -4 for borders and padding
+            let mut remaining = desc.as_str();
+            let mut desc_lines_added = 0;
+            let max_desc_lines = 8; // maximum description lines to show
+            
+            while !remaining.is_empty() && desc_lines_added < max_desc_lines {
+                if remaining.len() <= content_width {
+                    lines.push(Line::from(Span::styled(remaining.to_string(), Style::default().fg(Color::Rgb(60, 60, 60)))));
+                    break;
+                } else {
+                    // find a good break point (space, comma, period, etc.)
+                    let mut break_point = content_width;
+                    if let Some(space_pos) = remaining[..content_width.min(remaining.len())].rfind(' ') {
+                        break_point = space_pos;
+                    } else if let Some(comma_pos) = remaining[..content_width.min(remaining.len())].rfind(',') {
+                        break_point = comma_pos + 1;
+                    } else if let Some(period_pos) = remaining[..content_width.min(remaining.len())].rfind('.') {
+                        break_point = period_pos + 1;
+                    }
+                    
+                    let line_text = if desc_lines_added == max_desc_lines - 1 {
+                        // last line, truncate if needed
+                        if remaining.len() > content_width {
+                            format!("{}...", &remaining[..content_width.saturating_sub(3)])
+                        } else {
+                            remaining.to_string()
+                        }
+                    } else {
+                        remaining[..break_point].to_string()
+                    };
+                    
+                    lines.push(Line::from(Span::styled(line_text, Style::default().fg(Color::Rgb(60, 60, 60)))));
+                    remaining = remaining[break_point..].trim_start();
+                    desc_lines_added += 1;
+                }
+            }
         } else {
-            desc.clone()
-        };
-        lines.push(Line::from(Span::styled(truncated, Style::default().fg(Color::Rgb(60, 60, 60))))); // Dark gray text on white
+            // description exists but is empty/whitespace
+            lines.push(Line::from(Span::styled("(No description available)", Style::default().fg(Color::Rgb(120, 120, 120)))));
+        }
+    } else {
+        // description is None
+        lines.push(Line::from(Span::styled("(No description available)", Style::default().fg(Color::Rgb(120, 120, 120)))));
     }
 
     // first, clear the area to cover results below with solid background

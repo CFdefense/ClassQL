@@ -20,7 +20,7 @@ use classql::dsl::compiler::{
     CompilerResult,
 };
 use classql::tui::render::Tui;
-use classql::utils::visualizetree::ast_to_dot;
+use classql::debug_utils::visualizetree::ast_to_dot;
 
 /// Args struct
 ///
@@ -66,8 +66,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // parse the cli arguments
     let args = Args::parse();
 
-    // if a query is provided, compile it and visualize the AST
     if let Some(query) = args.query {
+        // if a query is provided, compile it and visualize the AST
         let mut compiler = Compiler::new();
 
         // run the compiler and handle the result
@@ -93,6 +93,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     } else {
+        // normal TUI mode
         let compiler = Compiler::new();
         let mut tui = Tui::new(compiler)?;
 
