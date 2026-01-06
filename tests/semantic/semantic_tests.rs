@@ -27,7 +27,7 @@ use classql::dsl::parser::Parser;
 use classql::dsl::semantic::semantic_analysis;
 use classql::tui::errors::SemanticError;
 use serde::{Deserialize, Serialize};
-use std::fs;
+use crate::utils;
 
 /// Semantic test case struct
 ///
@@ -115,7 +115,7 @@ impl SemanticTestHelper {
         println!("Input: '{}'", test_case.input);
         println!("Expected to succeed: {}", test_case.should_succeed);
 
-        // Lexical analysis
+        // lexical analysis
         let mut lexer = Lexer::new(test_case.input.to_string());
         let tokens = match lexer.analyze() {
             Ok(tokens) => tokens,
@@ -127,7 +127,7 @@ impl SemanticTestHelper {
             }
         };
 
-        // Parsing
+        // parsing
         let mut parser = Parser::new(test_case.input.to_string());
         let ast = match parser.parse(&tokens) {
             Ok(ast) => ast,
@@ -139,7 +139,7 @@ impl SemanticTestHelper {
             }
         };
 
-        // Semantic analysis
+        // semantic analysis
         match semantic_analysis(&ast) {
             Ok(()) => {
                 if !test_case.should_succeed {
@@ -158,7 +158,7 @@ impl SemanticTestHelper {
                         test_case.test_name, error
                     );
                 } else {
-                    // We currently expect all semantic failures to be InvalidContext.
+                    // we currently expect all semantic failures to be InvalidContext.
                     match error {
                         SemanticError::InvalidContext { .. } => {
                             println!(
@@ -168,7 +168,7 @@ impl SemanticTestHelper {
                         }
                     }
 
-                    // Basic sanity checks for reported positions: they must be within input bounds.
+                    // basic sanity checks for reported positions: they must be within input bounds.
                     for (start, end) in positions {
                         assert!(
                             end > start,
@@ -187,23 +187,6 @@ impl SemanticTestHelper {
     }
 }
 
-/// Load the semantic test file
-///
-/// Parameters:
-/// --- ---
-/// filename -> The filename to load
-/// --- ---
-///
-/// Returns:
-/// --- ---
-/// String -> The content of the test file
-/// --- ---
-///
-fn load_test_file(filename: &str) -> String {
-    let path = format!("tests/semantic/{filename}");
-    fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read test file: {path}"))
-}
-
 /// Run the semantic test file
 ///
 /// Parameters:
@@ -218,7 +201,7 @@ fn load_test_file(filename: &str) -> String {
 ///
 fn run_test_file(filename: &str) {
     let mut helper = SemanticTestHelper::new();
-    let content = load_test_file(filename);
+    let content = utils::load_test_file("semantic", filename);
     let test_cases: Vec<SemanticTestCase> =
         serde_json::from_str(&content).expect("Failed to parse semantic JSON test file");
 

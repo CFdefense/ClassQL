@@ -18,7 +18,7 @@
   {
     "test_name": "nested_ast_validation",
     "description": "Test that deeply nested query produces proper AST structure",
-    "input": "not ((prof is Alan) or (course contains CS))",
+    "input": "(prof is not Alan) or (course is not CS)",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null

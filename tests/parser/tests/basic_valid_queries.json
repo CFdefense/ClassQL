@@ -1,0 +1,154 @@
+[
+  {
+    "test_name": "simple_professor_query",
+    "description": "Basic professor query with 'is' operator",
+    "input": "prof is Alan",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "simple_course_query",
+    "description": "Basic course query with 'contains' operator",
+    "input": "course contains CS",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "simple_subject_query",
+    "description": "Basic subject query with equals operator",
+    "input": "subject = MATH",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "course_with_alphanumeric_number",
+    "description": "Course query with alphanumeric course number like 424N",
+    "input": "course = 424N",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "subject_and_alphanumeric_course",
+    "description": "Subject and alphanumeric course number query",
+    "input": "subject = CMPT and course = 424N",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "course_number_query_with_alphanumeric",
+    "description": "Course number query with alphanumeric value",
+    "input": "course number = 203N",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "simple_credit_hours_query",
+    "description": "Basic credit hours query with greater than operator",
+    "input": "credit hours > 3",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "professor_starts_with",
+    "description": "Professor query with 'starts with' operator",
+    "input": "prof starts with A",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "professor_ends_with",
+    "description": "Professor query with 'ends with' operator",
+    "input": "prof ends with son",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "title_starts_with",
+    "description": "Title query with 'starts with' operator",
+    "input": "title starts with Introduction",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "title_ends_with",
+    "description": "Title query with 'ends with' operator", 
+    "input": "title ends with Analysis",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "day_query_without_condition",
+    "description": "Day query without explicit condition defaults to = true",
+    "input": "monday",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "day_query_with_and",
+    "description": "Day query followed by and defaults to = true",
+    "input": "monday and wednesday",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "day_query_with_explicit_condition",
+    "description": "Day query with explicit condition still works",
+    "input": "monday = true",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "complex_query_with_days",
+    "description": "Complex query with type and multiple days without conditions",
+    "input": "type = WEB and monday and wednesday",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "subject_is_not_query",
+    "description": "IS NOT condition with subject query",
+    "input": "subject is not CMPT",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "professor_is_not_query",
+    "description": "IS NOT condition with professor query",
+    "input": "prof is not Alan",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "course_is_not_query",
+    "description": "IS NOT condition with course query",
+    "input": "course is not 424N",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  },
+  {
+    "test_name": "is_not_and_combination",
+    "description": "IS NOT condition combined with AND",
+    "input": "subject is not CMPT and credit hours >= 3",
+    "should_succeed": true,
+    "expected_error_type": null,
+    "expected_problematic_tokens": null
+  }
+] 

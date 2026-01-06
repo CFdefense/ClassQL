@@ -30,7 +30,7 @@ use classql::dsl::parser::Parser;
 use classql::dsl::token::Token;
 use classql::tui::errors::SyntaxError;
 use serde::{Deserialize, Serialize};
-use std::fs;
+use crate::utils;
 
 /// Parser test case struct
 /// 
@@ -196,7 +196,7 @@ impl ParserTestHelper {
                     println!("Parse failed as expected with error: {:?}", error);
                     println!("Problematic tokens: {:?}", problematic_tokens);
 
-                    // Validate that problematic tokens have valid positions
+                    // validate that problematic tokens have valid positions
                     for token in &problematic_tokens {
                         assert!(
                             token.get_end() > token.get_start(),
@@ -208,17 +208,17 @@ impl ParserTestHelper {
                         );
                     }
 
-                    // Validate specific error type if expected
+                    // validate specific error type if expected
                     if let Some(expected_error_type) = &test_case.expected_error_type {
                         self.validate_error_type(&error, expected_error_type);
                     }
 
-                    // Validate specific error message if expected
+                    // validate specific error message if expected
                     if let Some(expected_error_message) = &test_case.expected_error_message {
                         self.validate_error_message(&error, expected_error_message);
                     }
 
-                    // If we have expected problematic tokens, validate them
+                    // if we have expected problematic tokens, validate them
                     if let Some(expected_tokens) = &test_case.expected_problematic_tokens {
                         self.validate_problematic_tokens(
                             &problematic_tokens,
@@ -352,22 +352,6 @@ impl ParserTestHelper {
     }
 }
 
-/// Load the test file
-/// 
-/// Parameters:
-/// --- ---
-/// filename -> The filename to load
-/// --- ---
-/// 
-/// Returns:
-/// --- ---
-/// String -> The content of the test file
-/// --- ---
-/// 
-fn load_test_file(filename: &str) -> String {
-    let path = format!("tests/parser/{filename}",);
-    fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read test file: {path}"))
-}
 
 /// Run the test file
 /// 
@@ -383,7 +367,7 @@ fn load_test_file(filename: &str) -> String {
 /// 
 fn run_test_file(filename: &str) {
     let mut helper = ParserTestHelper::new();
-    let content = load_test_file(filename);
+    let content = utils::load_test_file("parser", filename);
     let test_cases: Vec<ParserTestCase> =
         serde_json::from_str(&content).expect("Failed to parse JSON test file");
 

@@ -419,8 +419,8 @@ fn analyze_time(node: &TreeNode) -> SemanticResult {
                 if *tok.get_token_type() != TokenType::Time {
                     let err = invalid_context(
                         tok.get_token_type().to_string(),
-                        "time literal",
-                        &["<time value>"],
+                        "time literal (must include am/pm)",
+                        &["6:00am", "6:00pm", "9:30am", "2:15pm"],
                     );
             return Err((err, vec![(tok.get_start(), tok.get_end())]));
             }
@@ -431,8 +431,8 @@ fn analyze_time(node: &TreeNode) -> SemanticResult {
     if !time_str.contains("am") && !time_str.contains("pm") {
         let err = invalid_context(
             node.node_content.clone(),
-            "time literal",
-            &["9:00am", "2:30pm", "12:00pm"],
+            "time literal (must include am/pm)",
+            &["6:00am", "6:00pm", "9:30am", "2:15pm"],
         );
         return Err((err, get_span(node)));
     }

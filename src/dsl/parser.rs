@@ -342,9 +342,10 @@ impl Parser {
     ///
     fn get_context_suggestions(&self, tokens: &[Token]) -> Vec<String> {
         // Full condition operators from grammar:
-        // <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal"
+        // <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "is not" | "equals" | "not equals" | "does not equal" | "doesn't equal" | "doesn't contain"
         let string_conditions = vec![
             "is".to_string(),
+            "is not".to_string(),
             "equals".to_string(),
             "=".to_string(),
             "!=".to_string(),
@@ -353,6 +354,8 @@ impl Parser {
             "starts with".to_string(),
             "ends with".to_string(),
             "does not equal".to_string(),
+            "doesn't equal".to_string(),
+            "doesn't contain".to_string(),
         ];
 
         // Binary operators for numeric comparisons from grammar:
@@ -459,7 +462,7 @@ impl Parser {
                 TokenType::Start | TokenType::End => numeric_binops,
 
                 // After values, suggest logical operators
-                TokenType::Identifier | TokenType::String | TokenType::Integer | TokenType::Time => {
+                TokenType::Identifier | TokenType::Alphanumeric | TokenType::String | TokenType::Integer | TokenType::Time => {
                     vec!["and".to_string(), "or".to_string()]
                 }
 
@@ -2156,11 +2159,76 @@ impl Parser {
         Ok(day_node)
     }
 
+    /// Parse a day query with optional condition (defaults to "= true" if condition is missing)
+    ///
+    /// Parameters:
+    /// --- ---
+    /// mut self -> The Parser
+    /// tokens -> The tokens to parse
+    /// day_name -> The name of the day (e.g., "monday")
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// ParseResult -> The parsed day query node
+    /// --- ---
+    ///
+    fn parse_day_query_helper(
+        &mut self,
+        tokens: &[Token],
+        day_name: &str,
+    ) -> ParseResult {
+        let day_token = tokens[self.token_pointer - 1];
+        let mut day_node = TreeNode::new(NodeType::String, day_name.to_string(), Some(day_token));
+
+        // check if next token is a logical operator (and/or) or end of input
+        // if so, default to "= true" for convenience
+        let condition_query = if self.token_pointer < tokens.len() {
+            let next_token = &tokens[self.token_pointer];
+            match *next_token.get_token_type() {
+                TokenType::And | TokenType::Or => {
+                    // default to "= true" when followed by logical operator
+                    let equals_token = Token::new(TokenType::Equals, 0, 0);
+                    TreeNode::new(NodeType::Condition, "=".to_string(), Some(equals_token))
+                }
+                _ => self.parse_condition(tokens)?,
+            }
+        } else {
+            // end of input, default to "= true"
+            let equals_token = Token::new(TokenType::Equals, 0, 0);
+            TreeNode::new(NodeType::Condition, "=".to_string(), Some(equals_token))
+        };
+
+        // for day queries, we typically expect a boolean-style value (like true/false)
+        // after the condition. If we defaulted to "=", also default the value to "true"
+        let string_query = if self.token_pointer < tokens.len() {
+            let next_token = &tokens[self.token_pointer];
+            match *next_token.get_token_type() {
+                TokenType::And | TokenType::Or => {
+                    // Default to "true" when followed by logical operator
+                    let true_token = Token::new(TokenType::Identifier, 0, 0);
+                    TreeNode::new(NodeType::Identifier, "true".to_string(), Some(true_token))
+                }
+                _ => self.parse_string(tokens)?,
+            }
+        } else {
+            // end of input, default to "true"
+            let true_token = Token::new(TokenType::Identifier, 0, 0);
+            TreeNode::new(NodeType::Identifier, "true".to_string(), Some(true_token))
+        };
+
+        day_node.children.push(condition_query);
+        day_node.children.push(string_query);
+
+        Ok(day_node)
+    }
+
     /// Parse the monday query into a TreeNode
     ///
     /// Syntax:
     /// --- ---
-    /// <monday_query> ::= "monday" <condition> <string>
+    /// <monday_query> ::= "monday" [<condition> <string>]
+    ///                     If condition is omitted, defaults to "= true"
     /// --- ---
     ///
     /// Parameters:
@@ -2180,27 +2248,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut monday_node =
-            TreeNode::new(NodeType::String, "monday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        // For day queries, we typically expect a boolean-style value (like true/false)
-        // after the condition. Make that explicit when the value is missing.
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        monday_node.children.push(condition_query);
-        monday_node.children.push(string_query);
-
-        Ok(monday_node)
+        self.parse_day_query_helper(tokens, "monday")
     }
 
     /// Parse the tuesday query into a TreeNode
@@ -2227,25 +2275,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut tuesday_node =
-            TreeNode::new(NodeType::String, "tuesday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        tuesday_node.children.push(condition_query);
-        tuesday_node.children.push(string_query);
-
-        Ok(tuesday_node)
+        self.parse_day_query_helper(tokens, "tuesday")
     }
 
     /// Parse the wednesday query into a TreeNode
@@ -2272,25 +2302,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut wednesday_node =
-            TreeNode::new(NodeType::String, "wednesday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        wednesday_node.children.push(condition_query);
-        wednesday_node.children.push(string_query);
-
-        Ok(wednesday_node)
+        self.parse_day_query_helper(tokens, "wednesday")
     }
 
     /// Parse the thursday query into a TreeNode
@@ -2317,25 +2329,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut thursday_node =
-            TreeNode::new(NodeType::String, "thursday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        thursday_node.children.push(condition_query);
-        thursday_node.children.push(string_query);
-
-        Ok(thursday_node)
+        self.parse_day_query_helper(tokens, "thursday")
     }
 
     /// Parse the friday query into a TreeNode
@@ -2362,25 +2356,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut friday_node =
-            TreeNode::new(NodeType::String, "friday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        friday_node.children.push(condition_query);
-        friday_node.children.push(string_query);
-
-        Ok(friday_node)
+        self.parse_day_query_helper(tokens, "friday")
     }
 
     /// Parse the saturday query into a TreeNode
@@ -2407,25 +2383,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut saturday_node =
-            TreeNode::new(NodeType::String, "saturday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        saturday_node.children.push(condition_query);
-        saturday_node.children.push(string_query);
-
-        Ok(saturday_node)
+        self.parse_day_query_helper(tokens, "saturday")
     }
 
     /// Parse the sunday query into a TreeNode
@@ -2452,25 +2410,7 @@ impl Parser {
         &mut self,
         tokens: &[Token],
     ) -> ParseResult {
-        let day_token = tokens[self.token_pointer - 1];
-        let mut sunday_node =
-            TreeNode::new(NodeType::String, "sunday".to_string(), Some(day_token));
-
-        let condition_query = self.parse_condition(tokens)?;
-
-        if self.token_pointer >= tokens.len() {
-            return Err((
-                SyntaxError::MissingToken("a value like 'true' or 'false' for this day".into()),
-                vec![],
-            ));
-        }
-
-        let string_query = self.parse_string(tokens)?;
-
-        sunday_node.children.push(condition_query);
-        sunday_node.children.push(string_query);
-
-        Ok(sunday_node)
+        self.parse_day_query_helper(tokens, "sunday")
     }
 
     /// Parse the time into a TreeNode
@@ -2538,6 +2478,7 @@ impl Parser {
                 SyntaxError::ExpectedAfter {
                     expected: vec![
                         "is".to_string(),
+                        "is not".to_string(),
                         "equals".to_string(),
                         "contains".to_string(),
                         "has".to_string(),
@@ -2545,6 +2486,8 @@ impl Parser {
                         "ends".to_string(),
                         "=".to_string(),
                         "!=".to_string(),
+                        "doesn't equal".to_string(),
+                        "doesn't contain".to_string(),
                     ],
                     after: "entity keyword".to_string(),
                     position: self.token_pointer,
@@ -2564,11 +2507,70 @@ impl Parser {
             | TokenType::NotEquals
             | TokenType::Contains
             | TokenType::Has
-            | TokenType::Is
-            | TokenType::Equal
+            |             TokenType::Equal
             | TokenType::EqualsWord
             | TokenType::Does => {
-                // valid standalone condition
+                // "DOES" can be followed by "NOT" to form "does not" / "doesn't"
+                // then it can be followed by "EQUAL" or "CONTAINS"
+                if *condition_token.get_token_type() == TokenType::Does
+                    && self.token_pointer < tokens.len()
+                    && *tokens[self.token_pointer].get_token_type() == TokenType::Not
+                {
+                    // consume the "not" token
+                    self.next_token(tokens).map_err(|_| {
+                        (
+                            SyntaxError::MissingToken("Expected 'not' after 'does'".into()),
+                            vec![],
+                        )
+                    })?;
+                    
+                    // check if followed by "equal" or "contains"
+                    if self.token_pointer < tokens.len() {
+                        let next_type = *tokens[self.token_pointer].get_token_type();
+                        if next_type == TokenType::Equal || next_type == TokenType::EqualsWord {
+                            // consume "equal"
+                            self.next_token(tokens).map_err(|_| {
+                                (
+                                    SyntaxError::MissingToken("Expected 'equal' after 'does not'".into()),
+                                    vec![],
+                                )
+                            })?;
+                            condition_node.node_content = "does not equal".to_string();
+                        } else if next_type == TokenType::Contains {
+                            // consume "contains"
+                            self.next_token(tokens).map_err(|_| {
+                                (
+                                    SyntaxError::MissingToken("Expected 'contains' after 'does not'".into()),
+                                    vec![],
+                                )
+                            })?;
+                            condition_node.node_content = "does not contain".to_string();
+                        } else {
+                            // "does not" without "equal" or "contains" - treat as "does not equal"
+                            condition_node.node_content = "does not equal".to_string();
+                        }
+                    } else {
+                        // "does not" at end - treat as "does not equal"
+                        condition_node.node_content = "does not equal".to_string();
+                    }
+                }
+                // else, it's a valid standalone condition
+            }
+            TokenType::Is => {
+                // "IS" can be followed by "NOT" to form "is not"
+                if self.token_pointer < tokens.len()
+                    && *tokens[self.token_pointer].get_token_type() == TokenType::Not
+                {
+                    // consume the "not" token
+                    self.next_token(tokens).map_err(|_| {
+                        (
+                            SyntaxError::MissingToken("Expected 'not' after 'is'".into()),
+                            vec![],
+                        )
+                    })?;
+                    // update condition node content to reflect "is not"
+                    condition_node.node_content = "is not".to_string();
+                }
             }
             TokenType::Starts => {
                 // "STARTS" must be followed by "WITH"
@@ -2633,11 +2635,14 @@ impl Parser {
                             context: "string condition".to_string(),
                             suggestions: vec![
                                 "is".to_string(),
+                                "is not".to_string(),
                                 "equals".to_string(),
                                 "contains".to_string(),
                                 "has".to_string(),
                                 "starts".to_string(),
                                 "ends".to_string(),
+                                "doesn't equal".to_string(),
+                                "doesn't contain".to_string(),
                             ],
                         },
                         vec![condition_token],
@@ -2653,11 +2658,14 @@ impl Parser {
                             context: "string condition".to_string(),
                             suggestions: vec![
                                 "is".to_string(),
+                                "is not".to_string(),
                                 "equals".to_string(),
                                 "contains".to_string(),
                                 "has".to_string(),
                                 "starts".to_string(),
                                 "ends".to_string(),
+                                "doesn't equal".to_string(),
+                                "doesn't contain".to_string(),
                             ],
                         },
                         vec![condition_token],
@@ -2804,6 +2812,7 @@ impl Parser {
             if next_token.get_token_type().to_string().contains("@") {
                 self.parse_email_identifier(tokens)
             } else {
+                // Alphanumeric tokens (like "424N") should be parsed as identifiers
                 self.parse_identifier(tokens)
             }
         } else {

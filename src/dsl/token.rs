@@ -114,6 +114,7 @@ pub enum TokenType {
 
     // literals
     String,
+    Alphanumeric,
     Integer,
     Time,
     Identifier,
@@ -230,6 +231,7 @@ impl TokenType {
             // logical
             (TokenType::And, r"(?i)\band\b"),
             (TokenType::Or, r"(?i)\bor\b"),
+            (TokenType::Not, r"(?i)\bn't\b"),
             (TokenType::Not, r"(?i)\bnot\b"),
             // conditions
             (TokenType::Has, r"(?i)\bhas\b"),
@@ -251,6 +253,8 @@ impl TokenType {
                 TokenType::Time,
                 r"[0-9]+:[0-9]+\s(?:am|pm)|[0-9]+:[0-9]+(?:am|pm)|[0-9]+:[0-9]+|[0-9]+\s(?:am|pm)|[0-9]+(?:am|pm)",
             ),
+            // Alphanumeric course numbers (e.g., "424N", "101L") - must come before Integer
+            (TokenType::Alphanumeric, r"[0-9]+[A-Za-z]+"),
             (TokenType::Integer, r"[0-9]+"),
             // general identifier pattern - must come last
             (TokenType::Identifier, r"[a-zA-Z_][a-zA-Z0-9_]*"),

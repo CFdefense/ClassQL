@@ -8,9 +8,9 @@
     "expected_problematic_tokens": null
   },
   {
-    "test_name": "not_expression",
-    "description": "Expression with NOT operator",
-    "input": "not (prof is Alan)",
+    "test_name": "is_not_expression",
+    "description": "Expression with IS NOT condition",
+    "input": "prof is not Alan",
     "should_succeed": true,
     "expected_error_type": null,
     "expected_problematic_tokens": null

@@ -292,7 +292,7 @@
         "expected_ast_type": "Query"
       },
       {
-        "input": "not prof contains Smith",
+        "input": "prof is not Smith",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
@@ -333,7 +333,7 @@
         "expected_ast_type": "Query"
       },
       {
-        "input": "not (prof is John and subject is CS)",
+        "input": "prof is not John and subject is not CS",
         "expected_result": "success",
         "expected_ast_type": "Query"
       }

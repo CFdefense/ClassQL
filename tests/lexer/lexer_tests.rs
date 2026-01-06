@@ -11,10 +11,9 @@
 /// TestHelper -> Test helper struct
 /// --- ---
 
-use std::fs;
-
 use classql::dsl::lexer::Lexer;
 use serde::{Deserialize, Serialize};
+use crate::utils;
 
 
 /// Test case struct
@@ -149,13 +148,13 @@ impl TestHelper {
         println!("Description: {}", test_case.description);
         println!("Input: '{}'", test_case.code);
 
-        // Clear lexer state before each test
+        // clear lexer state before each test
         let mut lexer = Lexer::new(test_case.code.clone());
 
-        // Tokenize the input
+        // tokenize the input
         match lexer.analyze() {
             Ok(tokens) => {
-                // Default to expecting success unless explicitly marked as false
+                // default to expecting success unless explicitly marked as false
                 if test_case.should_succeed == Some(false) {
                     panic!(
                         "Test '{}' expected to fail but succeeded with {} tokens",
@@ -164,7 +163,7 @@ impl TestHelper {
                     );
                 }
 
-                // Print actual tokens
+                // print actual tokens
                 println!(
                     "Expected {} tokens, got {} tokens",
                     test_case.result.len(),
@@ -189,7 +188,7 @@ impl TestHelper {
                     println!("========================\n");
                 }
 
-                // Compare results
+                // compare results
                 assert_eq!(
                     tokens.len(),
                     test_case.result.len(),
@@ -257,9 +256,9 @@ impl TestHelper {
                 }
             }
             Err(e) => {
-                // Default to expecting success unless explicitly marked as false
+                // default to expecting success unless explicitly marked as false
                 if test_case.should_succeed == Some(false) {
-                    // Check if we expected a specific error
+                    // check if we expected a specific error
                     if let Some(expected_error) = &test_case.expected_error {
                         let error_str = format!("{:?}", e);
                         if !error_str.contains(expected_error) {
@@ -282,22 +281,6 @@ impl TestHelper {
     }
 }
 
-/// Load the test file
-/// 
-/// Parameters:
-/// --- ---
-/// filename -> The filename to load
-/// --- ---
-/// 
-/// Returns:
-/// --- ---
-/// String -> The content of the test file
-/// --- ---
-/// 
-fn load_test_file(filename: &str) -> String {
-    let path = format!("tests/lexer/{}", filename);
-    fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read test file: {}", path))
-}
 
 /// Run the test file
 /// 
@@ -313,7 +296,7 @@ fn load_test_file(filename: &str) -> String {
 /// 
 fn run_test_file(filename: &str) {
     let mut helper = TestHelper::new();
-    let content = load_test_file(filename);
+    let content = utils::load_test_file("lexer", filename);
     let test_cases = helper.parse_json_tests(&content);
 
     for test_case in test_cases {

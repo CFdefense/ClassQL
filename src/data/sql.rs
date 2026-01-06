@@ -1,19 +1,320 @@
 /*
-    For sql code execution
+    src/data/sql.rs
+
+    For sql code execution - contains the Class struct and query execution logic
 */
+
+use rusqlite::Connection;
+use std::path::Path;
 
 /// Class struct
 ///
-/// TODO: Will be responsible for storing a class' information
-/// 
+/// Represents a class/section returned from a database query
+/// Contains all relevant information about a course section
+///
 /// Class fields:
 /// --- ---
-/// None -> No fields
+/// subject_code -> Subject code (e.g., "CS", "MATH")
+/// course_number -> Course number (e.g., "101", "201")
+/// title -> Course title
+/// description -> Course description
+/// credit_hours -> Number of credit hours
+/// prerequisites -> Prerequisites text
+/// corequisites -> Corequisites text
+/// section_sequence -> Section identifier (e.g., "001", "002")
+/// max_enrollment -> Maximum enrollment capacity
+/// enrollment -> Current enrollment count
+/// instruction_method -> Instruction method (e.g., "In Person", "Online")
+/// campus -> Campus location
+/// professor_name -> Professor's name
+/// professor_email -> Professor's email address
+/// meeting_type -> Type of meeting (e.g., "Lecture", "Lab")
+/// days -> Days the class meets (formatted string like "MWF" or "TTH")
 /// --- ---
 ///
 /// Implemented Traits:
 /// --- ---
 /// Debug -> Debug trait for Class
+/// Clone -> Clone trait for Class
+/// Default -> Default trait for Class
 /// --- ---
-#[derive(Debug)]
-pub struct Class {}
+///
+#[derive(Debug, Clone, Default)]
+pub struct Class {
+    pub subject_code: String,
+    pub course_number: String,
+    pub title: String,
+    pub description: Option<String>,
+    pub credit_hours: f64,
+    pub prerequisites: Option<String>,
+    pub corequisites: Option<String>,
+    pub section_sequence: String,
+    pub max_enrollment: Option<i32>,
+    pub enrollment: Option<i32>,
+    pub instruction_method: Option<String>,
+    pub campus: Option<String>,
+    pub professor_name: Option<String>,
+    pub professor_email: Option<String>,
+    pub meeting_type: Option<String>,
+    pub days: String,
+    pub meeting_times: Option<String>,
+}
+
+impl Class {
+    /// Format the class for display in a table cell
+    ///
+    /// Parameters:
+    /// --- ---
+    /// self -> The class instance
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// Vec<String> -> Multi-line display with course code, title, professor, days/time, enrollment
+    /// --- ---
+    ///
+    pub fn format_for_display(&self) -> Vec<String> {
+        let mut lines = Vec::new();
+
+        // line 1: course code (e.g., "CS 101-001")
+        lines.push(format!(
+            "{} {}-{}",
+            self.subject_code, self.course_number, self.section_sequence
+        ));
+
+        // line 2: title (truncated to ~25 chars)
+        let title = if self.title.len() > 25 {
+            format!("{}...", &self.title[..22])
+        } else {
+            self.title.clone()
+        };
+        lines.push(title);
+
+        // line 3: professor
+        let prof = self
+            .professor_name
+            .as_deref()
+            .unwrap_or("TBA");
+        let prof_display = if prof.len() > 20 {
+            format!("{}...", &prof[..17])
+        } else {
+            prof.to_string()
+        };
+        lines.push(prof_display);
+
+        // line 4: days and time
+        let time_str = if let Some(meeting_times_str) = &self.meeting_times {
+            // parse meeting times: "M:08:00:00-10:45:00|R:08:00:00-09:15:00"
+            let mut time_parts = Vec::new();
+            for mt in meeting_times_str.split('|') {
+                if let Some(colon_pos) = mt.find(':') {
+                    let days_part = &mt[..colon_pos];
+                    let time_part = &mt[colon_pos + 1..];
+                    if let Some(dash_pos) = time_part.find('-') {
+                        let start = format_time_short(&time_part[..dash_pos]);
+                        let end = format_time_short(&time_part[dash_pos + 1..]);
+                        if !days_part.is_empty() {
+                            time_parts.push(format!("{} {}-{}", days_part, start, end));
+                        }
+                    }
+                }
+            }
+            if time_parts.is_empty() {
+                format!("{} TBA", self.days)
+            } else if time_parts.len() == 1 {
+                // single time, use combined days
+                format!("{} {}", self.days, time_parts[0].split(' ').nth(1).unwrap_or("TBA"))
+            } else {
+                // multiple times, show each with its days
+                time_parts.join(", ")
+            }
+        } else {
+            // no meeting times available
+            format!("{} TBA", self.days)
+        };
+        lines.push(time_str);
+
+        // line 5: enrollment
+        let enrollment_str = match (self.enrollment, self.max_enrollment) {
+            (Some(e), Some(m)) => format!("{}/{} enrolled", e, m),
+            _ => String::new(),
+        };
+        if !enrollment_str.is_empty() {
+            lines.push(enrollment_str);
+        }
+
+        lines
+    }
+}
+
+/// Format time from "HH:MM:SS" to "H:MMam/pm"
+///
+/// Parameters:
+/// --- ---
+/// time -> Time string in "HH:MM:SS" format
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// String -> Formatted time string (e.g., "9:00am", "2:30pm")
+/// --- ---
+///
+fn format_time_short(time: &str) -> String {
+    let parts: Vec<&str> = time.split(':').collect();
+    if parts.len() >= 2 {
+        let hours: i32 = parts[0].parse().unwrap_or(0);
+        let minutes: i32 = parts[1].parse().unwrap_or(0);
+        
+        let (display_hour, period) = if hours == 0 {
+            (12, "am")
+        } else if hours < 12 {
+            (hours, "am")
+        } else if hours == 12 {
+            (12, "pm")
+        } else {
+            (hours - 12, "pm")
+        };
+        
+        format!("{}:{:02}{}", display_hour, minutes, period)
+    } else {
+        time.to_string()
+    }
+}
+
+/// Format days from boolean flags into a compact string like "MWF" or "TTH"
+///
+/// Parameters:
+/// --- ---
+/// is_monday -> Whether class meets on Monday
+/// is_tuesday -> Whether class meets on Tuesday
+/// is_wednesday -> Whether class meets on Wednesday
+/// is_thursday -> Whether class meets on Thursday
+/// is_friday -> Whether class meets on Friday
+/// is_saturday -> Whether class meets on Saturday
+/// is_sunday -> Whether class meets on Sunday
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// String -> Compact day string (e.g., "MWF", "TTH", "TBA")
+/// --- ---
+///
+fn format_days(
+    is_monday: bool,
+    is_tuesday: bool,
+    is_wednesday: bool,
+    is_thursday: bool,
+    is_friday: bool,
+    is_saturday: bool,
+    is_sunday: bool,
+) -> String {
+    let mut days = String::new();
+    if is_monday {
+        days.push('M');
+    }
+    if is_tuesday {
+        days.push('T');
+    }
+    if is_wednesday {
+        days.push('W');
+    }
+    if is_thursday {
+        days.push_str("TH");
+    }
+    if is_friday {
+        days.push('F');
+    }
+    if is_saturday {
+        days.push('S');
+    }
+    if is_sunday {
+        days.push('U');
+    }
+    if days.is_empty() {
+        days = "TBA".to_string();
+    }
+    days
+}
+
+/// Execute a SQL query against the classes database and return Class results
+///
+/// Parameters:
+/// --- ---
+/// sql -> The SQL query string to execute
+/// db_path -> Path to the SQLite database file
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// Result<Vec<Class>, String> -> Vector of Class results or error message
+/// --- ---
+///
+pub fn execute_query(sql: &str, db_path: &Path) -> Result<Vec<Class>, String> {
+    // connect to the database
+    let conn = Connection::open(db_path).map_err(|e| format!("Database connection error: {}", e))?;
+
+    // prepare and execute the statement
+    let mut stmt = conn
+        .prepare(sql)
+        .map_err(|e| format!("SQL preparation error: {}", e))?;
+
+    // execute query and map results to Class structs
+    let class_iter = stmt
+        .query_map([], |row| {
+            Ok(Class {
+                subject_code: row.get(0).unwrap_or_default(),
+                course_number: row.get(1).unwrap_or_default(),
+                title: row.get(2).unwrap_or_default(),
+                description: row.get(3).ok(),
+                credit_hours: row.get(4).unwrap_or(0.0),
+                prerequisites: row.get(5).ok(),
+                corequisites: row.get(6).ok(),
+                section_sequence: row.get(7).unwrap_or_default(),
+                max_enrollment: row.get(8).ok(),
+                enrollment: row.get(9).ok(),
+                instruction_method: row.get(10).ok(),
+                campus: row.get(11).ok(),
+                professor_name: row.get(12).ok(),
+                professor_email: row.get(13).ok(),
+                meeting_type: row.get(15).ok(),
+                days: format_days(
+                    row.get::<_, i32>(16).unwrap_or(0) == 1,
+                    row.get::<_, i32>(17).unwrap_or(0) == 1,
+                    row.get::<_, i32>(18).unwrap_or(0) == 1,
+                    row.get::<_, i32>(19).unwrap_or(0) == 1,
+                    row.get::<_, i32>(20).unwrap_or(0) == 1,
+                    row.get::<_, i32>(21).unwrap_or(0) == 1,
+                    row.get::<_, i32>(22).unwrap_or(0) == 1,
+                ),
+                meeting_times: row.get(14).ok(), // meeting_times is column 14
+            })
+        })
+        .map_err(|e| format!("Query execution error: {}", e))?;
+
+    // collect results
+    let mut classes = Vec::new();
+    for class_result in class_iter {
+        match class_result {
+            Ok(class) => classes.push(class),
+            Err(e) => return Err(format!("Error reading row: {}", e)),
+        }
+    }
+
+    Ok(classes)
+}
+
+/// Get the default database path
+///
+/// Parameters:
+/// --- ---
+/// None
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// PathBuf -> Path to the default database file
+/// --- ---
+///
+pub fn get_default_db_path() -> std::path::PathBuf {
+    std::path::PathBuf::from("src/data/classes.db")
+}
