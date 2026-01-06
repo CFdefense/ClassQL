@@ -362,8 +362,8 @@ impl Tui {
         // check if input ends with space (no partial word to complete)
         let has_partial = !self.input.is_empty() && !self.input.ends_with(' ');
 
-        // extract the partial word being typed (last word after space)
-        self.partial_word = if has_partial {
+        // extract the potential partial word (last word after space)
+        let potential_partial = if has_partial {
             self.input
                 .split_whitespace()
                 .last()
@@ -376,15 +376,28 @@ impl Tui {
         // get completion suggestions from compiler
         let suggestions = self.compiler.get_tab_completion(self.input.clone());
 
-        // if there's a partial word, only show completions that start with it
-        self.completions = if !self.partial_word.is_empty() {
-            let partial = &self.partial_word;
-            suggestions
-                .into_iter()
-                .filter(|s| s.to_lowercase().starts_with(partial))
-                .collect()
+        // if there's a potential partial word, check if any suggestions match it
+        // if matches exist, filter to those; otherwise it's a complete value, show all
+        if !potential_partial.is_empty() {
+            let matching: Vec<String> = suggestions
+                .iter()
+                .filter(|s| s.to_lowercase().starts_with(&potential_partial))
+                .cloned()
+                .collect();
+
+            if !matching.is_empty() {
+                // partial word matches some suggestions - filter to those
+                self.partial_word = potential_partial;
+                self.completions = matching;
+            } else {
+                // no matches - the "partial" is actually a complete value
+                // show all suggestions without replacement
+                self.partial_word = String::new();
+                self.completions = suggestions;
+            }
         } else {
-            suggestions
+            self.partial_word = String::new();
+            self.completions = suggestions;
         };
 
         if !self.completions.is_empty() {
@@ -568,14 +581,34 @@ fn render_search_bar_with_data(
         height: 3,
     };
 
+    // calculate visible width (minus borders and "> " prefix)
+    let visible_width = search_width.saturating_sub(4) as usize; // 2 for borders, 2 for "> "
+    let input_len = input.chars().count();
+
+    // calculate scroll offset to keep cursor (end of input) visible
+    let scroll_offset = if input_len > visible_width {
+        input_len - visible_width
+    } else {
+        0
+    };
+
     // create styled spans for the input with highlighted problematic positions
     let mut styled_spans = Vec::new();
 
-    // start with the "> " prefix
-    styled_spans.push(Span::styled("> ", Style::default().fg(Color::White)));
+    // start with the "> " prefix (or "…" if scrolled)
+    if scroll_offset > 0 {
+        styled_spans.push(Span::styled("…", Style::default().fg(Color::DarkGray)));
+    } else {
+        styled_spans.push(Span::styled("> ", Style::default().fg(Color::White)));
+    }
 
-    // process the input character by character, highlighting problematic positions
-    for (i, ch) in input.chars().enumerate() {
+    // process only the visible portion of the input
+    for (i, ch) in input.chars().enumerate().skip(scroll_offset) {
+        // stop if we've filled the visible width
+        if i - scroll_offset >= visible_width {
+            break;
+        }
+
         let is_problematic = problematic_positions.iter().any(|&(start, end)| {
             // positions are relative to the input string, so we need to match them correctly
             i >= start && i < end

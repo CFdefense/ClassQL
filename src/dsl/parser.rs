@@ -379,6 +379,14 @@ impl Parser {
                 "subject".to_string(),
                 "title".to_string(),
                 "section".to_string(),
+                "number".to_string(),
+                "description".to_string(),
+                "credit".to_string(),
+                "prerequisites".to_string(),
+                "corequisites".to_string(),
+                "enrollment".to_string(),
+                "campus".to_string(),
+                "meeting".to_string(),
             ]
         } else {
             let last_token = &tokens[tokens.len() - 1];
@@ -830,11 +838,19 @@ impl Parser {
             (
                 SyntaxError::ExpectedAfter {
                     expected: vec![
-                        "prof".to_string(),
+                        "professor".to_string(),
                         "course".to_string(),
                         "subject".to_string(),
                         "title".to_string(),
                         "section".to_string(),
+                        "number".to_string(),
+                        "description".to_string(),
+                        "credit".to_string(),
+                        "prerequisites".to_string(),
+                        "corequisites".to_string(),
+                        "enrollment".to_string(),
+                        "campus".to_string(),
+                        "meeting".to_string(),
                     ],
                     after: "start of query".to_string(),
                     position: self.token_pointer,
