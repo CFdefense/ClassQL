@@ -1,0 +1,83 @@
+[
+  {
+    "test_name": "codegen_professor_full_keyword",
+    "description": "Generate SQL using full 'professor' keyword",
+    "input": "professor equals johnson",
+    "should_succeed": true,
+    "expected_fragments": ["LOWER(p.name) = LOWER('johnson')"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_professor_short_keyword",
+    "description": "Generate SQL using 'prof' keyword",
+    "input": "prof contains smith",
+    "should_succeed": true,
+    "expected_fragments": ["p.name LIKE '%smith%'"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_day_abbreviation_mon",
+    "description": "Generate SQL using 'mon' day abbreviation",
+    "input": "mon is true",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_monday = 1"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_day_abbreviation_tue",
+    "description": "Generate SQL using 'tue' day abbreviation",
+    "input": "tue is true",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_tuesday = 1"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_day_abbreviation_wed",
+    "description": "Generate SQL using 'wed' day abbreviation",
+    "input": "wed is false",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_wednesday = 0"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_day_abbreviation_thu",
+    "description": "Generate SQL using 'thu' day abbreviation",
+    "input": "thu is true",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_thursday = 1"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_day_abbreviation_fri",
+    "description": "Generate SQL using 'fri' day abbreviation",
+    "input": "fri is true",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_friday = 1"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_day_abbreviation_sat",
+    "description": "Generate SQL using 'sat' day abbreviation",
+    "input": "sat is false",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_saturday = 0"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_day_abbreviation_sun",
+    "description": "Generate SQL using 'sun' day abbreviation",
+    "input": "sun is false",
+    "should_succeed": true,
+    "expected_fragments": ["mt.is_sunday = 0"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_subject_alias_sub",
+    "description": "Generate SQL using 'sub' subject alias",
+    "input": "sub equals MATH",
+    "should_succeed": true,
+    "expected_fragments": ["c.subject_code", "LOWER('MATH')"],
+    "forbidden_fragments": []
+  }
+]
+

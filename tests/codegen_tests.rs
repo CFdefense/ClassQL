@@ -291,3 +291,13 @@ fn test_codegen_complex_queries() {
     run_test_file("complex_queries.json");
 }
 
+#[test]
+fn test_codegen_keyword_variations() {
+    run_test_file("keyword_variations.json");
+}
+
+#[test]
+fn test_codegen_edge_cases() {
+    run_test_file("edge_cases.json");
+}
+
