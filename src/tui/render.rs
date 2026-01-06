@@ -91,6 +91,8 @@ pub struct Tui {
     completions: Vec<String>,
     completion_index: Option<usize>,
     show_completions: bool,
+    /// The partial word being completed (for replacement on selection)
+    partial_word: String,
 }
 
 /// Tui Implementation
@@ -132,6 +134,7 @@ impl Tui {
             completions: Vec::new(),
             completion_index: None,
             show_completions: false,
+            partial_word: String::new(),
         })
     }
 
@@ -184,6 +187,7 @@ impl Tui {
                         KeyCode::Esc => {
                             self.show_completions = false;
                             self.completion_index = None;
+                            self.partial_word.clear();
                         }
                         KeyCode::Up => {
                             if let Some(index) = self.completion_index {
@@ -208,12 +212,23 @@ impl Tui {
                                     let completion = &self.completions[index];
                                     // don't add placeholders like <value>
                                     if !completion.starts_with('<') {
-                                        if !self.input.is_empty() && !self.input.ends_with(' ') {
-                                            self.input.push(' ');
+                                        // only replace if there's a partial word that matches
+                                        if !self.partial_word.is_empty()
+                                            && completion.to_lowercase().starts_with(&self.partial_word)
+                                        {
+                                            // remove the partial word from input
+                                            let trim_len = self.partial_word.len();
+                                            let new_len = self.input.len().saturating_sub(trim_len);
+                                            self.input.truncate(new_len);
+                                        } else {
+                                            // no partial word - just append with space
+                                            if !self.input.is_empty() && !self.input.ends_with(' ') {
+                                                self.input.push(' ');
+                                            }
                                         }
                                         self.input.push_str(completion);
                                         if !completion.starts_with('"') {
-                                            // don't add space after quoted strings
+                                            // add space after completion for next word
                                             self.input.push(' ');
                                         }
                                     }
@@ -221,6 +236,7 @@ impl Tui {
                             }
                             self.show_completions = false;
                             self.completion_index = None;
+                            self.partial_word.clear();
                         }
                         KeyCode::Tab => {
                             // Tab moves down through completions (same as Down arrow)
@@ -236,6 +252,7 @@ impl Tui {
                             // any other key hides completions
                             self.show_completions = false;
                             self.completion_index = None;
+                            self.partial_word.clear();
                         }
                     }
                     continue; // skip normal key handling when completions are shown
@@ -342,8 +359,33 @@ impl Tui {
     /// --- ---
     ///
     fn handle_tab_completion(&mut self) {
+        // check if input ends with space (no partial word to complete)
+        let has_partial = !self.input.is_empty() && !self.input.ends_with(' ');
+
+        // extract the partial word being typed (last word after space)
+        self.partial_word = if has_partial {
+            self.input
+                .split_whitespace()
+                .last()
+                .unwrap_or("")
+                .to_lowercase()
+        } else {
+            String::new()
+        };
+
         // get completion suggestions from compiler
-        self.completions = self.compiler.get_tab_completion(self.input.clone());
+        let suggestions = self.compiler.get_tab_completion(self.input.clone());
+
+        // if there's a partial word, only show completions that start with it
+        self.completions = if !self.partial_word.is_empty() {
+            let partial = &self.partial_word;
+            suggestions
+                .into_iter()
+                .filter(|s| s.to_lowercase().starts_with(partial))
+                .collect()
+        } else {
+            suggestions
+        };
 
         if !self.completions.is_empty() {
             self.show_completions = true;
