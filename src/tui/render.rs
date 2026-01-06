@@ -1,27 +1,34 @@
 /// src/tui/render.rs
 ///
-/// Render for the TUI
+/// Render module for the TUI
 ///
-/// Responsible for rendering the TUI
+/// Responsible for rendering the TUI interface and handling user interactions
 ///
 /// Contains:
 /// --- ---
-/// Tui -> TUI struct
+/// Tui -> TUI struct that manages application state and event loop
 ///      Methods:
 ///      --- ---
 ///      new -> Create a new TUI instance
 ///      run -> Run the TUI event loop
 ///      terminate -> Terminate the TUI
+///      clear_error_state -> Clear error state and toast messages
+///      handle_tab_completion -> Handle tab completion logic
+///      get_completion_hint -> Get helpful hint when no completions available
+///      update_toast -> Update toast timer and auto-dismiss
+///      show_toast -> Show a toast notification
 ///      --- ---
 /// Helper functions:
 ///      --- ---
-///      render_logo -> Render the logo
-///      render_search_bar_with_data -> Render the search bar with data
-///      render_search_helpers_with_data -> Render the search helpers with data
-///      render_query_results -> Render the query results
-///      render_syntax_highlighting -> Render the syntax highlighting
-///      render_toast_with_data -> Render the toast with data
-///      render_completion_dropdown -> Render the completion dropdown
+///      render_frame -> Main render function that orchestrates all rendering
+///      render_logo -> Render the ASCII art logo
+///      render_search_bar_with_data -> Render the search bar with input and cursor
+///      render_search_helpers_with_data -> Render the help text at bottom of screen
+///      render_query_results -> Render the query results in a 3-column grid
+///      render_detail_view -> Render detailed class information overlay
+///      render_syntax_highlighting -> Render syntax highlighting (placeholder)
+///      render_toast_with_data -> Render error toast notifications
+///      render_completion_dropdown -> Render tab completion suggestions dropdown
 ///      --- ---
 /// --- ---
 ///
@@ -32,7 +39,7 @@ use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, Borders, Paragraph};
+use ratatui::widgets::{Block, Borders, Clear, Paragraph};
 use ratatui::{DefaultTerminal, Frame};
 use std::time::{Duration, Instant};
 
@@ -57,27 +64,46 @@ pub enum ErrorType {
     Semantic,
 }
 
-/// Tui struct
+/// FocusMode enum - tracks which element has keyboard focus
+///
+/// FocusMode types:
+/// --- ---
+/// QueryInput -> User is typing in the query box
+/// ResultsBrowse -> User is browsing/selecting results
+/// DetailView -> User is viewing detailed class info
+/// --- ---
+///
+#[derive(Debug, Clone, PartialEq)]
+pub enum FocusMode {
+    QueryInput,
+    ResultsBrowse,
+    DetailView,
+}
+
+//// Tui struct
+///
+/// Main TUI struct that manages the application state and rendering
 ///
 /// Tui fields:
 /// --- ---
-/// terminal -> The terminal instance
-/// input -> The input string
-/// user_query -> The user query string
-/// toast_message -> The toast message
-/// toast_start_time -> The toast start time
-/// error_type -> The error type
-/// problematic_positions -> The problematic positions (byte ranges)
-/// compiler -> The compiler instance
-/// completions -> The completions
-/// completion_index -> The completion index
-/// show_completions -> Whether to show completions
-/// --- ---
-///
-/// Implemented Traits:
-/// --- ---
-/// Debug -> Debug trait for Tui
-/// Clone -> Clone trait for Tui
+/// terminal -> The terminal instance for rendering
+/// input -> The current user input string in the query box
+/// user_query -> The last executed query string
+/// toast_message -> Optional toast notification message
+/// toast_start_time -> Timestamp when toast was shown (for auto-dismiss)
+/// error_type -> Type of error if any (Lexer, Parser, Semantic)
+/// problematic_positions -> Byte ranges of problematic tokens in input
+/// compiler -> The DSL compiler instance
+/// completions -> List of completion suggestions
+/// completion_index -> Currently selected completion index
+/// show_completions -> Whether completion dropdown is visible
+/// partial_word -> The partial word being completed
+/// query_results -> The list of Class results from the last query
+/// results_scroll -> Scroll offset for results display
+/// focus_mode -> Current UI focus (QueryInput, ResultsBrowse, DetailView)
+/// selected_result -> Index of currently selected result in browse mode
+/// cursor_visible -> Whether the input cursor is visible (for blinking)
+/// last_cursor_blink -> Timestamp of last cursor blink toggle
 /// --- ---
 ///
 pub struct Tui {
@@ -92,12 +118,13 @@ pub struct Tui {
     completions: Vec<String>,
     completion_index: Option<usize>,
     show_completions: bool,
-    /// The partial word being completed (for replacement on selection)
     partial_word: String,
-    /// The query results (classes) to display
     query_results: Vec<Class>,
-    /// Scroll offset for results (how many rows to skip)
     results_scroll: usize,
+    focus_mode: FocusMode,
+    selected_result: usize,
+    cursor_visible: bool,
+    last_cursor_blink: Instant,
 }
 
 /// Tui Implementation
@@ -142,6 +169,10 @@ impl Tui {
             partial_word: String::new(),
             query_results: Vec::new(),
             results_scroll: 0,
+            focus_mode: FocusMode::QueryInput,
+            selected_result: 0,
+            cursor_visible: true,
+            last_cursor_blink: Instant::now(),
         })
     }
 
@@ -162,6 +193,12 @@ impl Tui {
             // update toast timer
             self.update_toast();
 
+            // update cursor blink (every 500ms)
+            if self.last_cursor_blink.elapsed() > Duration::from_millis(500) {
+                self.cursor_visible = !self.cursor_visible;
+                self.last_cursor_blink = Instant::now();
+            }
+
             // extract render data to avoid borrow conflicts
             let input = self.input.clone();
             let problematic_positions = self.problematic_positions.clone();
@@ -172,6 +209,9 @@ impl Tui {
             let show_completions = self.show_completions;
             let query_results = self.query_results.clone();
             let results_scroll = self.results_scroll;
+            let focus_mode = self.focus_mode.clone();
+            let selected_result = self.selected_result;
+            let cursor_visible = self.cursor_visible;
 
             // draw the current state
             let terminal = &mut self.terminal;
@@ -187,183 +227,302 @@ impl Tui {
                     show_completions,
                     &query_results,
                     results_scroll,
+                    &focus_mode,
+                    selected_result,
+                    cursor_visible,
                 );
             })?;
 
-            // handle input events
-            if let Event::Key(key) = event::read()? {
-                // handle completion navigation first if completions are showing
-                if self.show_completions {
-                    match key.code {
-                        KeyCode::Esc => {
-                            self.show_completions = false;
-                            self.completion_index = None;
-                            self.partial_word.clear();
-                        }
-                        KeyCode::Up => {
-                            if let Some(index) = self.completion_index {
-                                if index > 0 {
-                                    self.completion_index = Some(index - 1);
-                                }
+            // handle input events with timeout for cursor blinking
+            if crossterm::event::poll(Duration::from_millis(100))? {
+                if let Event::Key(key) = event::read()? {
+                    // handle completion navigation first if completions are showing
+                    if self.show_completions {
+                        match key.code {
+                            KeyCode::Esc => {
+                                self.show_completions = false;
+                                self.completion_index = None;
+                                self.partial_word.clear();
                             }
-                        }
-                        KeyCode::Down => {
-                            if let Some(index) = self.completion_index {
-                                if index < self.completions.len() - 1 {
-                                    self.completion_index = Some(index + 1);
-                                } else {
-                                    self.completion_index = Some(0);
-                                }
-                            }
-                        }
-                        KeyCode::Enter => {
-                            // insert selected completion
-                            if let Some(index) = self.completion_index {
-                                if index < self.completions.len() {
-                                    let completion = &self.completions[index];
-                                    // don't add placeholders like <value>
-                                    if !completion.starts_with('<') {
-                                        // only replace if there's a partial word that matches
-                                        if !self.partial_word.is_empty()
-                                            && completion.to_lowercase().starts_with(&self.partial_word)
-                                        {
-                                            // remove the partial word from input
-                                            let trim_len = self.partial_word.len();
-                                            let new_len = self.input.len().saturating_sub(trim_len);
-                                            self.input.truncate(new_len);
-                                        } else {
-                                            // no partial word - just append with space
-                                            if !self.input.is_empty() && !self.input.ends_with(' ') {
-                                                self.input.push(' ');
-                                            }
-                                        }
-                                        self.input.push_str(completion);
-                                        if !completion.starts_with('"') {
-                                            // add space after completion for next word
-                                            self.input.push(' ');
-                                        }
+                            KeyCode::Up => {
+                                if let Some(index) = self.completion_index {
+                                    if index > 0 {
+                                        self.completion_index = Some(index - 1);
                                     }
                                 }
                             }
-                            self.show_completions = false;
-                            self.completion_index = None;
-                            self.partial_word.clear();
+                            KeyCode::Down => {
+                                if let Some(index) = self.completion_index {
+                                    if index < self.completions.len() - 1 {
+                                        self.completion_index = Some(index + 1);
+                                    } else {
+                                        self.completion_index = Some(0);
+                                    }
+                                }
+                            }
+                            KeyCode::Enter => {
+                                // insert selected completion
+                                if let Some(index) = self.completion_index {
+                                    if index < self.completions.len() {
+                                        let completion = &self.completions[index];
+                                        // don't add placeholders like <value>
+                                        if !completion.starts_with('<') {
+                                            // only replace if there's a partial word that matches
+                                            if !self.partial_word.is_empty()
+                                                && completion.to_lowercase().starts_with(&self.partial_word)
+                                            {
+                                                // remove the partial word from input
+                                                let trim_len = self.partial_word.len();
+                                                let new_len = self.input.len().saturating_sub(trim_len);
+                                                self.input.truncate(new_len);
+                                            } else {
+                                                // no partial word - just append with space
+                                                if !self.input.is_empty() && !self.input.ends_with(' ') {
+                                                    self.input.push(' ');
+                                                }
+                                            }
+                                            self.input.push_str(completion);
+                                            if !completion.starts_with('"') {
+                                                // add space after completion for next word
+                                                self.input.push(' ');
+                                            }
+                                        }
+                                    }
+                                }
+                                self.show_completions = false;
+                                self.completion_index = None;
+                                self.partial_word.clear();
+                            }
+                            KeyCode::Tab => {
+                                // tab moves down through completions (same as Down arrow)
+                                if let Some(index) = self.completion_index {
+                                    if index < self.completions.len() - 1 {
+                                        self.completion_index = Some(index + 1);
+                                    } else {
+                                        self.completion_index = Some(0);
+                                    }
+                                }
+                            }
+                            _ => {
+                                // any other key hides completions
+                                self.show_completions = false;
+                                self.completion_index = None;
+                                self.partial_word.clear();
+                            }
+                        }
+                        continue; // skip normal key handling when completions are shown
+                    }
+
+                    // handle detail view mode
+                    if self.focus_mode == FocusMode::DetailView {
+                        match key.code {
+                            KeyCode::Esc | KeyCode::Enter | KeyCode::Backspace => {
+                                // exit detail view, go back to results browse
+                                self.focus_mode = FocusMode::ResultsBrowse;
+                            }
+                            _ => {}
+                        }
+                        continue;
+                    }
+
+                    // handle results browse mode
+                    if self.focus_mode == FocusMode::ResultsBrowse {
+                        match key.code {
+                            // exit the TUI if the user presses Ctrl+C or Esc
+                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => break Ok(()),
+                            KeyCode::Esc => break Ok(()),
+                            KeyCode::Up => {
+                                // if at top of results, go back to query input
+                                if self.selected_result == 0 {
+                                    self.focus_mode = FocusMode::QueryInput;
+                                } else {
+                                    // move selection up (3 items per row)
+                                    if self.selected_result >= 3 {
+                                        self.selected_result -= 3;
+                                        // adjust scroll if needed
+                                        if self.selected_result < self.results_scroll {
+                                            self.results_scroll = self.selected_result;
+                                        }
+                                    } else {
+                                        // can't go up more, go to query input
+                                        self.focus_mode = FocusMode::QueryInput;
+                                    }
+                                }
+                            }
+                            KeyCode::Down => {
+                                // move selection down (3 items per row)
+                                if self.selected_result + 3 < self.query_results.len() {
+                                    self.selected_result += 3;
+                                    // only scroll if result is not already visible
+                                    // estimate visible items: typically 2-3 rows = 6-9 items
+                                    let total_results = self.query_results.len();
+                                    let estimated_visible = 9; // conservative estimate (3 rows * 3 cols)
+                                    // if all results fit on screen, don't scroll
+                                    if total_results <= estimated_visible {
+                                        // all results visible, don't scroll
+                                    } else if self.selected_result >= self.results_scroll + estimated_visible {
+                                        // result is beyond visible window, scroll to show it
+                                        self.results_scroll = self.selected_result.saturating_sub(estimated_visible - 1);
+                                    }
+                                }
+                            }
+                            KeyCode::Left => {
+                                // move selection left
+                                if self.selected_result > 0 {
+                                    self.selected_result -= 1;
+                                    // only scroll if result is not already visible
+                                    if self.selected_result < self.results_scroll {
+                                        self.results_scroll = self.selected_result;
+                                    }
+                                }
+                            }
+                            KeyCode::Right => {
+                                // move selection right
+                                if self.selected_result + 1 < self.query_results.len() {
+                                    self.selected_result += 1;
+                                    // only scroll if result is not already visible
+                                    // estimate visible items: typically 2-3 rows = 6-9 items
+                                    let total_results = self.query_results.len();
+                                    let estimated_visible = 9; // conservative estimate (3 rows * 3 cols)
+                                    // if all results fit on screen, don't scroll
+                                    if total_results <= estimated_visible {
+                                        // all results visible, don't scroll
+                                    } else if self.selected_result >= self.results_scroll + estimated_visible {
+                                        // result is beyond visible window, scroll to show it
+                                        self.results_scroll = self.selected_result.saturating_sub(estimated_visible - 1);
+                                    }
+                                }
+                            }
+                            KeyCode::Enter => {
+                                // open detail view for selected result
+                                if self.selected_result < self.query_results.len() {
+                                    self.focus_mode = FocusMode::DetailView;
+                                }
+                            }
+                            KeyCode::Char(_) | KeyCode::Backspace => {
+                                // typing goes back to query input
+                                self.focus_mode = FocusMode::QueryInput;
+                                if let KeyCode::Char(c) = key.code {
+                                    self.clear_error_state();
+                                    self.input.push(c);
+                                } else {
+                                    self.clear_error_state();
+                                    self.input.pop();
+                                }
+                            }
+                            KeyCode::Tab => {
+                                // go back to query input for tab completion
+                                self.focus_mode = FocusMode::QueryInput;
+                                self.handle_tab_completion();
+                            }
+                            _ => {}
+                        }
+                        continue;
+                    }
+
+                    // queryInput mode (default)
+                    match key.code {
+                        // exit the TUI if the user presses Ctrl+C or Esc
+                        KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => break Ok(()),
+                        KeyCode::Esc => break Ok(()),
+                        KeyCode::Down => {
+                            // if we have results, move to top left result
+                            if !self.query_results.is_empty() {
+                                self.focus_mode = FocusMode::ResultsBrowse;
+                                self.selected_result = 0;
+                                // only change scroll if result 0 is not already visible
+                                // (i.e., if scroll > 0, or if all results don't fit and we're scrolled)
+                                // For simplicity: only reset scroll if it's not 0 and result 0 isn't visible
+                                if self.results_scroll > 0 {
+                                    self.results_scroll = 0;
+                                }
+                                // If scroll is already 0, don't change it (all results already visible)
+                            }
+                        }
+
+                        // use compiler to process the query
+                        KeyCode::Enter => {
+                            // process the query here
+                            self.user_query = self.input.clone();
+
+                            // run the compiler and handle the result
+                            match self.compiler.run(&self.input) {
+                                CompilerResult::Success { classes, .. } => {
+                                    // clear any error state
+                                    self.toast_message = None;
+                                    self.toast_start_time = None;
+                                    self.error_type = None;
+                                    self.problematic_positions.clear();
+
+                                    // store the query results
+                                    self.query_results = classes;
+                                    self.results_scroll = 0;
+                                    self.selected_result = 0;
+                                }
+                                CompilerResult::LexerError {
+                                    message,
+                                    problematic_positions,
+                                } => {
+                                    // show error and highlight problematic tokens
+                                    self.show_toast(message, ErrorType::Lexer);
+                                    self.problematic_positions = problematic_positions;
+                                }
+                                CompilerResult::ParserError {
+                                    message,
+                                    problematic_positions,
+                                } => {
+                                    // show error and highlight problematic tokens
+                                    self.show_toast(message, ErrorType::Parser);
+                                    self.problematic_positions = problematic_positions;
+                                }
+                                CompilerResult::SemanticError {
+                                    message,
+                                    problematic_positions,
+                                } => {
+                                    // show error and highlight problematic tokens
+                                    self.show_toast(message, ErrorType::Semantic);
+                                    self.problematic_positions = problematic_positions;
+                                }
+                                CompilerResult::CodeGenError { message } => {
+                                    // show code generation error
+                                    self.show_toast(message, ErrorType::Semantic);
+                                    self.problematic_positions.clear();
+                                }
+                            }
+                        }
+                        KeyCode::Backspace => {
+                            // clear any previous toasts and problematic tokens when user backspaces
+                            self.clear_error_state();
+                            self.input.pop();
                         }
                         KeyCode::Tab => {
-                            // Tab moves down through completions (same as Down arrow)
-                            if let Some(index) = self.completion_index {
-                                if index < self.completions.len() - 1 {
-                                    self.completion_index = Some(index + 1);
-                                } else {
-                                    self.completion_index = Some(0);
-                                }
-                            }
+                            // handle tab completion
+                            self.handle_tab_completion();
                         }
-                        _ => {
-                            // any other key hides completions
-                            self.show_completions = false;
-                            self.completion_index = None;
-                            self.partial_word.clear();
+                        KeyCode::Char(c) => {
+                            // clear any previous toasts and problematic tokens when user starts typing
+                            self.clear_error_state();
+                            self.input.push(c);
                         }
-                    }
-                    continue; // skip normal key handling when completions are shown
-                }
-
-                match key.code {
-                    // exit the TUI if the user presses Ctrl+C or Esc
-                    KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => break Ok(()),
-                    KeyCode::Esc => break Ok(()),
-
-                    // use compiler to process the query
-                    KeyCode::Enter => {
-                        // process the query here
-                        self.user_query = self.input.clone();
-
-                        // run the compiler and handle the result
-                        match self.compiler.run(&self.input) {
-                            CompilerResult::Success { classes, .. } => {
-                                // clear any error state
-                                self.toast_message = None;
-                                self.toast_start_time = None;
-                                self.error_type = None;
-                                self.problematic_positions.clear();
-
-                                // store the query results
-                                let count = classes.len();
-                                self.query_results = classes;
+                        KeyCode::PageUp => {
+                            // scroll results up (show earlier classes)
+                            if self.results_scroll >= 3 {
+                                self.results_scroll -= 3;
+                            } else {
                                 self.results_scroll = 0;
-
-                                // show success message with count
-                                if count == 0 {
-                                    self.toast_message = Some("No results found".to_string());
-                                } else {
-                                    self.toast_message = Some(format!("Found {} class{}", count, if count == 1 { "" } else { "es" }));
-                                }
-                                self.toast_start_time = Some(Instant::now());
-                            }
-                            CompilerResult::LexerError {
-                                message,
-                                problematic_positions,
-                            } => {
-                                // show error and highlight problematic tokens
-                                self.show_toast(message, ErrorType::Lexer);
-                                self.problematic_positions = problematic_positions;
-                            }
-                            CompilerResult::ParserError {
-                                message,
-                                problematic_positions,
-                            } => {
-                                // show error and highlight problematic tokens
-                                self.show_toast(message, ErrorType::Parser);
-                                self.problematic_positions = problematic_positions;
-                            }
-                            CompilerResult::SemanticError {
-                                message,
-                                problematic_positions,
-                            } => {
-                                // show error and highlight problematic tokens
-                                self.show_toast(message, ErrorType::Semantic);
-                                self.problematic_positions = problematic_positions;
-                            }
-                            CompilerResult::CodeGenError { message } => {
-                                // show code generation error
-                                self.show_toast(message, ErrorType::Semantic);
-                                self.problematic_positions.clear();
                             }
                         }
-                    }
-                    KeyCode::Backspace => {
-                        // clear any previous toasts and problematic tokens when user backspaces
-                        self.clear_error_state();
-                        self.input.pop();
-                    }
-                    KeyCode::Tab => {
-                        // handle tab completion
-                        self.handle_tab_completion();
-                    }
-                    KeyCode::Char(c) => {
-                        // clear any previous toasts and problematic tokens when user starts typing
-                        self.clear_error_state();
-                        self.input.push(c);
-                    }
-                    KeyCode::Up | KeyCode::PageUp => {
-                        // scroll results up (show earlier classes)
-                        if self.results_scroll >= 3 {
-                            self.results_scroll -= 3;
-                        } else {
-                            self.results_scroll = 0;
+                        KeyCode::PageDown => {
+                            // scroll results down (show later classes)
+                            let max_scroll = self.query_results.len().saturating_sub(3);
+                            if self.results_scroll + 3 < max_scroll {
+                                self.results_scroll += 3;
+                            } else {
+                                self.results_scroll = max_scroll;
+                            }
                         }
+                        _ => {}
                     }
-                    KeyCode::Down | KeyCode::PageDown => {
-                        // scroll results down (show later classes)
-                        let max_scroll = self.query_results.len().saturating_sub(3);
-                        if self.results_scroll + 3 < max_scroll {
-                            self.results_scroll += 3;
-                        } else {
-                            self.results_scroll = max_scroll;
-                        }
-                    }
-                    _ => {}
                 }
             }
         }
@@ -543,20 +702,26 @@ impl Tui {
     }
 }
 
-/// Standalone render function to avoid borrow checker conflicts
+/// Main render function that orchestrates all rendering
+///
+/// This is a standalone function to avoid borrow checker conflicts with the Tui struct.
+/// It coordinates all the individual render functions in the correct order.
 ///
 /// Parameters:
 /// --- ---
 /// frame -> The frame to render
-/// input -> The input string
-/// problematic_positions -> The problematic positions (byte ranges)
-/// toast_message -> The toast message
-/// error_type -> The error type
-/// completions -> The completions
-/// completion_index -> The completion index
-/// show_completions -> Whether to show completions
+/// input -> The current user input string
+/// problematic_positions -> Byte ranges of problematic tokens for error highlighting
+/// toast_message -> Optional toast notification message
+/// error_type -> Type of error if any (Lexer, Parser, Semantic)
+/// completions -> List of completion suggestions
+/// completion_index -> Currently selected completion index
+/// show_completions -> Whether completion dropdown is visible
 /// query_results -> The query results (classes) to display
-/// results_scroll -> The scroll offset for results
+/// results_scroll -> The scroll offset for results display
+/// focus_mode -> Current UI focus (QueryInput, ResultsBrowse, DetailView)
+/// selected_result -> Index of currently selected result in browse mode
+/// cursor_visible -> Whether the input cursor is visible (for blinking)
 /// --- ---
 ///
 /// Returns:
@@ -576,14 +741,22 @@ fn render_frame(
     show_completions: bool,
     query_results: &[Class],
     results_scroll: usize,
+    focus_mode: &FocusMode,
+    selected_result: usize,
+    cursor_visible: bool,
 ) {
     render_logo(frame);
-    render_search_bar_with_data(frame, input, problematic_positions);
-    render_query_results(frame, query_results, results_scroll);
-    render_search_helpers_with_data(frame, input, toast_message, query_results);
+    render_search_bar_with_data(frame, input, problematic_positions, focus_mode, cursor_visible);
+    render_query_results(frame, query_results, results_scroll, focus_mode, selected_result);
+    render_search_helpers_with_data(frame, input, toast_message, query_results, focus_mode);
     render_syntax_highlighting(frame);
     render_toast_with_data(frame, toast_message, error_type);
     render_completion_dropdown(frame, completions, completion_index, show_completions);
+    
+    // render detail view overlay if in detail mode
+    if *focus_mode == FocusMode::DetailView && selected_result < query_results.len() {
+        render_detail_view(frame, &query_results[selected_result]);
+    }
 }
 
 /// Render the logo
@@ -640,6 +813,8 @@ fn render_logo(frame: &mut Frame) {
 /// frame -> The frame to render
 /// input -> The input string
 /// problematic_positions -> The problematic positions (byte ranges)
+/// focus_mode -> Current focus mode
+/// cursor_visible -> Whether cursor should be visible (for blinking)
 /// --- ---
 ///
 /// Returns:
@@ -651,8 +826,11 @@ fn render_search_bar_with_data(
     frame: &mut Frame,
     input: &str,
     problematic_positions: &[(usize, usize)],
+    focus_mode: &FocusMode,
+    cursor_visible: bool,
 ) {
     let search_width = 50;
+    let is_focused = *focus_mode == FocusMode::QueryInput;
 
     // position search bar directly below the logo
     let logo_height = 7; // Height of the ASCII art logo
@@ -665,8 +843,8 @@ fn render_search_bar_with_data(
         height: 3,
     };
 
-    // calculate visible width (minus borders and "> " prefix)
-    let visible_width = search_width.saturating_sub(4) as usize; // 2 for borders, 2 for "> "
+    // calculate visible width (minus borders and "> " prefix and cursor)
+    let visible_width = search_width.saturating_sub(5) as usize; // 2 for borders, 2 for "> ", 1 for cursor
     let input_len = input.chars().count();
 
     // calculate scroll offset to keep cursor (end of input) visible
@@ -683,7 +861,7 @@ fn render_search_bar_with_data(
     if scroll_offset > 0 {
         styled_spans.push(Span::styled("…", Style::default().fg(Color::DarkGray)));
     } else {
-        styled_spans.push(Span::styled("> ", Style::default().fg(Color::White)));
+        styled_spans.push(Span::styled("> ", Style::default().fg(if is_focused { Color::Cyan } else { Color::DarkGray })));
     }
 
     // process only the visible portion of the input
@@ -707,15 +885,36 @@ fn render_search_bar_with_data(
         styled_spans.push(Span::styled(ch.to_string(), style));
     }
 
+    // add flashing cursor if focused
+    if is_focused && cursor_visible {
+        styled_spans.push(Span::styled("|", Style::default().fg(Color::Cyan)));
+    } else if is_focused {
+        styled_spans.push(Span::styled(" ", Style::default()));
+    }
+
     let styled_line = Line::from(styled_spans);
+
+    // border color depends on focus state
+    let border_color = if is_focused {
+        Color::Cyan
+    } else {
+        Color::Rgb(60, 60, 70)
+    };
+
+    let title_style = if is_focused {
+        Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+    } else {
+        Style::default().fg(Color::DarkGray)
+    };
+
     let search_paragraph = Paragraph::new(styled_line)
         .style(Style::default().fg(Color::White))
         .block(
             Block::default()
                 .borders(Borders::ALL)
                 .title("ClassQL Query")
-                .title_style(Style::default().fg(Color::Cyan))
-                .border_style(Style::default().fg(Color::Gray)),
+                .title_style(title_style)
+                .border_style(Style::default().fg(border_color)),
         );
 
     frame.render_widget(search_paragraph, search_area);
@@ -729,6 +928,7 @@ fn render_search_bar_with_data(
 /// input -> The input string
 /// toast_message -> The toast message
 /// query_results -> The query results for showing navigation hints
+/// focus_mode -> Current focus mode
 /// --- ---
 ///
 /// Returns:
@@ -741,18 +941,25 @@ fn render_search_helpers_with_data(
     input: &str,
     toast_message: &Option<String>,
     query_results: &[Class],
+    focus_mode: &FocusMode,
 ) {
     // don't show help text if there's an active toast
     if toast_message.is_some() {
         return;
     }
 
-    let help_text = if !query_results.is_empty() {
-        "↑↓ Scroll Results | Enter to Search | Esc to Exit"
-    } else if input.is_empty() {
-        "Type a ClassQL query (e.g., 'prof is Brian')"
-    } else {
-        "Press Enter to Search, Esc to Exit"
+    let help_text = match focus_mode {
+        FocusMode::DetailView => "Press Esc or Enter to close detail view",
+        FocusMode::ResultsBrowse => "←↑↓→ Navigate | Enter: Details | Esc: Quit | Type to Search",
+        FocusMode::QueryInput => {
+            if !query_results.is_empty() {
+                "Enter: Search | Tab: Complete | ↓: Browse Results | Esc: Quit"
+            } else if input.is_empty() {
+                "Type a ClassQL query (e.g., 'prof is Brian') | Esc: Quit"
+            } else {
+                "Press Enter to Search, Tab for Completions | ↓: Browse Results | Esc: Quit"
+            }
+        }
     };
 
     let help_width = help_text.len() as u16;
@@ -777,6 +984,8 @@ fn render_search_helpers_with_data(
 /// frame -> The frame to render
 /// classes -> The classes to display
 /// scroll -> The scroll offset (number of classes to skip)
+/// focus_mode -> Current focus mode
+/// selected_result -> Index of currently selected result
 /// --- ---
 ///
 /// Returns:
@@ -784,85 +993,91 @@ fn render_search_helpers_with_data(
 /// None
 /// --- ---
 ///
-fn render_query_results(frame: &mut Frame, classes: &[Class], scroll: usize) {
+fn render_query_results(
+    frame: &mut Frame,
+    classes: &[Class],
+    scroll: usize,
+    focus_mode: &FocusMode,
+    selected_result: usize,
+) {
     if classes.is_empty() {
         return;
     }
 
-    // Position the results grid below the search bar
-    let logo_height = 7; // Height of the ASCII art logo
+    let is_browse_mode = *focus_mode == FocusMode::ResultsBrowse || *focus_mode == FocusMode::DetailView;
+
+    // position the results grid below the search bar
+    let logo_height = 7; // height of the ASCII art logo
     let search_y = logo_height + 2; // search bar position
     let search_height = 3; // search bar height
     let results_y = search_y + search_height + 1; // 1 line below search bar
 
-    // Calculate available space for results
+    // calculate available space for results
     let available_height = frame.area().height.saturating_sub(results_y + 10); // leave room for help text and logo
     let cell_height = 7_u16; // height per class box
     let rows_to_show = (available_height / cell_height).max(1) as usize;
 
-    // Calculate grid dimensions
+    // calculate grid dimensions
     let cell_width = 26_u16;
     let cols = 3_usize;
     let grid_width = cell_width * cols as u16 + (cols as u16 - 1) * 2; // cells + gaps
     let grid_x = frame.area().width.saturating_sub(grid_width) / 2;
 
-    // Apply scroll offset and get visible classes
-    let visible_classes: Vec<&Class> = classes.iter().skip(scroll).take(rows_to_show * cols).collect();
+    // apply scroll offset and get visible classes
+    let visible_classes: Vec<(usize, &Class)> = classes
+        .iter()
+        .enumerate()
+        .skip(scroll)
+        .take(rows_to_show * cols)
+        .collect();
 
-    // Render each class in a 3-column grid
-    for (idx, class) in visible_classes.iter().enumerate() {
+    // render each class in a 3-column grid
+    for (global_idx, class) in visible_classes.iter() {
+        let idx = global_idx - scroll; // local index in visible area
         let row = idx / cols;
         let col = idx % cols;
 
         let cell_x = grid_x + (col as u16 * (cell_width + 2));
         let cell_y = results_y + (row as u16 * cell_height);
 
-        // Create the class card
+        let is_selected = is_browse_mode && *global_idx == selected_result;
+
+        // create the class card
         let display_lines = class.format_for_display();
 
-        // Build styled lines for the card
+        // build styled lines for the card
         let mut styled_lines: Vec<Line> = Vec::new();
 
-        // Line 1: Course code (bold cyan)
+        // line 1: course code (bold cyan)
         if let Some(line) = display_lines.first() {
-            styled_lines.push(Line::from(Span::styled(
-                line.clone(),
-                Style::default()
-                    .fg(Color::Cyan)
-                    .add_modifier(Modifier::BOLD),
-            )));
+            let style = Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD);
+            styled_lines.push(Line::from(Span::styled(line.clone(), style)));
         }
 
-        // Line 2: Title (white)
+        // line 2: title (white)
         if let Some(line) = display_lines.get(1) {
-            styled_lines.push(Line::from(Span::styled(
-                line.clone(),
-                Style::default().fg(Color::White),
-            )));
+            let style = Style::default().fg(Color::White);
+            styled_lines.push(Line::from(Span::styled(line.clone(), style)));
         }
 
-        // Line 3: Professor (yellow)
+        // line 3: professor (yellow)
         if let Some(line) = display_lines.get(2) {
-            styled_lines.push(Line::from(Span::styled(
-                line.clone(),
-                Style::default().fg(Color::Yellow),
-            )));
+            let style = Style::default().fg(Color::Yellow);
+            styled_lines.push(Line::from(Span::styled(line.clone(), style)));
         }
 
-        // Line 4: Days/Time (green)
+        // line 4: days/time (green)
         if let Some(line) = display_lines.get(3) {
-            styled_lines.push(Line::from(Span::styled(
-                line.clone(),
-                Style::default().fg(Color::Green),
-            )));
+            let style = Style::default().fg(Color::Green);
+            styled_lines.push(Line::from(Span::styled(line.clone(), style)));
         }
 
-        // Line 5: Enrollment (gray)
+        // line 5: enrollment (gray)
         if let Some(line) = display_lines.get(4) {
-            styled_lines.push(Line::from(Span::styled(
-                line.clone(),
-                Style::default().fg(Color::DarkGray),
-            )));
+            let style = Style::default().fg(Color::DarkGray);
+            styled_lines.push(Line::from(Span::styled(line.clone(), style)));
         }
 
         let cell_area = Rect {
@@ -872,17 +1087,235 @@ fn render_query_results(frame: &mut Frame, classes: &[Class], scroll: usize) {
             height: cell_height,
         };
 
+        // border color depends on selection state
+        let border_color = if is_selected {
+            Color::Cyan
+        } else {
+            Color::Rgb(70, 70, 90)
+        };
+
         let card = Paragraph::new(styled_lines).block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Rgb(70, 70, 90))),
+                .border_style(Style::default().fg(border_color)),
         );
 
         frame.render_widget(card, cell_area);
     }
 }
 
-/// TODO:Render the syntax highlighting
+/// Render detailed view of a selected class as an overlay
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// class -> The class to display in detail
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
+fn render_detail_view(frame: &mut Frame, class: &Class) {
+    let detail_width = 60_u16;
+    let detail_height = 18_u16;
+
+    let detail_area = Rect {
+        x: (frame.area().width.saturating_sub(detail_width)) / 2,
+        y: (frame.area().height.saturating_sub(detail_height)) / 2,
+        width: detail_width,
+        height: detail_height,
+    };
+
+    // build detailed content
+    let mut lines: Vec<Line> = Vec::new();
+
+    // course code and title
+    lines.push(Line::from(vec![
+        Span::styled(
+            format!("{} {} - {}", class.subject_code, class.course_number, class.section_sequence),
+            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+        ),
+    ]));
+    lines.push(Line::from(Span::styled(
+        class.title.clone(),
+        Style::default().fg(Color::Rgb(0, 0, 0)).add_modifier(Modifier::BOLD), // Black text on white
+    )));
+    lines.push(Line::from("")); // blank line
+
+    // professor
+    lines.push(Line::from(vec![
+        Span::styled("Professor: ", Style::default().fg(Color::Yellow)),
+        Span::styled(
+            class.professor_name.as_deref().unwrap_or("TBA"),
+            Style::default().fg(Color::Rgb(0, 0, 0)), // Black text on white
+        ),
+    ]));
+
+    // email
+    if let Some(email) = &class.professor_email {
+        lines.push(Line::from(vec![
+            Span::styled("Email: ", Style::default().fg(Color::Yellow)),
+            Span::styled(email, Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
+        ]));
+    }
+
+    lines.push(Line::from("")); // blank line
+
+    // schedule
+    lines.push(Line::from(vec![
+        Span::styled("Schedule:", Style::default().fg(Color::Green)),
+    ]));
+    
+    // helper function to format time
+    let format_time = |time: &str| -> String {
+        let parts: Vec<&str> = time.split(':').collect();
+        if parts.len() >= 2 {
+            let hours: i32 = parts[0].parse().unwrap_or(0);
+            let minutes: i32 = parts[1].parse().unwrap_or(0);
+            
+            let (display_hour, period) = if hours == 0 {
+                (12, "am")
+            } else if hours < 12 {
+                (hours, "am")
+            } else if hours == 12 {
+                (12, "pm")
+            } else {
+                (hours - 12, "pm")
+            };
+            
+            format!("{}:{:02}{}", display_hour, minutes, period)
+        } else {
+            time.to_string()
+        }
+    };
+    
+    // parse meeting_times if available, otherwise fall back to old format
+    if let Some(meeting_times_str) = &class.meeting_times {
+        if !meeting_times_str.is_empty() {
+            // parse meeting times: "M:08:00:00-10:45:00|R:08:00:00-09:15:00"
+            for mt in meeting_times_str.split('|') {
+                if mt.is_empty() {
+                    continue;
+                }
+                if let Some(colon_pos) = mt.find(':') {
+                    let days_part = &mt[..colon_pos];
+                    let time_part = &mt[colon_pos + 1..];
+                    if let Some(dash_pos) = time_part.find('-') {
+                        let start = format_time(&time_part[..dash_pos]);
+                        let end = format_time(&time_part[dash_pos + 1..]);
+                        if !days_part.is_empty() && !start.is_empty() && !end.is_empty() {
+                            lines.push(Line::from(vec![
+                                Span::styled("    ", Style::default().fg(Color::Rgb(0, 0, 0))), // 4 spaces for indentation
+                                Span::styled(format!("{} {}-{}", days_part, start, end), Style::default().fg(Color::Rgb(0, 0, 0))),
+                            ]));
+                        }
+                    }
+                }
+            }
+        } else {
+            // empty meeting_times
+            lines.push(Line::from(vec![
+                Span::styled("    ", Style::default().fg(Color::Rgb(0, 0, 0))), // 4 spaces for indentation
+                Span::styled("TBD", Style::default().fg(Color::Rgb(0, 0, 0))),
+            ]));
+        }
+    } else {
+        // no meeting_times available
+        lines.push(Line::from(vec![
+            Span::styled("    ", Style::default().fg(Color::Rgb(0, 0, 0))), // 4 spaces for indentation
+            Span::styled("TBD", Style::default().fg(Color::Rgb(0, 0, 0))),
+        ]));
+    }
+
+    // meeting type
+    if let Some(meeting_type) = &class.meeting_type {
+        lines.push(Line::from(vec![
+            Span::styled("Type: ", Style::default().fg(Color::Green)),
+            Span::styled(meeting_type, Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
+        ]));
+    }
+
+    // location/campus
+    if let Some(campus) = &class.campus {
+        lines.push(Line::from(vec![
+            Span::styled("Campus: ", Style::default().fg(Color::Green)),
+            Span::styled(campus, Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
+        ]));
+    }
+
+    // instruction method
+    if let Some(method) = &class.instruction_method {
+        lines.push(Line::from(vec![
+            Span::styled("Method: ", Style::default().fg(Color::Green)),
+            Span::styled(method, Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
+        ]));
+    }
+
+    lines.push(Line::from("")); // blank line
+
+    // enrollment
+    let enrollment_str = match (class.enrollment, class.max_enrollment) {
+        (Some(e), Some(m)) => format!("{} / {} ({:.0}% full)", e, m, (e as f64 / m as f64) * 100.0),
+        _ => "Unknown".to_string(),
+    };
+    lines.push(Line::from(vec![
+        Span::styled("Enrollment: ", Style::default().fg(Color::Magenta)),
+        Span::styled(enrollment_str, Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
+    ]));
+
+    // credit hours
+    lines.push(Line::from(vec![
+        Span::styled("Credits: ", Style::default().fg(Color::Magenta)),
+        Span::styled(format!("{}", class.credit_hours), Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
+    ]));
+
+    // description (truncated)
+    if let Some(desc) = &class.description {
+        lines.push(Line::from("")); // blank line
+        let truncated = if desc.len() > 100 {
+            format!("{}...", &desc[..97])
+        } else {
+            desc.clone()
+        };
+        lines.push(Line::from(Span::styled(truncated, Style::default().fg(Color::Rgb(60, 60, 60))))); // Dark gray text on white
+    }
+
+    // first, clear the area to cover results below with solid background
+    frame.render_widget(Clear, detail_area);
+
+    let white_bg = Color::Rgb(255, 255, 255); // True white
+
+    let detail_paragraph = Paragraph::new(lines).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title(" Class Details ")
+            .title_style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
+            .border_style(Style::default().fg(Color::Cyan))
+            .style(Style::default().bg(white_bg)),
+    );
+
+    frame.render_widget(detail_paragraph, detail_area);
+    
+    // force white background on empty/border cells, preserve styled text cells
+    let buffer = frame.buffer_mut();
+    for y in detail_area.top()..detail_area.bottom() {
+        for x in detail_area.left()..detail_area.right() {
+            let cell = &mut buffer[(x, y)];
+            // Only set white background if cell is empty or a border character
+            // This preserves the text colors and backgrounds set by the paragraph
+            if cell.symbol() == " " || cell.symbol() == "│" || cell.symbol() == "─" || 
+               cell.symbol() == "┌" || cell.symbol() == "┐" || cell.symbol() == "└" || 
+               cell.symbol() == "┘" || cell.symbol() == "├" || cell.symbol() == "┤" ||
+               cell.symbol() == "┬" || cell.symbol() == "┴" {
+                cell.set_bg(white_bg);
+            }
+        }
+    }
+}
+
+/// Render the syntax highlighting
 ///
 /// Parameters:
 /// --- ---
@@ -893,6 +1326,8 @@ fn render_query_results(frame: &mut Frame, classes: &[Class], scroll: usize) {
 /// --- ---
 /// None
 /// --- ---
+///
+/// Note: Currently a placeholder - syntax highlighting is handled inline in render_search_bar_with_data
 ///
 fn render_syntax_highlighting(frame: &mut Frame) {
     let _ = frame;
@@ -1034,25 +1469,47 @@ fn render_completion_dropdown(
         height: dropdown_height,
     };
 
+    let white_bg = Color::Rgb(255, 255, 255);
     let mut styled_lines = Vec::new();
     for (i, completion) in completions.iter().enumerate() {
         let style = if Some(i) == completion_index {
-            Style::default().fg(Color::Black).bg(Color::White) // better contrast for selected item
+            Style::default().fg(Color::Black).bg(Color::Cyan) // selected: black text on cyan
         } else {
-            Style::default().fg(Color::Gray)
+            Style::default().fg(Color::Rgb(0, 0, 0)).bg(white_bg) // unselected: pure black text on white for maximum contrast
         };
         styled_lines.push(Line::from(Span::styled(completion, style)));
     }
 
+    // first, clear the area to cover results below with solid background
+    frame.render_widget(Clear, dropdown_area);
+
+    let white_bg = Color::Rgb(255, 255, 255); // True white
+    
     let dropdown_paragraph = Paragraph::new(styled_lines)
-        .style(Style::default().fg(Color::Gray))
         .block(
             Block::default()
                 .borders(Borders::ALL)
                 .title("Suggestions (↑↓ to navigate, Enter to select)")
                 .title_style(Style::default().fg(Color::Yellow))
-                .border_style(Style::default().fg(Color::Yellow)),
+                .border_style(Style::default().fg(Color::Yellow))
+                .style(Style::default().bg(white_bg)),
         );
 
     frame.render_widget(dropdown_paragraph, dropdown_area);
+    
+    // force white background on empty/border cells, preserve styled text cells
+    let buffer = frame.buffer_mut();
+    for y in dropdown_area.top()..dropdown_area.bottom() {
+        for x in dropdown_area.left()..dropdown_area.right() {
+            let cell = &mut buffer[(x, y)];
+            // only set white background if cell is empty or a border character
+            // this preserves the text colors and backgrounds set by the paragraph
+            if cell.symbol() == " " || cell.symbol() == "│" || cell.symbol() == "─" || 
+               cell.symbol() == "┌" || cell.symbol() == "┐" || cell.symbol() == "└" || 
+               cell.symbol() == "┘" || cell.symbol() == "├" || cell.symbol() == "┤" ||
+               cell.symbol() == "┬" || cell.symbol() == "┴" {
+                cell.set_bg(white_bg);
+            }
+        }
+    }
 }

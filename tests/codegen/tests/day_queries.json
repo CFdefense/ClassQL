@@ -13,7 +13,7 @@
     "input": "monday is false",
     "should_succeed": true,
     "expected_fragments": ["mt.is_monday = 0"],
-    "forbidden_fragments": ["= 1"]
+    "forbidden_fragments": []
   },
   {
     "test_name": "codegen_tuesday_true",

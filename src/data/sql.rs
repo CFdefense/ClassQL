@@ -28,8 +28,6 @@ use std::path::Path;
 /// campus -> Campus location
 /// professor_name -> Professor's name
 /// professor_email -> Professor's email address
-/// start_time -> Class start time
-/// end_time -> Class end time
 /// meeting_type -> Type of meeting (e.g., "Lecture", "Lab")
 /// days -> Days the class meets (formatted string like "MWF" or "TR")
 /// --- ---
@@ -57,10 +55,9 @@ pub struct Class {
     pub campus: Option<String>,
     pub professor_name: Option<String>,
     pub professor_email: Option<String>,
-    pub start_time: Option<String>,
-    pub end_time: Option<String>,
     pub meeting_type: Option<String>,
     pub days: String,
+    pub meeting_times: Option<String>,
 }
 
 impl Class {
@@ -79,13 +76,13 @@ impl Class {
     pub fn format_for_display(&self) -> Vec<String> {
         let mut lines = Vec::new();
 
-        // Line 1: Course code (e.g., "CS 101-001")
+        // line 1: course code (e.g., "CS 101-001")
         lines.push(format!(
             "{} {}-{}",
             self.subject_code, self.course_number, self.section_sequence
         ));
 
-        // Line 2: Title (truncated to ~25 chars)
+        // line 2: title (truncated to ~25 chars)
         let title = if self.title.len() > 25 {
             format!("{}...", &self.title[..22])
         } else {
@@ -93,7 +90,7 @@ impl Class {
         };
         lines.push(title);
 
-        // Line 3: Professor
+        // line 3: professor
         let prof = self
             .professor_name
             .as_deref()
@@ -105,18 +102,39 @@ impl Class {
         };
         lines.push(prof_display);
 
-        // Line 4: Days and time
-        let time_str = match (&self.start_time, &self.end_time) {
-            (Some(start), Some(end)) => {
-                let start_short = format_time_short(start);
-                let end_short = format_time_short(end);
-                format!("{} {}-{}", self.days, start_short, end_short)
+        // line 4: days and time
+        let time_str = if let Some(meeting_times_str) = &self.meeting_times {
+            // parse meeting times: "M:08:00:00-10:45:00|R:08:00:00-09:15:00"
+            let mut time_parts = Vec::new();
+            for mt in meeting_times_str.split('|') {
+                if let Some(colon_pos) = mt.find(':') {
+                    let days_part = &mt[..colon_pos];
+                    let time_part = &mt[colon_pos + 1..];
+                    if let Some(dash_pos) = time_part.find('-') {
+                        let start = format_time_short(&time_part[..dash_pos]);
+                        let end = format_time_short(&time_part[dash_pos + 1..]);
+                        if !days_part.is_empty() {
+                            time_parts.push(format!("{} {}-{}", days_part, start, end));
+                        }
+                    }
+                }
             }
-            _ => format!("{} TBA", self.days),
+            if time_parts.is_empty() {
+                format!("{} TBA", self.days)
+            } else if time_parts.len() == 1 {
+                // single time, use combined days
+                format!("{} {}", self.days, time_parts[0].split(' ').nth(1).unwrap_or("TBA"))
+            } else {
+                // multiple times, show each with its days
+                time_parts.join(", ")
+            }
+        } else {
+            // no meeting times available
+            format!("{} TBA", self.days)
         };
         lines.push(time_str);
 
-        // Line 5: Enrollment
+        // line 5: enrollment
         let enrollment_str = match (self.enrollment, self.max_enrollment) {
             (Some(e), Some(m)) => format!("{}/{} enrolled", e, m),
             _ => String::new(),
@@ -232,15 +250,15 @@ fn format_days(
 /// --- ---
 ///
 pub fn execute_query(sql: &str, db_path: &Path) -> Result<Vec<Class>, String> {
-    // Connect to the database
+    // connect to the database
     let conn = Connection::open(db_path).map_err(|e| format!("Database connection error: {}", e))?;
 
-    // Prepare and execute the statement
+    // prepare and execute the statement
     let mut stmt = conn
         .prepare(sql)
         .map_err(|e| format!("SQL preparation error: {}", e))?;
 
-    // Execute query and map results to Class structs
+    // execute query and map results to Class structs
     let class_iter = stmt
         .query_map([], |row| {
             Ok(Class {
@@ -258,23 +276,22 @@ pub fn execute_query(sql: &str, db_path: &Path) -> Result<Vec<Class>, String> {
                 campus: row.get(11).ok(),
                 professor_name: row.get(12).ok(),
                 professor_email: row.get(13).ok(),
-                start_time: row.get(14).ok(),
-                end_time: row.get(15).ok(),
-                meeting_type: row.get(16).ok(),
+                meeting_type: row.get(15).ok(),
                 days: format_days(
+                    row.get::<_, i32>(16).unwrap_or(0) == 1,
                     row.get::<_, i32>(17).unwrap_or(0) == 1,
                     row.get::<_, i32>(18).unwrap_or(0) == 1,
                     row.get::<_, i32>(19).unwrap_or(0) == 1,
                     row.get::<_, i32>(20).unwrap_or(0) == 1,
                     row.get::<_, i32>(21).unwrap_or(0) == 1,
                     row.get::<_, i32>(22).unwrap_or(0) == 1,
-                    row.get::<_, i32>(23).unwrap_or(0) == 1,
                 ),
+                meeting_times: row.get(14).ok(), // meeting_times is column 14
             })
         })
         .map_err(|e| format!("Query execution error: {}", e))?;
 
-    // Collect results
+    // collect results
     let mut classes = Vec::new();
     for class_result in class_iter {
         match class_result {

@@ -27,7 +27,7 @@ use classql::dsl::lexer::Lexer;
 use classql::dsl::parser::Parser;
 use classql::dsl::semantic::semantic_analysis;
 use serde::{Deserialize, Serialize};
-use std::fs;
+use crate::utils;
 
 /// Codegen test case struct
 ///
@@ -119,7 +119,7 @@ impl CodegenTestHelper {
         println!("Input: '{}'", test_case.input);
         println!("Expected to succeed: {}", test_case.should_succeed);
 
-        // Lexical analysis
+        // lexical analysis
         let mut lexer = Lexer::new(test_case.input.to_string());
         let tokens = match lexer.analyze() {
             Ok(tokens) => tokens,
@@ -136,7 +136,7 @@ impl CodegenTestHelper {
             }
         };
 
-        // Parsing
+        // parsing
         let mut parser = Parser::new(test_case.input.to_string());
         let ast = match parser.parse(&tokens) {
             Ok(ast) => ast,
@@ -153,7 +153,7 @@ impl CodegenTestHelper {
             }
         };
 
-        // Semantic analysis
+        // semantic analysis
         if let Err((error, _positions)) = semantic_analysis(&ast) {
             if test_case.should_succeed {
                 panic!(
@@ -166,7 +166,7 @@ impl CodegenTestHelper {
             }
         }
 
-        // Code generation
+        // code generation
         match generate_sql(&ast) {
             Ok(sql) => {
                 if !test_case.should_succeed {
@@ -178,7 +178,7 @@ impl CodegenTestHelper {
 
                 println!("Generated SQL:\n{}\n", sql);
 
-                // Check expected fragments
+                // check expected fragments
                 for fragment in &test_case.expected_fragments {
                     assert!(
                         sql.contains(fragment),
@@ -189,7 +189,7 @@ impl CodegenTestHelper {
                     );
                 }
 
-                // Check forbidden fragments
+                // check forbidden fragments
                 for fragment in &test_case.forbidden_fragments {
                     assert!(
                         !sql.contains(fragment),
@@ -216,23 +216,6 @@ impl CodegenTestHelper {
     }
 }
 
-/// Load the codegen test file
-///
-/// Parameters:
-/// --- ---
-/// filename -> The filename to load
-/// --- ---
-///
-/// Returns:
-/// --- ---
-/// String -> The content of the test file
-/// --- ---
-///
-fn load_test_file(filename: &str) -> String {
-    let path = format!("tests/codegen/{filename}");
-    fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read test file: {path}"))
-}
-
 /// Run the codegen test file
 ///
 /// Parameters:
@@ -247,7 +230,7 @@ fn load_test_file(filename: &str) -> String {
 ///
 fn run_test_file(filename: &str) {
     let mut helper = CodegenTestHelper::new();
-    let content = load_test_file(filename);
+    let content = utils::load_test_file("codegen", filename);
     let test_cases: Vec<CodegenTestCase> =
         serde_json::from_str(&content).expect("Failed to parse codegen JSON test file");
 

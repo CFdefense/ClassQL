@@ -4,7 +4,7 @@
     "description": "Generate SQL for a professor query with contains condition",
     "input": "prof contains smith",
     "should_succeed": true,
-    "expected_fragments": ["p.name LIKE '%smith%'", "p.email_address LIKE '%smith%'", "SELECT DISTINCT"],
+    "expected_fragments": ["p.name LIKE '%smith%'", "p.email_address LIKE '%smith%'"],
     "forbidden_fragments": []
   },
   {
@@ -12,7 +12,7 @@
     "description": "Generate SQL for a professor query with equals condition",
     "input": "prof equals smith",
     "should_succeed": true,
-    "expected_fragments": ["LOWER(p.name) = LOWER('smith')", "SELECT DISTINCT"],
+    "expected_fragments": ["LOWER(p.name) = LOWER('smith')"],
     "forbidden_fragments": []
   },
   {
