@@ -390,9 +390,12 @@ impl Tui {
                     // handle results browse mode
                     if self.focus_mode == FocusMode::ResultsBrowse {
                         match key.code {
-                            // exit the TUI if the user presses Ctrl+C or Esc
+                            // exit the TUI if the user presses Ctrl+C
                             KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => break Ok(()),
-                            KeyCode::Esc => break Ok(()),
+                            // esc goes back to main menu
+                            KeyCode::Esc => {
+                                self.focus_mode = FocusMode::MainMenu;
+                            }
                             KeyCode::Up => {
                                 // if at top of results, go back to query input
                                 if self.selected_result == 0 {
