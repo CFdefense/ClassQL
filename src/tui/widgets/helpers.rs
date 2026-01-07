@@ -58,9 +58,13 @@ pub fn render_search_helpers_with_data(
     };
 
     let help_width = help_text.len() as u16;
+    
+    // position navigation controls at the bottom of the screen
+    let help_y = frame.area().height.saturating_sub(2);
+    
     let help_area = Rect {
         x: frame.area().width.saturating_sub(help_width) / 2,
-        y: frame.area().height.saturating_sub(3),
+        y: help_y,
         width: help_width,
         height: 2,
     };

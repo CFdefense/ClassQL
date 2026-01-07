@@ -43,6 +43,7 @@ use crate::tui::widgets::{
     render_settings, render_toast_with_data, MenuOption,
 };
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
+use ratatui::layout::Rect;
 use ratatui::{DefaultTerminal, Frame};
 use std::time::{Duration, Instant};
 
@@ -822,15 +823,81 @@ fn render_frame(
 ) -> (usize, usize) {
     let theme = current_theme.to_theme();
     
-    // Clear the entire frame with the theme background color
+    // check window size 
+    let buffer_height = frame.area().height;
+    let buffer_width = frame.area().width;
+    
+    // check minimum window size requirements
+    let min_height = 25_u16;
+    let min_width = 80_u16;
+    
+    if buffer_height < min_height || buffer_width < min_width {
+        // display error message in center of screen
+        let error_msg = format!(
+            "Window too small! Minimum size: {}x{} (Current: {}x{})",
+            min_width, min_height, buffer_width, buffer_height
+        );
+        // ensure error message fits on screen and handle width constraints
+        let error_width = error_msg.len() as u16;
+        let error_x = if buffer_width >= error_width {
+            (buffer_width.saturating_sub(error_width)) / 2
+        } else {
+            0 // if window is too narrow, start at left edge
+        };
+        let error_area = Rect {
+            x: error_x,
+            y: buffer_height.saturating_sub(1) / 2, // center vertically, ensure in bounds
+            width: error_width.min(buffer_width.saturating_sub(error_x)), // don't exceed available width
+            height: 1,
+        };
+        let error_paragraph = ratatui::widgets::Paragraph::new(error_msg)
+            .style(ratatui::style::Style::default().fg(theme.error_color));
+        frame.render_widget(error_paragraph, error_area);
+        return (0, 0);
+    }
+    
+    // clear the entire frame with the theme background color
+    // use saturating_sub to ensure we don't go out of bounds
     let buffer = frame.buffer_mut();
-    for y in 0..buffer.area.height {
-        for x in 0..buffer.area.width {
+    // use buffer's actual dimensions to prevent index errors
+    let actual_width = buffer.area.width;
+    let actual_height = buffer.area.height;
+    
+    // double-check dimensions match and are valid
+    if actual_width < min_width || actual_height < min_height {
+        // buffer dimensions don't meet minimum - show error and return early
+        let error_msg = format!(
+            "Window too small! Minimum size: {}x{} (Current: {}x{})",
+            min_width, min_height, actual_width, actual_height
+        );
+        let error_width = error_msg.len() as u16;
+        let error_x = if actual_width >= error_width {
+            (actual_width.saturating_sub(error_width)) / 2
+        } else {
+            0
+        };
+        let error_y = actual_height.saturating_sub(1) / 2;
+        let error_area = Rect {
+            x: error_x,
+            y: error_y.min(actual_height.saturating_sub(1)),
+            width: error_width.min(actual_width.saturating_sub(error_x)),
+            height: 1,
+        };
+        let error_paragraph = ratatui::widgets::Paragraph::new(error_msg)
+            .style(ratatui::style::Style::default().fg(theme.error_color));
+        frame.render_widget(error_paragraph, error_area);
+        return (0, 0);
+    }
+    
+    // use exclusive range: 0..actual_width gives 0 to actual_width-1
+    for y in 0..actual_height {
+        for x in 0..actual_width {
             let cell = &mut buffer[(x, y)];
             cell.set_bg(theme.background_color);
         }
     }
     
+    // only render widgets if window is large enough
     render_logo(frame, &theme);
     
     // render main menu if in menu mode

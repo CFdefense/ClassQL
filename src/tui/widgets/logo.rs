@@ -45,14 +45,34 @@ pub fn render_logo(frame: &mut Frame, theme: &Theme) {
         })
         .collect();
 
+    let frame_width = frame.area().width;
+    let frame_height = frame.area().height;
+    let logo_width = 80_u16;
+    let logo_height = ascii_art.len() as u16;
+    
+    // clamp logo dimensions to fit within frame
+    let clamped_width = logo_width.min(frame_width);
+    let clamped_height = logo_height.min(frame_height);
+    let logo_x = if frame_width >= clamped_width {
+        (frame_width.saturating_sub(clamped_width)) / 2 + 3 // shift 3 spaces to the right
+    } else {
+        3.min(frame_width.saturating_sub(1)) // still shift right if possible
+    };
+    let logo_y = if frame_height >= clamped_height {
+        frame_height.saturating_sub(clamped_height + 1)
+    } else {
+        0
+    };
+    
+    // ensure x + width doesn't exceed frame width (account for the 3-space shift)
+    let final_width = clamped_width.min(frame_width.saturating_sub(logo_x));
+    let final_height = clamped_height.min(frame_height.saturating_sub(logo_y));
+    
     let logo_area = Rect {
-        x: frame.area().width.saturating_sub(75) / 2,
-        y: frame
-            .area()
-            .height
-            .saturating_sub(ascii_art.len() as u16 + 1),
-        width: 80,
-        height: ascii_art.len() as u16,
+        x: logo_x,
+        y: logo_y,
+        width: final_width,
+        height: final_height,
     };
 
     let logo_paragraph = Paragraph::new(lines);

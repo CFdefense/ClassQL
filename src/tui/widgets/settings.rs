@@ -35,11 +35,15 @@ pub fn render_settings(frame: &mut Frame, current_theme: ThemePalette, theme: &T
     let spacing = 3_u16;
     let settings_y = logo_height + spacing;
 
+    let frame_width = frame.area().width;
+    let frame_height = frame.area().height;
+    
+    // clamp settings dimensions to fit within frame
     let settings_area = Rect {
-        x: (frame.area().width.saturating_sub(settings_width)) / 2,
-        y: settings_y,
-        width: settings_width,
-        height: settings_height,
+        x: (frame_width.saturating_sub(settings_width.min(frame_width))) / 2,
+        y: settings_y.min(frame_height.saturating_sub(settings_height.min(frame_height))),
+        width: settings_width.min(frame_width),
+        height: settings_height.min(frame_height),
     };
 
     let mut lines = Vec::new();

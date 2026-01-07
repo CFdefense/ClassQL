@@ -60,11 +60,15 @@ pub fn render_main_menu(frame: &mut Frame, selected_index: usize, theme: &Theme)
     let spacing = 3_u16; // spacing between logo and menu
     let menu_y = logo_height + spacing;
 
+    let frame_width = frame.area().width;
+    let frame_height = frame.area().height;
+    
+    // clamp menu dimensions to fit within frame
     let menu_area = Rect {
-        x: (frame.area().width.saturating_sub(menu_width)) / 2,
-        y: menu_y,
-        width: menu_width,
-        height: menu_height,
+        x: (frame_width.saturating_sub(menu_width.min(frame_width))) / 2,
+        y: menu_y.min(frame_height.saturating_sub(menu_height.min(frame_height))),
+        width: menu_width.min(frame_width),
+        height: menu_height.min(frame_height),
     };
 
     let mut styled_lines = Vec::new();

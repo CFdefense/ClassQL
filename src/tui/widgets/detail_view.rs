@@ -324,16 +324,30 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
     
     // force white background on empty/border cells, preserve styled text cells
     let buffer = frame.buffer_mut();
-    for y in detail_area.top()..detail_area.bottom() {
-        for x in detail_area.left()..detail_area.right() {
-            let cell = &mut buffer[(x, y)];
-            // Only set white background if cell is empty or a border character
-            // This preserves the text colors and backgrounds set by the paragraph
-            if cell.symbol() == " " || cell.symbol() == "│" || cell.symbol() == "─" || 
-               cell.symbol() == "┌" || cell.symbol() == "┐" || cell.symbol() == "└" || 
-               cell.symbol() == "┘" || cell.symbol() == "├" || cell.symbol() == "┤" ||
-               cell.symbol() == "┬" || cell.symbol() == "┴" {
-                cell.set_bg(theme.background_color);
+    let buffer_width = buffer.area.width;
+    let buffer_height = buffer.area.height;
+    // ensure we don't access out of bounds - right() and bottom() are exclusive
+    // so we need to clamp them to buffer dimensions
+    let start_y = detail_area.top();
+    let start_x = detail_area.left();
+    let end_y = detail_area.bottom().min(buffer_height);
+    let end_x = detail_area.right().min(buffer_width);
+    // only iterate if area is valid and within bounds
+    if start_y < buffer_height && start_x < buffer_width && end_y > start_y && end_x > start_x {
+        for y in start_y..end_y {
+            for x in start_x..end_x {
+                // final bounds check before access
+                if x < buffer_width && y < buffer_height {
+                    let cell = &mut buffer[(x, y)];
+                    // only set background if cell is empty or a border character
+                    // this preserves the text colors and backgrounds set by the paragraph
+                    if cell.symbol() == " " || cell.symbol() == "│" || cell.symbol() == "─" || 
+                       cell.symbol() == "┌" || cell.symbol() == "┐" || cell.symbol() == "└" || 
+                       cell.symbol() == "┘" || cell.symbol() == "├" || cell.symbol() == "┤" ||
+                       cell.symbol() == "┬" || cell.symbol() == "┴" {
+                        cell.set_bg(theme.background_color);
+                    }
+                }
             }
         }
     }

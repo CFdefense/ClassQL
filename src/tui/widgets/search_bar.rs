@@ -43,11 +43,16 @@ pub fn render_search_bar_with_data(
     let logo_height = 7; // Height of the ASCII art logo
     let search_y = logo_height + 2; // 2 lines below the logo
 
+    let frame_width = frame.area().width;
+    let frame_height = frame.area().height;
+    let search_height = 3_u16;
+    
+    // clamp search bar dimensions to fit within frame
     let search_area = Rect {
-        x: frame.area().width.saturating_sub(search_width) / 2,
-        y: search_y,
-        width: search_width,
-        height: 3,
+        x: (frame_width.saturating_sub(search_width.min(frame_width) as u16)) / 2,
+        y: search_y.min(frame_height.saturating_sub(search_height)),
+        width: (search_width as u16).min(frame_width),
+        height: search_height.min(frame_height),
     };
 
     // calculate visible width (minus borders and "> " prefix and cursor)
