@@ -1,0 +1,75 @@
+[
+  {
+    "test_name": "monday_default_true",
+    "description": "Monday query without condition (defaults to true)",
+    "input": "monday",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "monday_equals_true",
+    "description": "Monday query with equals true",
+    "input": "monday equals true",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "monday_equals_false",
+    "description": "Monday query with equals false",
+    "input": "monday equals false",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "tuesday_default",
+    "description": "Tuesday query without condition (defaults to true)",
+    "input": "tuesday",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "wednesday_abbreviation",
+    "description": "Wednesday query with abbreviation",
+    "input": "w",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "thursday_abbreviation",
+    "description": "Thursday query with abbreviation",
+    "input": "th",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "friday_abbreviation",
+    "description": "Friday query with abbreviation",
+    "input": "f",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "saturday_abbreviation",
+    "description": "Saturday query with abbreviation",
+    "input": "sa",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "sunday_abbreviation",
+    "description": "Sunday query with abbreviation",
+    "input": "su",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  }
+]
+

@@ -6,6 +6,7 @@
 ///
 /// Contains:
 /// --- ---
+/// ParseResult -> Result type for parser
 /// NodeType -> Node types for the AST
 /// TreeNode -> Tree node struct
 /// Ast -> AST struct
@@ -50,7 +51,6 @@ pub enum NodeType {
     ProfessorQuery,
     CourseQuery,
     SubjectQuery,
-    SectionQuery,
     NumberQuery,
     TitleQuery,
     DescriptionQuery,
@@ -293,7 +293,6 @@ impl Parser {
                             "course".to_string(),
                             "subject".to_string(),
                             "title".to_string(),
-                            "section".to_string(),
                             "number".to_string(),
                             "description".to_string(),
                             "credit".to_string(),
@@ -355,6 +354,7 @@ impl Parser {
             "ends with".to_string(),
             "does not equal".to_string(),
             "doesn't equal".to_string(),
+            "does not contain".to_string(),
             "doesn't contain".to_string(),
         ];
 
@@ -384,7 +384,6 @@ impl Parser {
                 "course".to_string(),
                 "subject".to_string(),
                 "title".to_string(),
-                "section".to_string(),
                 "number".to_string(),
                 "description".to_string(),
                 "credit".to_string(),
@@ -435,16 +434,6 @@ impl Parser {
                     suggestions
                 }
 
-                // Section can be followed by sub-queries
-                TokenType::Section => vec![
-                    "subject".to_string(),
-                    "number".to_string(),
-                    "enrollment".to_string(),
-                    "cap".to_string(),
-                    "method".to_string(),
-                    "campus".to_string(),
-                    "full".to_string(),
-                ],
 
                 // Credit must be followed by "hours"
                 TokenType::Credit => vec!["hours".to_string()],
@@ -472,7 +461,6 @@ impl Parser {
                     "course".to_string(),
                     "subject".to_string(),
                     "title".to_string(),
-                    "section".to_string(),
                     "number".to_string(),
                     "description".to_string(),
                     "credit".to_string(),
@@ -813,7 +801,7 @@ impl Parser {
     ///
     /// Syntax:
     /// --- ---
-    /// <entity_query> ::= <professor_query> | <course_query> | <section_query> | <meeting_type_query> | <time_query> | <day_query>
+    /// <entity_query> ::= <professor_query> | <course_query> | <meeting_type_query> | <time_query> | <day_query>
     /// --- ---
     ///
     /// Parameters:
@@ -848,7 +836,6 @@ impl Parser {
                         "course".to_string(),
                         "subject".to_string(),
                         "title".to_string(),
-                        "section".to_string(),
                         "number".to_string(),
                         "description".to_string(),
                         "credit".to_string(),
@@ -870,7 +857,6 @@ impl Parser {
             TokenType::Course => self.parse_course_query(tokens)?,
             TokenType::Subject => self.parse_subject_query(tokens)?,
             TokenType::Title => self.parse_title_query(tokens)?,
-            TokenType::Section => self.parse_section_query(tokens)?,
             TokenType::Number => self.parse_number_query(tokens)?,
             TokenType::Description => self.parse_description_query(tokens)?,
             TokenType::Credit => self.parse_credit_hours_query(tokens)?,
@@ -944,7 +930,6 @@ impl Parser {
                             "course".to_string(),
                             "subject".to_string(),
                             "title".to_string(),
-                            "section".to_string(),
                             "number".to_string(),
                             "description".to_string(),
                             "credit".to_string(),
@@ -1108,7 +1093,9 @@ impl Parser {
             | TokenType::Is
             | TokenType::Equal
             | TokenType::EqualsWord
-            | TokenType::Does => {
+            | TokenType::Does
+            | TokenType::DoesNotEqual
+            | TokenType::DoesNotContain => {
                 // Parse as direct condition + string for course number/code
                 let condition = self.parse_condition(tokens)?;
                 let string = self.parse_string(tokens)?;
@@ -1219,75 +1206,6 @@ impl Parser {
         subject_node.children.push(string_query);
 
         Ok(subject_node)
-    }
-
-    /// Parse the section query into a TreeNode
-    ///
-    /// Syntax:
-    /// --- ---
-    /// <section_query> ::= "section" <subject_query> | <course_query> | <enrollment_cap_query> | <instruction_method_query> | <campus_query> | <enrollment_query> | <full_query>
-    /// --- ---
-    ///
-    /// Parameters:
-    /// --- ---
-    /// mut self -> The Parser to parse the section query for
-    /// tokens -> The tokens to parse the section query for
-    /// --- ---
-    ///
-    /// Returns:
-    /// --- ---
-    /// ParseResult
-    ///     Ok(TreeNode) -> Parsing succeeded, contains the TreeNode
-    ///     Err((SyntaxError, Vec<Token>)) -> Parsing failed, contains the SyntaxError and the remaining tokens
-    /// --- ---
-    ///
-    fn parse_section_query(
-        &mut self,
-        tokens: &[Token],
-    ) -> ParseResult {
-        let section_token = tokens[self.token_pointer - 1];
-        let mut section_node = TreeNode::new(
-            NodeType::SectionQuery,
-            NodeType::SectionQuery.to_string(),
-            Some(section_token),
-        );
-
-        let next_query = match *tokens[self.token_pointer].get_token_type() {
-            TokenType::Subject => self.parse_subject_query(tokens)?,
-            TokenType::Course => self.parse_course_query(tokens)?,
-            TokenType::Enrollment => self.parse_enrollment_query(tokens)?,
-            TokenType::Instruction => self.parse_instruction_method_query(tokens)?,
-            TokenType::Campus => self.parse_campus_query(tokens)?,
-            TokenType::Size => self.parse_enrollment_query(tokens)?,
-            TokenType::Cap => self.parse_enrollment_cap_query(tokens)?,
-            TokenType::Full => self.parse_full_query(tokens)?,
-            _ => {
-                return Err((
-                    SyntaxError::InvalidContext {
-                        token: format!(
-                            "{} ('{}')",
-                            tokens[self.token_pointer].get_token_type(),
-                            self.get_lexeme(&tokens[self.token_pointer])
-                        ),
-                        context: "after 'section'".to_string(),
-                        suggestions: vec![
-                            "subject".to_string(),
-                            "course".to_string(),
-                            "enrollment".to_string(),
-                            "instruction".to_string(),
-                            "campus".to_string(),
-                            "size".to_string(),
-                            "cap".to_string(),
-                            "full".to_string(),
-                        ],
-                    },
-                    vec![tokens[self.token_pointer]],
-                ))
-            }
-        };
-
-        section_node.children.push(next_query);
-        Ok(section_node)
     }
 
     /// Parse the number query into a TreeNode
@@ -2181,13 +2099,13 @@ impl Parser {
         let day_token = tokens[self.token_pointer - 1];
         let mut day_node = TreeNode::new(NodeType::String, day_name.to_string(), Some(day_token));
 
-        // check if next token is a logical operator (and/or) or end of input
+        // check if next token is a logical operator (and/or), closing parenthesis, or end of input
         // if so, default to "= true" for convenience
         let condition_query = if self.token_pointer < tokens.len() {
             let next_token = &tokens[self.token_pointer];
             match *next_token.get_token_type() {
-                TokenType::And | TokenType::Or => {
-                    // default to "= true" when followed by logical operator
+                TokenType::And | TokenType::Or | TokenType::RightParen => {
+                    // default to "= true" when followed by logical operator or closing parenthesis
                     let equals_token = Token::new(TokenType::Equals, 0, 0);
                     TreeNode::new(NodeType::Condition, "=".to_string(), Some(equals_token))
                 }
@@ -2204,8 +2122,8 @@ impl Parser {
         let string_query = if self.token_pointer < tokens.len() {
             let next_token = &tokens[self.token_pointer];
             match *next_token.get_token_type() {
-                TokenType::And | TokenType::Or => {
-                    // Default to "true" when followed by logical operator
+                TokenType::And | TokenType::Or | TokenType::RightParen => {
+                    // Default to "true" when followed by logical operator or closing parenthesis
                     let true_token = Token::new(TokenType::Identifier, 0, 0);
                     TreeNode::new(NodeType::Identifier, "true".to_string(), Some(true_token))
                 }
@@ -2456,7 +2374,7 @@ impl Parser {
     ///
     /// Syntax:
     /// --- ---
-    /// <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal"
+    /// <condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "equals" | "not equals" | "does not equal" | "does not contain"
     /// --- ---
     ///
     /// Parameters:
@@ -2486,7 +2404,9 @@ impl Parser {
                         "ends".to_string(),
                         "=".to_string(),
                         "!=".to_string(),
+                        "does not equal".to_string(),
                         "doesn't equal".to_string(),
+                        "does not contain".to_string(),
                         "doesn't contain".to_string(),
                     ],
                     after: "entity keyword".to_string(),
@@ -2503,57 +2423,21 @@ impl Parser {
 
         // check if it's a valid condition token
         match *condition_token.get_token_type() {
+            TokenType::DoesNotEqual => {
+                condition_node.node_content = "does not equal".to_string();
+            }
+            TokenType::DoesNotContain => {
+                condition_node.node_content = "does not contain".to_string();
+            }
             TokenType::Equals
             | TokenType::NotEquals
             | TokenType::Contains
             | TokenType::Has
-            |             TokenType::Equal
+            | TokenType::Equal
             | TokenType::EqualsWord
             | TokenType::Does => {
-                // "DOES" can be followed by "NOT" to form "does not" / "doesn't"
-                // then it can be followed by "EQUAL" or "CONTAINS"
-                if *condition_token.get_token_type() == TokenType::Does
-                    && self.token_pointer < tokens.len()
-                    && *tokens[self.token_pointer].get_token_type() == TokenType::Not
-                {
-                    // consume the "not" token
-                    self.next_token(tokens).map_err(|_| {
-                        (
-                            SyntaxError::MissingToken("Expected 'not' after 'does'".into()),
-                            vec![],
-                        )
-                    })?;
-                    
-                    // check if followed by "equal" or "contains"
-                    if self.token_pointer < tokens.len() {
-                        let next_type = *tokens[self.token_pointer].get_token_type();
-                        if next_type == TokenType::Equal || next_type == TokenType::EqualsWord {
-                            // consume "equal"
-                            self.next_token(tokens).map_err(|_| {
-                                (
-                                    SyntaxError::MissingToken("Expected 'equal' after 'does not'".into()),
-                                    vec![],
-                                )
-                            })?;
-                            condition_node.node_content = "does not equal".to_string();
-                        } else if next_type == TokenType::Contains {
-                            // consume "contains"
-                            self.next_token(tokens).map_err(|_| {
-                                (
-                                    SyntaxError::MissingToken("Expected 'contains' after 'does not'".into()),
-                                    vec![],
-                                )
-                            })?;
-                            condition_node.node_content = "does not contain".to_string();
-                        } else {
-                            // "does not" without "equal" or "contains" - treat as "does not equal"
-                            condition_node.node_content = "does not equal".to_string();
-                        }
-                    } else {
-                        // "does not" at end - treat as "does not equal"
-                        condition_node.node_content = "does not equal".to_string();
-                    }
-                }
+                // "DOES" can be followed by "NOT" to form "is not" (for backwards compatibility)
+                // but "does not equal" and "does not contain" are now handled as single tokens above
                 // else, it's a valid standalone condition
             }
             TokenType::Is => {
@@ -2641,7 +2525,9 @@ impl Parser {
                                 "has".to_string(),
                                 "starts".to_string(),
                                 "ends".to_string(),
+                                "does not equal".to_string(),
                                 "doesn't equal".to_string(),
+                                "does not contain".to_string(),
                                 "doesn't contain".to_string(),
                             ],
                         },
@@ -2664,7 +2550,9 @@ impl Parser {
                                 "has".to_string(),
                                 "starts".to_string(),
                                 "ends".to_string(),
+                                "does not equal".to_string(),
                                 "doesn't equal".to_string(),
+                                "does not contain".to_string(),
                                 "doesn't contain".to_string(),
                             ],
                         },

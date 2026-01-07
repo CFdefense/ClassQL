@@ -52,7 +52,6 @@ pub enum TokenType {
     Email,
 
     // new tokens for parser support
-    Section,
     Number,
     Description,
     Enrollment,
@@ -96,6 +95,8 @@ pub enum TokenType {
     Does,
     Equal,
     EqualsWord,
+    DoesNotEqual,
+    DoesNotContain,
 
     // binary operators
     Less,
@@ -166,7 +167,9 @@ impl TokenType {
     ///
     pub fn all_patterns() -> Vec<(TokenType, &'static str)> {
         vec![
-            // multi-word operators
+            // multi-word operators - must come before individual words
+            (TokenType::DoesNotEqual, r"(?i)\bdoes\s+not\s+equal\b|\bdoesn't\s+equal\b|\bdoesnt\s+equal\b"),
+            (TokenType::DoesNotContain, r"(?i)\bdoes\s+not\s+contain\b|\bdoesn't\s+contain\b|\bdoesnt\s+contain\b"),
             (TokenType::EqualsWord, r"(?i)\bequals\b"),
             (TokenType::Starts, r"(?i)\bstarts\b"),
             (TokenType::With, r"(?i)\bwith\b"),
@@ -215,7 +218,6 @@ impl TokenType {
             (TokenType::Title, r"(?i)\btitle\b"),
             (TokenType::Term, r"(?i)\bterm\b"),
             (TokenType::Prof, r"(?i)\b(?:prof|professor)\b"),
-            (TokenType::Section, r"(?i)\bsection\b"),
             (TokenType::Number, r"(?i)\bnumber\b"),
             (TokenType::Description, r"(?i)\bdescription\b"),
             (TokenType::Enrollment, r"(?i)\benrollment\b"),

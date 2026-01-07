@@ -1,0 +1,75 @@
+[
+  {
+    "test_name": "professor_contains",
+    "description": "Professor query with contains condition",
+    "input": "prof contains Shanley",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N",
+        "professor_name": "Shanley",
+        "section_sequence": "020"
+      }
+    ]
+  },
+  {
+    "test_name": "professor_equals",
+    "description": "Professor query with equals condition",
+    "input": "prof equals \"Shanley, Brigid\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N",
+        "professor_name": "Shanley",
+        "section_sequence": "020"
+      }
+    ]
+  },
+  {
+    "test_name": "professor_is",
+    "description": "Professor query with is condition",
+    "input": "prof is \"Shanley, Brigid\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "professor_starts_with",
+    "description": "Professor query with starts with condition",
+    "input": "prof starts with Shanley",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "professor_is_not",
+    "description": "Professor query with is not condition",
+    "input": "prof is not \"Shanley, Brigid\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "professor_does_not_equal",
+    "description": "Professor query with does not equal condition",
+    "input": "prof does not equal \"Shanley, Brigid\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "professor_does_not_contain",
+    "description": "Professor query with does not contain condition",
+    "input": "prof does not contain Shanley",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  }
+]
+

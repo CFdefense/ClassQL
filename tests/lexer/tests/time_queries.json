@@ -192,11 +192,10 @@
     ]
   },
   {
-    "test_name": "Time Queries in Section Context",
-    "description": "Test time queries within section query context",
-    "code": "section start > 9:00 and end < 17:00",
+    "test_name": "Time Queries with Start and End",
+    "description": "Test time queries with start and end",
+    "code": "start > 9:00 and end < 17:00",
     "result": [
-      {"token_type": "T_SECTION", "content": "section"},
       {"token_type": "T_START", "content": "start"},
       {"token_type": "T_GREATERTHAN", "content": ">"},
       {"token_type": "T_TIME", "content": "9:00"},

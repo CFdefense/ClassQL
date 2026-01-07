@@ -1,0 +1,57 @@
+[
+  {
+    "test_name": "start_time_greater_than",
+    "description": "Start time query with greater than",
+    "input": "start >= 9:00am",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N"
+      }
+    ]
+  },
+  {
+    "test_name": "start_time_less_than",
+    "description": "Start time query with less than",
+    "input": "start < 12:00pm",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "end_time_greater_than",
+    "description": "End time query with greater than",
+    "input": "end >= 3:00pm",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "start_time_range",
+    "description": "Start time query with time range",
+    "input": "start 9:00am to 12:00pm",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "end_time_range",
+    "description": "End time query with time range",
+    "input": "end 12:00pm to 3:00pm",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "begins_time_range",
+    "description": "Begin time query with time range (using start instead of begins)",
+    "input": "start 9:00am to 12:00pm",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  }
+]
+

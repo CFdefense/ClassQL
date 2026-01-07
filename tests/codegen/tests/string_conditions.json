@@ -62,6 +62,38 @@
     "should_succeed": true,
     "expected_fragments": ["c.corequisites LIKE '%LAB%'"],
     "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_condition_does_not_equal",
+    "description": "Generate SQL for does not equal condition",
+    "input": "subject does not equal CS",
+    "should_succeed": true,
+    "expected_fragments": ["LOWER(c.subject_code) != LOWER('CS')"],
+    "forbidden_fragments": ["LOWER(c.subject_code) = LOWER('CS')"]
+  },
+  {
+    "test_name": "codegen_condition_does_not_contain",
+    "description": "Generate SQL for does not contain condition",
+    "input": "title does not contain intro",
+    "should_succeed": true,
+    "expected_fragments": ["c.title NOT LIKE '%intro%'", "COLLATE NOCASE"],
+    "forbidden_fragments": ["c.title LIKE '%intro%'"]
+  },
+  {
+    "test_name": "codegen_condition_doesnt_equal",
+    "description": "Generate SQL for doesn't equal condition (contracted form)",
+    "input": "subject doesn't equal CS",
+    "should_succeed": true,
+    "expected_fragments": ["LOWER(c.subject_code) != LOWER('CS')"],
+    "forbidden_fragments": ["LOWER(c.subject_code) = LOWER('CS')"]
+  },
+  {
+    "test_name": "codegen_condition_doesnt_contain",
+    "description": "Generate SQL for doesn't contain condition (contracted form)",
+    "input": "title doesn't contain intro",
+    "should_succeed": true,
+    "expected_fragments": ["c.title NOT LIKE '%intro%'", "COLLATE NOCASE"],
+    "forbidden_fragments": ["c.title LIKE '%intro%'"]
   }
 ]
 

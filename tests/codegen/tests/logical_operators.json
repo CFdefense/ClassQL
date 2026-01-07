@@ -54,6 +54,86 @@
     "should_succeed": true,
     "expected_fragments": ["AND", "OR", "p.name"],
     "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_triple_nested_parentheses",
+    "description": "Generate SQL for triple nested parentheses",
+    "input": "(((subject equals CS or subject equals MATH) and credit hours >= 3) or prof contains smith) and enrollment > 0",
+    "should_succeed": true,
+    "expected_fragments": ["AND", "OR", "c.subject_code", "c.credit_hours >= 3", "p.name", "s.enrollment > 0"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_four_level_nesting",
+    "description": "Generate SQL for four levels of nested parentheses",
+    "input": "((((subject equals CS and credit hours = 3) or subject equals MATH) and enrollment > 0) or prof contains smith) and cap > 20",
+    "should_succeed": true,
+    "expected_fragments": ["AND", "OR", "c.subject_code", "c.credit_hours = 3", "s.enrollment > 0", "p.name", "s.max_enrollment > 20"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_deeply_nested_mixed_operators",
+    "description": "Generate SQL for deeply nested mixed AND/OR operators",
+    "input": "((subject equals CS and (credit hours = 3 or credit hours = 4)) or ((prof contains smith or prof contains jones) and subject equals MATH)) and (enrollment > 0 or cap > 20)",
+    "should_succeed": true,
+    "expected_fragments": ["AND", "OR", "c.subject_code", "c.credit_hours", "p.name", "s.enrollment > 0", "s.max_enrollment > 20"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_complex_or_within_and",
+    "description": "Generate SQL for complex OR grouping within AND",
+    "input": "(subject equals CS or subject equals MATH or subject equals PHYS) and (credit hours = 3 or credit hours = 4) and (enrollment > 0 or cap > 20)",
+    "should_succeed": true,
+    "expected_fragments": ["AND", "OR", "c.subject_code", "c.credit_hours", "s.enrollment > 0", "s.max_enrollment > 20"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_complex_and_within_or",
+    "description": "Generate SQL for complex AND grouping within OR",
+    "input": "(subject equals CS and credit hours = 3 and title contains programming) or (subject equals MATH and prof contains smith) or (subject equals PHYS and credit hours >= 4)",
+    "should_succeed": true,
+    "expected_fragments": ["OR", "AND", "c.subject_code", "c.credit_hours", "c.title", "p.name"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_asymmetric_nesting",
+    "description": "Generate SQL for asymmetric nesting patterns",
+    "input": "((subject equals CS and credit hours = 3) or subject equals MATH) and (prof contains smith or (enrollment > 0 and cap > 20))",
+    "should_succeed": true,
+    "expected_fragments": ["AND", "OR", "c.subject_code", "c.credit_hours = 3", "p.name", "s.enrollment > 0", "s.max_enrollment > 20"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_multiple_nested_or_groups",
+    "description": "Generate SQL for multiple nested OR groups",
+    "input": "((subject equals CS or subject equals MATH) and (credit hours = 3 or credit hours = 4)) or ((prof contains smith or prof contains jones) and (enrollment > 0 or cap > 20))",
+    "should_succeed": true,
+    "expected_fragments": ["AND", "OR", "c.subject_code", "c.credit_hours", "p.name", "s.enrollment > 0", "s.max_enrollment > 20"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_five_level_nesting",
+    "description": "Generate SQL for five levels of nested parentheses",
+    "input": "(((((subject equals CS and credit hours = 3) or subject equals MATH) and enrollment > 0) or prof contains smith) and cap > 20) or title contains programming",
+    "should_succeed": true,
+    "expected_fragments": ["AND", "OR", "c.subject_code", "c.credit_hours = 3", "s.enrollment > 0", "p.name", "s.max_enrollment > 20", "c.title"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_complex_time_day_nested",
+    "description": "Generate SQL for complex nested query with time and day conditions",
+    "input": "((start >= 9:00am and end <= 5:00pm) and (monday or wednesday or friday)) or ((start >= 10:00am and end <= 3:00pm) and (tuesday or thursday))",
+    "should_succeed": true,
+    "expected_fragments": ["AND", "OR", "mt.start_minutes >= '09:00:00'", "mt.end_minutes <= '17:00:00'", "mt.is_monday = 1", "mt.is_wednesday = 1", "mt.is_friday = 1", "mt.start_minutes >= '10:00:00'", "mt.end_minutes <= '15:00:00'", "mt.is_tuesday = 1", "mt.is_thursday = 1"],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_negation_with_nesting",
+    "description": "Generate SQL for complex query with negation and nested parentheses",
+    "input": "((subject is not CS or subject is not MATH) and credit hours >= 3) or (prof does not contain smith and subject equals PHYS)",
+    "should_succeed": true,
+    "expected_fragments": ["AND", "OR", "c.subject_code", "!=", "c.credit_hours >= 3", "p.name", "NOT LIKE"],
+    "forbidden_fragments": []
   }
 ]
 

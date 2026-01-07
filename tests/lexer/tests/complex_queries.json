@@ -134,11 +134,11 @@
         ]
     },
     {
-        "test_name": "Section Token",
-        "description": "Test basic section token recognition",
-        "code": "section",
+        "test_name": "Subject Token",
+        "description": "Test basic subject token recognition",
+        "code": "subject",
         "result": [
-            {"token_type": "T_SECTION", "content": "section"}
+            {"token_type": "T_SUBJECT", "content": "subject"}
         ]
     },
     {
@@ -216,9 +216,9 @@
     {
         "test_name": "Multiple Core Tokens",
         "description": "Test multiple core tokens in sequence",
-        "code": "section title number description",
+        "code": "subject title number description",
         "result": [
-            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
             {"token_type": "T_TITLE", "content": "title"},
             {"token_type": "T_NUMBER", "content": "number"},
             {"token_type": "T_DESCRIPTION", "content": "description"}
@@ -227,9 +227,9 @@
     {
         "test_name": "Core Tokens with Operators",
         "description": "Test core tokens with comparison operators",
-        "code": "section = \"CS101\" and enrollment > 50",
+        "code": "subject = \"CS101\" and enrollment > 50",
         "result": [
-            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
             {"token_type": "T_EQUALS", "content": "="},
             {"token_type": "T_STRING", "content": "\"CS101\""},
             {"token_type": "T_AND", "content": "and"},
@@ -255,10 +255,10 @@
     {
         "test_name": "Core Tokens Complex Query",
         "description": "Test complex query with multiple core tokens and operators",
-        "code": "(section = \"CS101\" and enrollment < 100) or (title contains \"Advanced\" and credit hours >= 3)",
+        "code": "(subject = \"CS101\" and enrollment < 100) or (title contains \"Advanced\" and credit hours >= 3)",
         "result": [
             {"token_type": "T_LEFTPAREN", "content": "("},
-            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
             {"token_type": "T_EQUALS", "content": "="},
             {"token_type": "T_STRING", "content": "\"CS101\""},
             {"token_type": "T_AND", "content": "and"},
@@ -282,9 +282,9 @@
     {
         "test_name": "Core Tokens Edge Cases",
         "description": "Test core tokens with various whitespace patterns",
-        "code": "  section  \t  title  \n  number  ",
+        "code": "  subject  \t  title  \n  number  ",
         "result": [
-            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
             {"token_type": "T_TITLE", "content": "title"},
             {"token_type": "T_NUMBER", "content": "number"}
         ]
@@ -292,9 +292,9 @@
     {
         "test_name": "Core Tokens Case Sensitivity",
         "description": "Test core tokens are case sensitive",
-        "code": "SECTION Title NUMBER Description",
+        "code": "SUBJECT Title NUMBER Description",
         "result": [
-            {"token_type": "T_SECTION", "content": "SECTION"},
+            {"token_type": "T_SUBJECT", "content": "SUBJECT"},
             {"token_type": "T_TITLE", "content": "Title"},
             {"token_type": "T_NUMBER", "content": "NUMBER"},
             {"token_type": "T_DESCRIPTION", "content": "Description"}
@@ -303,12 +303,12 @@
     {
         "test_name": "Core Tokens Partial Matches",
         "description": "Test that partial matches don't interfere with core tokens",
-        "code": "sectional sectioned sectioning section",
+        "code": "sectional sectioned sectioning subject",
         "result": [
             {"token_type": "T_IDENTIFIER", "content": "sectional"},
             {"token_type": "T_IDENTIFIER", "content": "sectioned"},
             {"token_type": "T_IDENTIFIER", "content": "sectioning"},
-            {"token_type": "T_SECTION", "content": "section"}
+            {"token_type": "T_SUBJECT", "content": "subject"}
         ]
     },
     {
@@ -344,10 +344,10 @@
     {
         "test_name": "Core Tokens with Parentheses",
         "description": "Test core tokens with parentheses",
-        "code": "(section) (title) (number)",
+        "code": "(subject) (title) (number)",
         "result": [
             {"token_type": "T_LEFTPAREN", "content": "("},
-            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
             {"token_type": "T_RIGHTPAREN", "content": ")"},
             {"token_type": "T_LEFTPAREN", "content": "("},
             {"token_type": "T_TITLE", "content": "title"},
@@ -360,9 +360,9 @@
     {
         "test_name": "Core Tokens with Comparison Operators",
         "description": "Test core tokens with comparison operators",
-        "code": "section = \"CS101\" title != \"Advanced\" number > 100",
+        "code": "subject = \"CS101\" title != \"Advanced\" number > 100",
         "result": [
-            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
             {"token_type": "T_EQUALS", "content": "="},
             {"token_type": "T_STRING", "content": "\"CS101\""},
             {"token_type": "T_TITLE", "content": "title"},
@@ -376,9 +376,9 @@
     {
         "test_name": "Core Tokens with Contains Operator",
         "description": "Test core tokens with contains operator",
-        "code": "section contains \"101\" title contains \"Introduction\"",
+        "code": "subject contains \"101\" title contains \"Introduction\"",
         "result": [
-            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
             {"token_type": "T_CONTAINS", "content": "contains"},
             {"token_type": "T_STRING", "content": "\"101\""},
             {"token_type": "T_TITLE", "content": "title"},
@@ -402,9 +402,9 @@
     {
         "test_name": "Very Long Core Tokens Query",
         "description": "Test very long query with many core tokens",
-        "code": "section = \"CS101\" and title contains \"Introduction\" and number = \"101\" and description contains \"Computer Science\" and enrollment < 100 and cap > 50 and instruction is \"in-person\" and meeting type is \"lecture\" and campus is \"main\" and credit hours >= 3 and prereqs contains \"MATH101\" and corereqs contains \"CS100\" and time is \"MWF\" and prof email contains \"@university.edu\"",
+        "code": "subject = \"CS101\" and title contains \"Introduction\" and number = \"101\" and description contains \"Computer Science\" and enrollment < 100 and cap > 50 and instruction is \"in-person\" and meeting type is \"lecture\" and campus is \"main\" and credit hours >= 3 and prereqs contains \"MATH101\" and corereqs contains \"CS100\" and time is \"MWF\" and prof email contains \"@university.edu\"",
         "result": [
-            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
             {"token_type": "T_EQUALS", "content": "="},
             {"token_type": "T_STRING", "content": "\"CS101\""},
             {"token_type": "T_AND", "content": "and"},
@@ -467,13 +467,13 @@
     {
         "test_name": "Nested Parentheses Core Tokens",
         "description": "Test deeply nested parentheses with core tokens",
-        "code": "((((section = \"CS101\" and (title contains \"Introduction\" or (number = \"101\" and description contains \"Computer Science\"))) and enrollment < 100) or (cap > 50 and instruction is \"in-person\")) and (meeting type is \"lecture\" or campus is \"main\"))",
+        "code": "((((subject = \"CS101\" and (title contains \"Introduction\" or (number = \"101\" and description contains \"Computer Science\"))) and enrollment < 100) or (cap > 50 and instruction is \"in-person\")) and (meeting type is \"lecture\" or campus is \"main\"))",
         "result": [
             {"token_type": "T_LEFTPAREN", "content": "("},
             {"token_type": "T_LEFTPAREN", "content": "("},
             {"token_type": "T_LEFTPAREN", "content": "("},
             {"token_type": "T_LEFTPAREN", "content": "("},
-            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
             {"token_type": "T_EQUALS", "content": "="},
             {"token_type": "T_STRING", "content": "\"CS101\""},
             {"token_type": "T_AND", "content": "and"},
@@ -526,9 +526,9 @@
     {
         "test_name": "Mixed Operators Core Tokens",
         "description": "Test core tokens with mixed logical operators",
-        "code": "section = \"CS101\" or title contains \"Introduction\" and number = \"101\" or description contains \"Computer Science\" and enrollment < 100 or cap > 50 and instruction is \"in-person\" or meeting type is \"lecture\" and campus is \"main\" or credit hours >= 3 and prereqs contains \"MATH101\" or corereqs contains \"CS100\" and time is \"MWF\" or prof email contains \"@university.edu\"",
+        "code": "subject = \"CS101\" or title contains \"Introduction\" and number = \"101\" or description contains \"Computer Science\" and enrollment < 100 or cap > 50 and instruction is \"in-person\" or meeting type is \"lecture\" and campus is \"main\" or credit hours >= 3 and prereqs contains \"MATH101\" or corereqs contains \"CS100\" and time is \"MWF\" or prof email contains \"@university.edu\"",
         "result": [
-            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
             {"token_type": "T_EQUALS", "content": "="},
             {"token_type": "T_STRING", "content": "\"CS101\""},
             {"token_type": "T_OR", "content": "or"},
@@ -591,13 +591,13 @@
     {
         "test_name": "Repeated Core Tokens",
         "description": "Test repeated core tokens in various contexts",
-        "code": "section = \"CS101\" and section = \"CS102\" or title contains \"Introduction\" and title contains \"Advanced\" and number = \"101\" or number = \"201\" and description contains \"Computer Science\" or description contains \"Mathematics\" and enrollment < 100 or enrollment > 200 and cap > 50 or cap < 25",
+        "code": "subject = \"CS101\" and subject = \"CS102\" or title contains \"Introduction\" and title contains \"Advanced\" and number = \"101\" or number = \"201\" and description contains \"Computer Science\" or description contains \"Mathematics\" and enrollment < 100 or enrollment > 200 and cap > 50 or cap < 25",
         "result": [
-            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
             {"token_type": "T_EQUALS", "content": "="},
             {"token_type": "T_STRING", "content": "\"CS101\""},
             {"token_type": "T_AND", "content": "and"},
-            {"token_type": "T_SECTION", "content": "section"},
+            {"token_type": "T_SUBJECT", "content": "subject"},
             {"token_type": "T_EQUALS", "content": "="},
             {"token_type": "T_STRING", "content": "\"CS102\""},
             {"token_type": "T_OR", "content": "or"},

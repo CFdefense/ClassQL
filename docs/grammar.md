@@ -25,9 +25,9 @@ professor
 courses
     subject_code            N           "subject" || "sub" {|condition|} <str> REPEATED
     number                  N           "course" {|condition|} <str>           REPEATED
-    subject_description     V           "contains" || "subject description" {|condition|} <str>
+    subject_description     V           "contains" || "description" {|condition|} <str>
     title                   V           "contains" || "title" <str>
-    description             V           "contains" || "course desription" <str>
+    description             V           "contains" || "description" <str>
     credit_hours            N           "credit hours" {|binop|} <int>
     prerequisites           V           "prereqs" {|condition|} <str>
     corequisites            V           "corereqs" {|condition|} <str>
@@ -39,16 +39,16 @@ sections
     max_enrollment          N           "cap" {|binop|} <int>
     instruction_method      V           "method" {|condition|} <str>
     campus                  V           "campus" {|condition|} <str>
-    enrollment              N           "pop" {|binop|} <int>
+    enrollment              N           "enrollment" {|binop|} <int> | "size" {|binop|} <int>
     is_full? <custom>       N           {|condition|} "full"
     other (JSON)            V
 
 meeting_times
     subject_code            N           "subject" | "sub" {|condition|} <str> REPEATED
     course_number           N           "course" {|condition|} <str>          REPEATED
-    start_date              V           "start(s)" | "begin(s)" | "date" {|binop|} <str>
+    start_date              V           "start(s)" | "date" {|binop|} <str>
     end_date                V           "end(s)" | "date" {|binop|} <str>
-    meeting_type            V           "meeting type" | "type" {|condition|} <str> ENUM?
+    meeting_type            V           "type" {|condition|} <str> ENUM?
     start_minutes           N           "time" {|binop|} <str>
     end_minutes             N           "time" {|binop|} <str>
     is_monday               N           "mon" | "monday" | "m" {|condition|} <str>
@@ -113,7 +113,7 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 
 <logical_factor> ::= <entity_query> | "(" <query> ")"
 
-<entity_query> ::= <professor_query> | <course_query> | <section_query> | <meeting_type_query> | <time_query> | <day_query>
+<entity_query> ::= <professor_query> | <course_query> | <meeting_type_query> | <time_query> | <day_query>
 
 <professor_query> ::= "prof" <condition> <string>
 
@@ -126,14 +126,13 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
 <prereqs_query> ::= "prereqs" <condition> <string>
 <corereqs_query> ::= "corereqs" <condition> <string>
 
-<section_query> ::= "section" <subject_query> | <course_query> | <enrollment_cap_query> | <instruction_method_query> | <campus_query> | <enrollment_query> | <full_query>
 <enrollment_query> ::= "size" <binop> <integer> | "enrollment" <binop> <integer>
 <enrollment_cap_query> ::= "enrollment cap" <binop> <integer> | "cap" <binop> <integer>
 <instruction_method_query> ::= "method" <condition> <string>
 <campus_query> ::= "campus" <condition> <string>
 <full_query> ::= "full" <condition> <string>
 
-<meeting_type_query> ::= ("meeting type" | "type") <condition> <string>
+<meeting_type_query> ::= "type" <condition> <string>
 <time_query> ::= ("start" | "end") (<binop> <time> | <time_range>)
 <time_range> ::= <time> "to" <time>
 <day_query> ::= <monday_query> | <tuesday_query> | <wednesday_query> | <thursday_query> | <friday_query> | <saturday_query> | <sunday_query>
@@ -153,12 +152,11 @@ The following regex patterns define how the lexer tokenizes ClassQL input:
                     If condition is omitted, defaults to "= true"
 
 <time> ::= [0-9]+:[0-9]+\s?(?:am|pm)|[0-9]+\s?(?:am|pm)  ; am/pm suffix required
-<condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "is not" | "equals" | "not equals" | "does not equal"
+<condition> ::= "=" | "!=" | "contains" | "has" | "starts with" | "ends with" | "is" | "is not" | "equals" | "not equals" | "does not equal" | "doesn't equal" | "doesnt equal" | "does not contain" | "doesn't contain" | "doesnt contain"
 <binop> ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "equals" | "is" | "is not" | "not equals" | "does not equal" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at least" | "at most" | "more than" | "fewer than"
 
 <string> ::= "[^"]*"?
 <integer> ::= [0-9]+
 <identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*
 <email_identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*@[a-zA-Z0-9_]*\.[a-zA-Z0-9_.]*
-<string_list> ::= <string> | <string_list> "," <string>
 ```

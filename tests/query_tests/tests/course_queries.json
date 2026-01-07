@@ -1,0 +1,111 @@
+[
+  {
+    "test_name": "course_contains",
+    "description": "Course query with contains condition (searches title and subject) - using title directly instead",
+    "input": "title contains TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "course_number_equals",
+    "description": "Course number query with equals",
+    "input": "number equals 103L",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "course_number_alphanumeric",
+    "description": "Course number query with alphanumeric value",
+    "input": "number equals 203N",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "ACCT",
+        "course_number": "203N",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "title_contains",
+    "description": "Title query with contains condition",
+    "input": "title contains TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "title": "TECHNOLOGY",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "title_starts_with",
+    "description": "Title query with starts with condition",
+    "input": "title starts with TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "title_ends_with",
+    "description": "Title query with ends with condition",
+    "input": "title ends with CENTURY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "description_contains",
+    "description": "Description query with contains condition",
+    "input": "description contains technology",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "prereqs_contains",
+    "description": "Prerequisites query with contains condition",
+    "input": "prereqs contains CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "corereqs_contains",
+    "description": "Corequisites query with contains condition",
+    "input": "corereqs contains LAB",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  }
+]
+

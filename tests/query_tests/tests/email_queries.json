@@ -1,0 +1,123 @@
+[
+  {
+    "test_name": "professor_email_contains",
+    "description": "Professor query with email address using contains condition",
+    "input": "prof contains \"@marist.edu\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "professor_email_equals",
+    "description": "Professor query with full email address using equals condition",
+    "input": "prof equals \"Alan.Labouseur@marist.edu\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "424N",
+        "section_sequence": "111",
+        "professor_name": "Labouseur"
+      }
+    ]
+  },
+  {
+    "test_name": "professor_email_contains_domain",
+    "description": "Professor query searching email domain",
+    "input": "prof contains \"marist.edu\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "professor_email_contains_username",
+    "description": "Professor query searching email username part",
+    "input": "prof contains \"Alan.Labouseur\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "424N",
+        "section_sequence": "111",
+        "professor_name": "Labouseur"
+      }
+    ]
+  },
+  {
+    "test_name": "professor_email_starts_with",
+    "description": "Professor query with email using starts with condition",
+    "input": "prof starts with Alan",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "424N",
+        "section_sequence": "111",
+        "professor_name": "Labouseur"
+      }
+    ]
+  },
+  {
+    "test_name": "professor_email_has",
+    "description": "Professor query with email using has condition",
+    "input": "prof has \"@marist\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "professor_email_is_not",
+    "description": "Professor query with email using is not condition",
+    "input": "prof is not \"Alan.Labouseur@marist.edu\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "professor_email_does_not_contain",
+    "description": "Professor query with email using does not contain condition",
+    "input": "prof does not contain \"@marist.edu\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "professor_email_and_name",
+    "description": "Professor query that matches both email and name",
+    "input": "prof contains Alan",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "424N",
+        "section_sequence": "111",
+        "professor_name": "Labouseur"
+      }
+    ]
+  },
+  {
+    "test_name": "professor_email_full_address",
+    "description": "Professor query with complete email address as identifier",
+    "input": "prof contains \"Aaron.Suma@marist.edu\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "PHED",
+        "course_number": "124N",
+        "section_sequence": "111",
+        "professor_name": "Suma"
+      }
+    ]
+  }
+]
+

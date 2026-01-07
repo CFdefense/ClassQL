@@ -175,6 +175,79 @@
       "AND"
     ],
     "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_deeply_nested_complex",
+    "description": "Generate SQL for deeply nested complex query",
+    "input": "((subject equals CS and (credit hours = 3 or credit hours = 4)) or ((prof contains smith or prof contains jones) and subject equals MATH)) and (enrollment > 0 or cap > 20) and (campus contains main or method contains online)",
+    "should_succeed": true,
+    "expected_fragments": [
+      "AND",
+      "OR",
+      "c.subject_code",
+      "c.credit_hours",
+      "p.name",
+      "s.enrollment > 0",
+      "s.max_enrollment > 20",
+      "s.campus",
+      "s.instruction_method"
+    ],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_four_level_nested_mixed",
+    "description": "Generate SQL for four level nested query with mixed operators",
+    "input": "((((subject equals CS and credit hours = 3) or subject equals MATH) and (enrollment > 0 or cap > 20)) or (prof contains smith and subject equals PHYS)) and (title contains programming or description contains programming)",
+    "should_succeed": true,
+    "expected_fragments": [
+      "AND",
+      "OR",
+      "c.subject_code",
+      "c.credit_hours = 3",
+      "s.enrollment > 0",
+      "s.max_enrollment > 20",
+      "p.name",
+      "c.title",
+      "c.description"
+    ],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_complex_time_day_nested",
+    "description": "Generate SQL for complex nested query with time and day",
+    "input": "((start >= 9:00am and end <= 5:00pm) and (monday or wednesday or friday)) or ((start >= 10:00am and end <= 3:00pm) and (tuesday or thursday)) and (subject equals CS or subject equals MATH)",
+    "should_succeed": true,
+    "expected_fragments": [
+      "AND",
+      "OR",
+      "mt.start_minutes >= '09:00:00'",
+      "mt.end_minutes <= '17:00:00'",
+      "mt.is_monday = 1",
+      "mt.is_wednesday = 1",
+      "mt.is_friday = 1",
+      "mt.is_tuesday = 1",
+      "mt.is_thursday = 1",
+      "c.subject_code"
+    ],
+    "forbidden_fragments": []
+  },
+  {
+    "test_name": "codegen_five_level_nesting",
+    "description": "Generate SQL for five levels of nested parentheses",
+    "input": "(((((subject equals CS and credit hours = 3) or subject equals MATH) and enrollment > 0) or prof contains smith) and cap > 20) or (title contains programming and description contains programming)",
+    "should_succeed": true,
+    "expected_fragments": [
+      "AND",
+      "OR",
+      "c.subject_code",
+      "c.credit_hours = 3",
+      "s.enrollment > 0",
+      "p.name",
+      "s.max_enrollment > 20",
+      "c.title",
+      "c.description"
+    ],
+    "forbidden_fragments": []
   }
 ]
 

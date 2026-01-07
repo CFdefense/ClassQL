@@ -1,0 +1,213 @@
+[
+  {
+    "test_name": "professor_and_subject",
+    "description": "Complex query with professor and subject",
+    "input": "prof contains Shanley and subject equals MEDT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N",
+        "professor_name": "Shanley",
+        "section_sequence": "020"
+      }
+    ]
+  },
+  {
+    "test_name": "subject_course_and_credit",
+    "description": "Complex query with subject, course, and credit hours",
+    "input": "subject equals CMPT and number equals 103L and credit hours = 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "professor_or_subject",
+    "description": "Complex query with professor OR subject",
+    "input": "prof contains Shanley or subject equals MEDT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N",
+        "professor_name": "Shanley",
+        "section_sequence": "020"
+      }
+    ]
+  },
+  {
+    "test_name": "multiple_conditions_and",
+    "description": "Complex query with multiple conditions using AND",
+    "input": "subject equals CMPT and credit hours >= 3 and enrollment > 0",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "479N",
+        "section_sequence": "112"
+      }
+    ]
+  },
+  {
+    "test_name": "meeting_type_and_day",
+    "description": "Complex query with meeting type and day",
+    "input": "type equals LEC and monday",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "FYS",
+        "course_number": "101L"
+      }
+    ]
+  },
+  {
+    "test_name": "time_and_day",
+    "description": "Complex query with time and day",
+    "input": "start >= 9:00am and monday",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "305N"
+      }
+    ]
+  },
+  {
+    "test_name": "not_full_section_query",
+    "description": "Complex query checking if section is not full",
+    "input": "full equals false",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "FYS",
+        "course_number": "101L"
+      }
+    ]
+  },
+  {
+    "test_name": "deeply_nested_parentheses",
+    "description": "Deeply nested parentheses with multiple logical operators",
+    "input": "((subject equals CMPT and (credit hours = 3 or credit hours = 4)) or (subject equals MEDT and prof contains Shanley)) and enrollment > 0",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "479N",
+        "section_sequence": "112"
+      }
+    ]
+  },
+  {
+    "test_name": "triple_nested_parentheses",
+    "description": "Triple nested parentheses with complex logic",
+    "input": "(((subject equals CMPT or subject equals MATH) and credit hours >= 3) or (prof contains Shanley and subject equals MEDT)) and (enrollment > 0 or cap > 20)",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "complex_or_within_and",
+    "description": "Complex OR grouping within AND conditions",
+    "input": "(subject equals CMPT or subject equals MATH or subject equals BIOL) and (credit hours = 3 or credit hours = 4) and enrollment > 0",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "479N",
+        "section_sequence": "112"
+      }
+    ]
+  },
+  {
+    "test_name": "complex_and_within_or",
+    "description": "Complex AND grouping within OR conditions",
+    "input": "(subject equals CMPT and credit hours = 3 and title contains TECHNOLOGY) or (subject equals MEDT and prof contains Shanley) or (subject equals MATH and credit hours >= 4)",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "four_level_nesting",
+    "description": "Four levels of nested parentheses",
+    "input": "(((subject equals CMPT and credit hours = 3) or (subject equals MATH and credit hours = 4)) and (enrollment > 0 or cap > 20)) or (prof contains Shanley and subject equals MEDT)",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "multiple_or_groups_with_and",
+    "description": "Multiple OR groups connected with AND",
+    "input": "(subject equals CMPT or subject equals MATH) and (credit hours = 3 or credit hours = 4) and (enrollment > 0 or cap > 20) and (campus contains Marist or method contains Online)",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "asymmetric_nesting",
+    "description": "Asymmetric nesting with different depths",
+    "input": "((subject equals CMPT and credit hours = 3) or subject equals MATH) and (prof contains Macur or (enrollment > 0 and cap > 20))",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "112",
+        "professor_name": "Macur"
+      }
+    ]
+  }
+]
+

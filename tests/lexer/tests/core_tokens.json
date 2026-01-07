@@ -1,13 +1,5 @@
 [
   {
-    "test_name": "section_token",
-    "description": "Test basic section token recognition",
-    "code": "section",
-    "result": [
-      {"token_type": "T_SECTION", "content": "section"}
-    ]
-  },
-  {
     "test_name": "title_token",
     "description": "Test basic title token recognition",
     "code": "title",
@@ -82,20 +74,20 @@
   {
     "test_name": "multiple_core_tokens",
     "description": "Test multiple core tokens in sequence",
-    "code": "section title number description",
+    "code": "title number description enrollment",
     "result": [
-      {"token_type": "T_SECTION", "content": "section"},
       {"token_type": "T_TITLE", "content": "title"},
       {"token_type": "T_NUMBER", "content": "number"},
-      {"token_type": "T_DESCRIPTION", "content": "description"}
+      {"token_type": "T_DESCRIPTION", "content": "description"},
+      {"token_type": "T_ENROLLMENT", "content": "enrollment"}
     ]
   },
   {
     "test_name": "core_tokens_with_operators",
     "description": "Test core tokens with comparison operators",
-    "code": "section = \"CS101\" and enrollment > 50",
+    "code": "number = \"CS101\" and enrollment > 50",
     "result": [
-      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_NUMBER", "content": "number"},
       {"token_type": "T_EQUALS", "content": "="},
       {"token_type": "T_STRING", "content": "\"CS101\""},
       {"token_type": "T_AND", "content": "and"},
@@ -121,10 +113,10 @@
   {
     "test_name": "core_tokens_complex_query",
     "description": "Test complex query with multiple core tokens and operators",
-    "code": "(section = \"CS101\" and enrollment < 100) or (title contains \"Advanced\" and credit hours >= 3)",
+    "code": "(number = \"CS101\" and enrollment < 100) or (title contains \"Advanced\" and credit hours >= 3)",
     "result": [
       {"token_type": "T_LEFTPAREN", "content": "("},
-      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_NUMBER", "content": "number"},
       {"token_type": "T_EQUALS", "content": "="},
       {"token_type": "T_STRING", "content": "\"CS101\""},
       {"token_type": "T_AND", "content": "and"},

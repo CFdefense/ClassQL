@@ -14,7 +14,7 @@
     "input": "is Alan",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "'is' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
+    "expected_error_message": "'is' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
     "expected_problematic_tokens": [
       {
         "lexeme": "is",
@@ -29,7 +29,7 @@
     "input": "prof is Alan and",
     "should_succeed": false,
     "expected_error_type": "ExpectedAfter",
-    "expected_error_message": "Please start with one of: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
+    "expected_error_message": "Please start with one of: 'professor', 'course', 'subject', 'title', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
     "expected_problematic_tokens": []
   },
   {
@@ -38,7 +38,7 @@
     "input": "prof is Alan or",
     "should_succeed": false,
     "expected_error_type": "ExpectedAfter",
-    "expected_error_message": "Please start with one of: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
+    "expected_error_message": "Please start with one of: 'professor', 'course', 'subject', 'title', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
     "expected_problematic_tokens": []
   },
   {
@@ -47,7 +47,7 @@
     "input": "prof < Smith",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "'<' is not valid here. Try: 'is', 'equals', 'contains', 'has', 'starts with', 'ends with'",
+    "expected_error_message": "'<' is not valid here. Try: 'is', 'is not', 'equals', 'contains', 'has', 'starts with', 'ends with', 'does not equal', 'doesn't equal', 'does not contain', 'doesn't contain'",
     "expected_problematic_tokens": [
       {
         "lexeme": "<",
