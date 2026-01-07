@@ -133,7 +133,7 @@ pub fn generate_sql(ast: &Ast) -> CodeGenResult {
                  CASE WHEN mt.is_thursday = 1 THEN 'TH' ELSE '' END || \
                  CASE WHEN mt.is_friday = 1 THEN 'F' ELSE '' END || \
                  CASE WHEN mt.is_saturday = 1 THEN 'S' ELSE '' END || \
-                 CASE WHEN mt.is_sunday = 1 THEN 'U' ELSE '' END) || \
+                 CASE WHEN mt.is_sunday = 1 THEN 'SU' ELSE '' END) || \
                 ':' || mt.start_minutes || '-' || mt.end_minutes, \
                 '|' \
             ) AS meeting_times, \
@@ -874,15 +874,15 @@ fn generate_day_query(node: &TreeNode) -> CodeGenResult {
     let day_node = &node.children[0];
     let day_name = day_node.node_content.to_lowercase();
     
-    // map day names to column names
-    let column = match day_name.as_str() {
-        "monday" => "mt.is_monday",
-        "tuesday" => "mt.is_tuesday",
-        "wednesday" => "mt.is_wednesday",
-        "thursday" => "mt.is_thursday",
-        "friday" => "mt.is_friday",
-        "saturday" => "mt.is_saturday",
-        "sunday" => "mt.is_sunday",
+    // map day names to column names for the EXISTS subquery
+    let column_filter = match day_name.as_str() {
+        "monday" => "mt_filter.is_monday",
+        "tuesday" => "mt_filter.is_tuesday",
+        "wednesday" => "mt_filter.is_wednesday",
+        "thursday" => "mt_filter.is_thursday",
+        "friday" => "mt_filter.is_friday",
+        "saturday" => "mt_filter.is_saturday",
+        "sunday" => "mt_filter.is_sunday",
         _ => {
             return Err(CodeGenError::InvalidStructure {
                 message: format!("Unknown day: {}", day_name),
@@ -900,9 +900,19 @@ fn generate_day_query(node: &TreeNode) -> CodeGenResult {
     let is_true = value.to_lowercase() == "true";
     let day_value = if is_true { 1 } else { 0 };
     
-    // use the joined mt table directly in WHERE clause
-    // this is efficient because we're already joining meeting_times
-    Ok(format!("{} = {}", column, day_value))
+    // use EXISTS subquery to filter sections that have at least one meeting_time
+    // matching the day condition, but still include ALL meeting_times for those sections
+    // this ensures that when filtering by "monday", we still see Thursday times for the same class
+    Ok(format!(
+        "EXISTS (SELECT 1 FROM meeting_times mt_filter \
+         WHERE mt_filter.section_sequence = s.sequence \
+         AND mt_filter.term_collection_id = s.term_collection_id \
+         AND mt_filter.school_id = s.school_id \
+         AND mt_filter.subject_code = s.subject_code \
+         AND mt_filter.course_number = s.course_number \
+         AND {} = {})",
+        column_filter, day_value
+    ))
 }
 
 /// Extract the condition type from a Condition node

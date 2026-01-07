@@ -6,6 +6,7 @@
 
 use crate::data::sql::Class;
 use crate::tui::themes::Theme;
+use crate::tui::widgets::helpers::{format_day_for_display, get_day_order};
 use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -175,7 +176,10 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
     // parse meeting_times if available, otherwise fall back to old format
     if let Some(meeting_times_str) = &class.meeting_times {
         if !meeting_times_str.is_empty() {
-            // parse meeting times: "M:08:00:00-10:45:00|R:08:00:00-09:15:00"
+            // parse meeting times: "M:08:00:00-10:45:00|TH:08:00:00-09:15:00"
+            // collect all meeting times with their day codes for sorting
+            let mut meeting_times: Vec<(u8, String, String, String)> = Vec::new(); // (day_order, days_part, start, end)
+            
             for mt in meeting_times_str.split('|') {
                 if mt.is_empty() {
                     continue;
@@ -187,13 +191,34 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
                         let start = format_time(&time_part[..dash_pos]);
                         let end = format_time(&time_part[dash_pos + 1..]);
                         if !days_part.is_empty() && !start.is_empty() && !end.is_empty() {
-                            lines.push(Line::from(vec![
-                                Span::styled("    ", Style::default().fg(theme.text_color)), // 4 spaces for indentation
-                                Span::styled(format!("{} {}-{}", days_part, start, end), Style::default().fg(theme.text_color)),
-                            ]));
+                            // get the first day code for sorting (in case of multiple days like "MW")
+                            let first_day = if days_part.starts_with("TH") {
+                                "TH"
+                            } else if days_part.starts_with("SU") {
+                                "SU"
+                            } else if days_part.len() > 0 {
+                                &days_part[..1]
+                            } else {
+                                days_part
+                            };
+                            let day_order = get_day_order(first_day);
+                            meeting_times.push((day_order, days_part.to_string(), start, end));
                         }
                     }
                 }
+            }
+            
+            // sort by day order (Monday first)
+            meeting_times.sort_by_key(|(day_order, _, _, _)| *day_order);
+            
+            // display sorted meeting times
+            for (_, days_part, start, end) in meeting_times {
+                // format day code for display (add space after single letters)
+                let formatted_days = format_day_for_display(&days_part);
+                lines.push(Line::from(vec![
+                    Span::styled("    ", Style::default().fg(theme.text_color)), // 4 spaces for indentation
+                    Span::styled(format!("{} {}-{}", formatted_days, start, end), Style::default().fg(theme.text_color)),
+                ]));
             }
         } else {
             // empty meeting_times

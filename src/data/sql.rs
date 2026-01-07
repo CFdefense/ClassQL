@@ -4,6 +4,7 @@
     For sql code execution - contains the Class struct and query execution logic
 */
 
+use crate::tui::widgets::helpers::{format_day_for_display, get_day_order};
 use rusqlite::Connection;
 use std::path::Path;
 
@@ -104,8 +105,8 @@ impl Class {
 
         // line 4: days and time
         let time_str = if let Some(meeting_times_str) = &self.meeting_times {
-            // parse meeting times: "M:08:00:00-10:45:00|R:08:00:00-09:15:00"
-            let mut time_parts = Vec::new();
+            // parse meeting times: "M:08:00:00-10:45:00|TH:08:00:00-09:15:00"
+            let mut time_parts: Vec<(u8, String)> = Vec::new(); // (day_order, formatted_string)
             for mt in meeting_times_str.split('|') {
                 if let Some(colon_pos) = mt.find(':') {
                     let days_part = &mt[..colon_pos];
@@ -114,19 +115,33 @@ impl Class {
                         let start = format_time_short(&time_part[..dash_pos]);
                         let end = format_time_short(&time_part[dash_pos + 1..]);
                         if !days_part.is_empty() {
-                            time_parts.push(format!("{} {}-{}", days_part, start, end));
+                            // get the first day code for sorting (in case of multiple days like "MW")
+                            let first_day = if days_part.starts_with("TH") {
+                                "TH"
+                            } else if days_part.starts_with("SU") {
+                                "SU"
+                            } else if days_part.len() > 0 {
+                                &days_part[..1]
+                            } else {
+                                days_part
+                            };
+                            let day_order = get_day_order(first_day);
+                            // format day code for display (add space after single letters)
+                            let formatted_days = format_day_for_display(days_part);
+                            time_parts.push((day_order, format!("{} {}-{}", formatted_days, start, end)));
                         }
                     }
                 }
             }
+            
+            // sort by day order (Monday first)
+            time_parts.sort_by_key(|(day_order, _)| *day_order);
+            
             if time_parts.is_empty() {
                 format!("{} TBA", self.days)
-            } else if time_parts.len() == 1 {
-                // single time, use combined days
-                format!("{} {}", self.days, time_parts[0].split(' ').nth(1).unwrap_or("TBA"))
             } else {
-                // multiple times, show each with its days
-                time_parts.join(", ")
+                // show all parsed meeting times with their days (already sorted)
+                time_parts.iter().map(|(_, s)| s.as_str()).collect::<Vec<_>>().join(", ")
             }
         } else {
             // no meeting times available
@@ -208,6 +223,7 @@ fn format_days(
     is_saturday: bool,
     is_sunday: bool,
 ) -> String {
+    // build days in order (Monday first)
     let mut days = String::new();
     if is_monday {
         days.push('M');
@@ -228,7 +244,7 @@ fn format_days(
         days.push('S');
     }
     if is_sunday {
-        days.push('U');
+        days.push_str("SU");
     }
     if days.is_empty() {
         days = "TBA".to_string();
