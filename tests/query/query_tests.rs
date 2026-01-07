@@ -1,3 +1,4 @@
+use crate::utils;
 /// tests/query_tests.rs
 ///
 /// End-to-end query tests
@@ -21,10 +22,8 @@
 ///     --- ---
 /// --- ---
 ///
-
 use classql::dsl::compiler::Compiler;
 use serde::{Deserialize, Serialize};
-use crate::utils;
 
 /// Query test case struct
 ///
@@ -145,11 +144,11 @@ impl QueryTestHelper {
 
         // Create compiler with test database
         let mut compiler = Compiler::new();
-        
+
         // Override database path for testing
         // Note: This requires modifying the compiler to accept a db_path parameter
         // For now, we'll use the default path and assume test_db.db is in the right place
-        
+
         // Run the compiler
         let result = compiler.run(&test_case.input);
 
@@ -203,23 +202,26 @@ impl QueryTestHelper {
                         let found = classes.iter().any(|class| {
                             class.subject_code == expected.subject_code
                                 && class.course_number == expected.course_number
-                                && expected.title.as_ref().map_or(true, |t| {
-                                    class.title.contains(t)
-                                })
+                                && expected
+                                    .title
+                                    .as_ref()
+                                    .map_or(true, |t| class.title.contains(t))
                                 && expected.professor_name.as_ref().map_or(true, |p| {
-                                    class.professor_name.as_ref().map_or(false, |name| name.contains(p))
+                                    class
+                                        .professor_name
+                                        .as_ref()
+                                        .map_or(false, |name| name.contains(p))
                                 })
-                                && expected.section_sequence.as_ref().map_or(true, |s| {
-                                    class.section_sequence == *s
-                                })
+                                && expected
+                                    .section_sequence
+                                    .as_ref()
+                                    .map_or(true, |s| class.section_sequence == *s)
                         });
 
                         assert!(
                             found,
                             "Query test '{}': Expected class {}-{} not found in results",
-                            test_case.test_name,
-                            expected.subject_code,
-                            expected.course_number
+                            test_case.test_name, expected.subject_code, expected.course_number
                         );
                     }
                 }
@@ -332,5 +334,3 @@ fn test_day_conditions() {
 fn test_email_queries() {
     run_test_file("email_queries.json");
 }
-
-

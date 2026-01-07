@@ -51,4 +51,3 @@ pub enum FocusMode {
     DetailView,
     Settings,
 }
-

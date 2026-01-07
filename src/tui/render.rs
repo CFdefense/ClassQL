@@ -221,7 +221,9 @@ impl Tui {
                     // handle main menu mode
                     if self.focus_mode == FocusMode::MainMenu {
                         match key.code {
-                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => break Ok(()),
+                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                                break Ok(())
+                            }
                             KeyCode::Esc => break Ok(()),
                             KeyCode::Up => {
                                 if self.menu_index > 0 {
@@ -246,7 +248,10 @@ impl Tui {
                                         }
                                         MenuOption::Help => {
                                             // TODO: Show help screen
-                                            self.show_toast("Help feature coming soon!".to_string(), ErrorType::Semantic);
+                                            self.show_toast(
+                                                "Help feature coming soon!".to_string(),
+                                                ErrorType::Semantic,
+                                            );
                                         }
                                         MenuOption::Settings => {
                                             self.focus_mode = FocusMode::Settings;
@@ -293,15 +298,20 @@ impl Tui {
                                         if !completion.starts_with('<') {
                                             // only replace if there's a partial word that matches
                                             if !self.partial_word.is_empty()
-                                                && completion.to_lowercase().starts_with(&self.partial_word)
+                                                && completion
+                                                    .to_lowercase()
+                                                    .starts_with(&self.partial_word)
                                             {
                                                 // remove the partial word from input
                                                 let trim_len = self.partial_word.len();
-                                                let new_len = self.input.len().saturating_sub(trim_len);
+                                                let new_len =
+                                                    self.input.len().saturating_sub(trim_len);
                                                 self.input.truncate(new_len);
                                             } else {
                                                 // no partial word - just append with space
-                                                if !self.input.is_empty() && !self.input.ends_with(' ') {
+                                                if !self.input.is_empty()
+                                                    && !self.input.ends_with(' ')
+                                                {
                                                     self.input.push(' ');
                                                 }
                                             }
@@ -340,7 +350,9 @@ impl Tui {
                     // handle settings mode
                     if self.focus_mode == FocusMode::Settings {
                         match key.code {
-                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => break Ok(()),
+                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                                break Ok(())
+                            }
                             KeyCode::Esc => {
                                 // exit settings, go back to main menu
                                 self.focus_mode = FocusMode::MainMenu;
@@ -360,12 +372,23 @@ impl Tui {
                                 // Change theme when on Theme option
                                 if self.settings_index == 0 {
                                     let themes = ThemePalette::all();
-                                    let current_idx = themes.iter().position(|&t| t == self.current_theme).unwrap_or(0);
+                                    let current_idx = themes
+                                        .iter()
+                                        .position(|&t| t == self.current_theme)
+                                        .unwrap_or(0);
                                     if key.code == KeyCode::Left {
-                                        let new_idx = if current_idx > 0 { current_idx - 1 } else { themes.len() - 1 };
+                                        let new_idx = if current_idx > 0 {
+                                            current_idx - 1
+                                        } else {
+                                            themes.len() - 1
+                                        };
                                         self.current_theme = themes[new_idx];
                                     } else {
-                                        let new_idx = if current_idx < themes.len() - 1 { current_idx + 1 } else { 0 };
+                                        let new_idx = if current_idx < themes.len() - 1 {
+                                            current_idx + 1
+                                        } else {
+                                            0
+                                        };
                                         self.current_theme = themes[new_idx];
                                     }
                                 }
@@ -391,7 +414,9 @@ impl Tui {
                     if self.focus_mode == FocusMode::ResultsBrowse {
                         match key.code {
                             // exit the TUI if the user presses Ctrl+C
-                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => break Ok(()),
+                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                                break Ok(())
+                            }
                             // esc goes back to main menu
                             KeyCode::Esc => {
                                 self.focus_mode = FocusMode::MainMenu;
@@ -401,21 +426,21 @@ impl Tui {
                                 if self.selected_result == 0 {
                                     self.focus_mode = FocusMode::QueryInput;
                                 } else {
-                                // move selection up (3 items per row)
-                                let cols = 3;
-                                if self.selected_result >= cols {
-                                    self.selected_result -= cols;
-                                    // adjust scroll if needed
-                                    if self.selected_result < self.results_scroll {
-                                        // align scroll to row boundaries (multiples of cols) to preserve columns
-                                        let target_row = self.selected_result / cols;
-                                        self.results_scroll = target_row * cols;
+                                    // move selection up (3 items per row)
+                                    let cols = 3;
+                                    if self.selected_result >= cols {
+                                        self.selected_result -= cols;
+                                        // adjust scroll if needed
+                                        if self.selected_result < self.results_scroll {
+                                            // align scroll to row boundaries (multiples of cols) to preserve columns
+                                            let target_row = self.selected_result / cols;
+                                            self.results_scroll = target_row * cols;
+                                        }
+                                    } else {
+                                        // can't go up more, go to query input
+                                        self.focus_mode = FocusMode::QueryInput;
                                     }
-                                } else {
-                                    // can't go up more, go to query input
-                                    self.focus_mode = FocusMode::QueryInput;
                                 }
-                            }
                             }
                             KeyCode::Down => {
                                 // move selection down (3 items per row)
@@ -429,12 +454,15 @@ impl Tui {
                                     if total_results <= max_visible {
                                         // all results visible, don't scroll
                                         self.results_scroll = 0; // ensure scroll is reset
-                                    } else if self.selected_result >= self.results_scroll + max_visible {
+                                    } else if self.selected_result
+                                        >= self.results_scroll + max_visible
+                                    {
                                         // result is beyond visible window, scroll to show it
                                         // align scroll to row boundaries (multiples of cols) to preserve columns
                                         let rows_visible = max_visible / cols;
                                         let current_row = self.selected_result / cols;
-                                        let scroll_row = current_row.saturating_sub(rows_visible - 1);
+                                        let scroll_row =
+                                            current_row.saturating_sub(rows_visible - 1);
                                         self.results_scroll = (scroll_row * cols).max(0);
                                     }
                                 }
@@ -460,9 +488,12 @@ impl Tui {
                                     if total_results <= max_visible {
                                         // all results visible, don't scroll
                                         self.results_scroll = 0; // ensure scroll is reset
-                                    } else if self.selected_result >= self.results_scroll + max_visible {
+                                    } else if self.selected_result
+                                        >= self.results_scroll + max_visible
+                                    {
                                         // result is beyond visible window, scroll to show it
-                                        self.results_scroll = self.selected_result.saturating_sub(max_visible - 1);
+                                        self.results_scroll =
+                                            self.selected_result.saturating_sub(max_visible - 1);
                                     }
                                 }
                             }
@@ -496,7 +527,9 @@ impl Tui {
                     // queryInput mode (default)
                     match key.code {
                         // exit the TUI if the user presses Ctrl+C
-                        KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => break Ok(()),
+                        KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                            break Ok(())
+                        }
                         // Esc goes back to main menu
                         KeyCode::Esc => {
                             self.focus_mode = FocusMode::MainMenu;
@@ -701,22 +734,14 @@ impl Tui {
             "contains" | "is" | "equals" | "has" => {
                 "Enter a value in quotes, e.g. \"Computer Science\"".to_string()
             }
-            "=" | "!=" => {
-                "Enter a value, e.g. \"CS\" or 101".to_string()
-            }
-            "<" | ">" | "<=" | ">=" => {
-                "Enter a number, e.g. 3 or 100".to_string()
-            }
+            "=" | "!=" => "Enter a value, e.g. \"CS\" or 101".to_string(),
+            "<" | ">" | "<=" | ">=" => "Enter a number, e.g. 3 or 100".to_string(),
             "with" => {
                 // "starts with" or "ends with"
                 "Enter a value in quotes, e.g. \"Intro\"".to_string()
             }
-            "hours" => {
-                "Enter an operator (=, <, >, etc.) then a number".to_string()
-            }
-            "type" => {
-                "Enter a condition (is, equals, contains) then a value".to_string()
-            }
+            "hours" => "Enter an operator (=, <, >, etc.) then a number".to_string(),
+            "type" => "Enter a condition (is, equals, contains) then a value".to_string(),
             _ => String::new(),
         }
     }
@@ -825,15 +850,15 @@ fn render_frame(
     settings_index: usize,
 ) -> (usize, usize) {
     let theme = current_theme.to_theme();
-    
-    // check window size 
+
+    // check window size
     let buffer_height = frame.area().height;
     let buffer_width = frame.area().width;
-    
+
     // check minimum window size requirements
     let min_height = 25_u16;
     let min_width = 80_u16;
-    
+
     if buffer_height < min_height || buffer_width < min_width {
         // display error message in center of screen
         let error_msg = format!(
@@ -858,14 +883,14 @@ fn render_frame(
         frame.render_widget(error_paragraph, error_area);
         return (0, 0);
     }
-    
+
     // clear the entire frame with the theme background color
     // use saturating_sub to ensure we don't go out of bounds
     let buffer = frame.buffer_mut();
     // use buffer's actual dimensions to prevent index errors
     let actual_width = buffer.area.width;
     let actual_height = buffer.area.height;
-    
+
     // double-check dimensions match and are valid
     if actual_width < min_width || actual_height < min_height {
         // buffer dimensions don't meet minimum - show error and return early
@@ -891,7 +916,7 @@ fn render_frame(
         frame.render_widget(error_paragraph, error_area);
         return (0, 0);
     }
-    
+
     // use exclusive range: 0..actual_width gives 0 to actual_width-1
     for y in 0..actual_height {
         for x in 0..actual_width {
@@ -899,39 +924,80 @@ fn render_frame(
             cell.set_bg(theme.background_color);
         }
     }
-    
+
     // only render widgets if window is large enough
     render_logo(frame, &theme);
-    
+
     // render main menu if in menu mode
     if *focus_mode == FocusMode::MainMenu {
         render_main_menu(frame, menu_index, &theme);
-        render_search_helpers_with_data(frame, input, toast_message, query_results, focus_mode, &theme);
+        render_search_helpers_with_data(
+            frame,
+            input,
+            toast_message,
+            query_results,
+            focus_mode,
+            &theme,
+        );
         render_toast_with_data(frame, toast_message, error_type, &theme);
         return (0, 0);
     }
-    
+
     // render settings if in settings mode
     if *focus_mode == FocusMode::Settings {
         render_settings(frame, current_theme, &theme, settings_index);
-        render_search_helpers_with_data(frame, input, toast_message, query_results, focus_mode, &theme);
+        render_search_helpers_with_data(
+            frame,
+            input,
+            toast_message,
+            query_results,
+            focus_mode,
+            &theme,
+        );
         render_toast_with_data(frame, toast_message, error_type, &theme);
         return (0, 0);
     }
-    
+
     // render query interface
-    render_search_bar_with_data(frame, input, problematic_positions, focus_mode, cursor_visible, &theme);
-    let (_items_rendered, max_items_that_fit) = render_query_results(frame, query_results, results_scroll, focus_mode, selected_result, &theme);
-    render_search_helpers_with_data(frame, input, toast_message, query_results, focus_mode, &theme);
+    render_search_bar_with_data(
+        frame,
+        input,
+        problematic_positions,
+        focus_mode,
+        cursor_visible,
+        &theme,
+    );
+    let (_items_rendered, max_items_that_fit) = render_query_results(
+        frame,
+        query_results,
+        results_scroll,
+        focus_mode,
+        selected_result,
+        &theme,
+    );
+    render_search_helpers_with_data(
+        frame,
+        input,
+        toast_message,
+        query_results,
+        focus_mode,
+        &theme,
+    );
     render_toast_with_data(frame, toast_message, error_type, &theme);
-    render_completion_dropdown(frame, completions, completion_index, show_completions, &theme);
-    
+    render_completion_dropdown(
+        frame,
+        completions,
+        completion_index,
+        show_completions,
+        &theme,
+    );
+
     // render detail view overlay if in detail mode
     if *focus_mode == FocusMode::DetailView && selected_result < query_results.len() {
         render_detail_view(frame, &query_results[selected_result], &theme);
     }
-    
+
     (0, max_items_that_fit)
 }
 
-// Widget functions have been moved to src/tui/widgets/ modules            
+// Widget functions have been moved to src/tui/widgets/ modules

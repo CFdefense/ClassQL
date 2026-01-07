@@ -168,8 +168,14 @@ impl TokenType {
     pub fn all_patterns() -> Vec<(TokenType, &'static str)> {
         vec![
             // multi-word operators - must come before individual words
-            (TokenType::DoesNotEqual, r"(?i)\bdoes\s+not\s+equal\b|\bdoesn't\s+equal\b|\bdoesnt\s+equal\b"),
-            (TokenType::DoesNotContain, r"(?i)\bdoes\s+not\s+contain\b|\bdoesn't\s+contain\b|\bdoesnt\s+contain\b"),
+            (
+                TokenType::DoesNotEqual,
+                r"(?i)\bdoes\s+not\s+equal\b|\bdoesn't\s+equal\b|\bdoesnt\s+equal\b",
+            ),
+            (
+                TokenType::DoesNotContain,
+                r"(?i)\bdoes\s+not\s+contain\b|\bdoesn't\s+contain\b|\bdoesnt\s+contain\b",
+            ),
             (TokenType::EqualsWord, r"(?i)\bequals\b"),
             (TokenType::Starts, r"(?i)\bstarts\b"),
             (TokenType::With, r"(?i)\bwith\b"),

@@ -3,7 +3,6 @@
 /// Settings widget rendering
 ///
 /// Renders the settings menu
-
 use crate::tui::themes::{Theme, ThemePalette};
 use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
@@ -26,7 +25,12 @@ use ratatui::Frame;
 /// None
 /// --- ---
 ///
-pub fn render_settings(frame: &mut Frame, current_theme: ThemePalette, theme: &Theme, selected_index: usize) {
+pub fn render_settings(
+    frame: &mut Frame,
+    current_theme: ThemePalette,
+    theme: &Theme,
+    selected_index: usize,
+) {
     let settings_width = 50_u16;
     let settings_height = 15_u16;
 
@@ -37,7 +41,7 @@ pub fn render_settings(frame: &mut Frame, current_theme: ThemePalette, theme: &T
 
     let frame_width = frame.area().width;
     let frame_height = frame.area().height;
-    
+
     // clamp settings dimensions to fit within frame
     let settings_area = Rect {
         x: (frame_width.saturating_sub(settings_width.min(frame_width))) / 2,
@@ -47,25 +51,32 @@ pub fn render_settings(frame: &mut Frame, current_theme: ThemePalette, theme: &T
     };
 
     let mut lines = Vec::new();
-    
+
     // Settings options
     let theme_prefix = if selected_index == 0 { "> " } else { "  " };
     let theme_style = if selected_index == 0 {
-        Style::default().fg(theme.selected_color).add_modifier(Modifier::BOLD)
+        Style::default()
+            .fg(theme.selected_color)
+            .add_modifier(Modifier::BOLD)
     } else {
         Style::default().fg(theme.text_color)
     };
     lines.push(Line::from(vec![
         Span::styled(theme_prefix, theme_style),
         Span::styled("Theme: ", theme_style),
-        Span::styled(current_theme.as_str(), Style::default().fg(theme.warning_color)),
+        Span::styled(
+            current_theme.as_str(),
+            Style::default().fg(theme.warning_color),
+        ),
         Span::styled(" (← → to change)", Style::default().fg(theme.muted_color)),
     ]));
     lines.push(Line::from(""));
-    
+
     let autocomplete_prefix = if selected_index == 1 { "> " } else { "  " };
     let autocomplete_style = if selected_index == 1 {
-        Style::default().fg(theme.selected_color).add_modifier(Modifier::BOLD)
+        Style::default()
+            .fg(theme.selected_color)
+            .add_modifier(Modifier::BOLD)
     } else {
         Style::default().fg(theme.text_color)
     };
@@ -75,10 +86,12 @@ pub fn render_settings(frame: &mut Frame, current_theme: ThemePalette, theme: &T
         Span::styled("TBD", Style::default().fg(theme.muted_color)),
     ]));
     lines.push(Line::from(""));
-    
+
     let school_prefix = if selected_index == 2 { "> " } else { "  " };
     let school_style = if selected_index == 2 {
-        Style::default().fg(theme.selected_color).add_modifier(Modifier::BOLD)
+        Style::default()
+            .fg(theme.selected_color)
+            .add_modifier(Modifier::BOLD)
     } else {
         Style::default().fg(theme.text_color)
     };
@@ -88,10 +101,12 @@ pub fn render_settings(frame: &mut Frame, current_theme: ThemePalette, theme: &T
         Span::styled("None", Style::default().fg(theme.warning_color)),
     ]));
     lines.push(Line::from(""));
-    
+
     let sync_prefix = if selected_index == 3 { "> " } else { "  " };
     let sync_style = if selected_index == 3 {
-        Style::default().fg(theme.selected_color).add_modifier(Modifier::BOLD)
+        Style::default()
+            .fg(theme.selected_color)
+            .add_modifier(Modifier::BOLD)
     } else {
         Style::default().fg(theme.text_color)
     };
@@ -101,15 +116,17 @@ pub fn render_settings(frame: &mut Frame, current_theme: ThemePalette, theme: &T
         Span::styled("N/A", Style::default().fg(theme.muted_color)),
     ]));
 
-    let settings_paragraph = Paragraph::new(lines)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(" Settings ")
-                .title_style(Style::default().fg(theme.title_color).add_modifier(Modifier::BOLD))
-                .border_style(Style::default().fg(theme.border_color))
-        );
+    let settings_paragraph = Paragraph::new(lines).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title(" Settings ")
+            .title_style(
+                Style::default()
+                    .fg(theme.title_color)
+                    .add_modifier(Modifier::BOLD),
+            )
+            .border_style(Style::default().fg(theme.border_color)),
+    );
 
     frame.render_widget(settings_paragraph, settings_area);
 }
-

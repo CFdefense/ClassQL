@@ -3,7 +3,6 @@
 /// Query results widget rendering
 ///
 /// Renders the query results in a 3-column grid
-
 use crate::data::sql::Class;
 use crate::tui::state::FocusMode;
 use crate::tui::themes::Theme;
@@ -42,7 +41,8 @@ pub fn render_query_results(
         return (0, 0);
     }
 
-    let is_browse_mode = *focus_mode == FocusMode::ResultsBrowse || *focus_mode == FocusMode::DetailView;
+    let is_browse_mode =
+        *focus_mode == FocusMode::ResultsBrowse || *focus_mode == FocusMode::DetailView;
 
     // position the results grid below the search bar
     let logo_height = 7; // height of the ASCII art logo
@@ -71,7 +71,7 @@ pub fn render_query_results(
         .skip(scroll)
         .take(max_items_that_fit)
         .collect();
-    
+
     let items_rendered = visible_classes.len();
 
     // render each class in a 3-column grid
@@ -94,7 +94,7 @@ pub fn render_query_results(
         // line 1: course code (bold title color)
         if let Some(line) = display_lines.first() {
             let style = Style::default()
-                    .fg(theme.title_color)
+                .fg(theme.title_color)
                 .add_modifier(Modifier::BOLD);
             styled_lines.push(Line::from(Span::styled(line.clone(), style)));
         }
@@ -145,7 +145,6 @@ pub fn render_query_results(
 
         frame.render_widget(card, cell_area);
     }
-    
+
     (items_rendered, max_items_that_fit)
 }
-

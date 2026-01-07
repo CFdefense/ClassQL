@@ -3,7 +3,6 @@
 /// Toast widget rendering
 ///
 /// Renders error toast notifications
-
 use crate::tui::state::ErrorType;
 use crate::tui::themes::Theme;
 use ratatui::layout::Rect;
@@ -102,4 +101,3 @@ pub fn render_toast_with_data(
         frame.render_widget(toast_paragraph, toast_area);
     }
 }
-

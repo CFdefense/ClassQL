@@ -92,10 +92,7 @@ impl Class {
         lines.push(title);
 
         // line 3: professor
-        let prof = self
-            .professor_name
-            .as_deref()
-            .unwrap_or("TBA");
+        let prof = self.professor_name.as_deref().unwrap_or("TBA");
         let prof_display = if prof.len() > 20 {
             format!("{}...", &prof[..17])
         } else {
@@ -128,20 +125,25 @@ impl Class {
                             let day_order = get_day_order(first_day);
                             // format day code for display (add space after single letters)
                             let formatted_days = format_day_for_display(days_part);
-                            time_parts.push((day_order, format!("{} {}-{}", formatted_days, start, end)));
+                            time_parts
+                                .push((day_order, format!("{} {}-{}", formatted_days, start, end)));
                         }
                     }
                 }
             }
-            
+
             // sort by day order (Monday first)
             time_parts.sort_by_key(|(day_order, _)| *day_order);
-            
+
             if time_parts.is_empty() {
                 format!("{} TBA", self.days)
             } else {
                 // show all parsed meeting times with their days (already sorted)
-                time_parts.iter().map(|(_, s)| s.as_str()).collect::<Vec<_>>().join(", ")
+                time_parts
+                    .iter()
+                    .map(|(_, s)| s.as_str())
+                    .collect::<Vec<_>>()
+                    .join(", ")
             }
         } else {
             // no meeting times available
@@ -179,7 +181,7 @@ fn format_time_short(time: &str) -> String {
     if parts.len() >= 2 {
         let hours: i32 = parts[0].parse().unwrap_or(0);
         let minutes: i32 = parts[1].parse().unwrap_or(0);
-        
+
         let (display_hour, period) = if hours == 0 {
             (12, "am")
         } else if hours < 12 {
@@ -189,7 +191,7 @@ fn format_time_short(time: &str) -> String {
         } else {
             (hours - 12, "pm")
         };
-        
+
         format!("{}:{:02}{}", display_hour, minutes, period)
     } else {
         time.to_string()
@@ -267,7 +269,8 @@ fn format_days(
 ///
 pub fn execute_query(sql: &str, db_path: &Path) -> Result<Vec<Class>, String> {
     // connect to the database
-    let conn = Connection::open(db_path).map_err(|e| format!("Database connection error: {}", e))?;
+    let conn =
+        Connection::open(db_path).map_err(|e| format!("Database connection error: {}", e))?;
 
     // prepare and execute the statement
     let mut stmt = conn

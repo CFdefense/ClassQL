@@ -3,7 +3,6 @@
 /// Completion dropdown widget rendering
 ///
 /// Renders tab completion suggestions dropdown
-
 use crate::tui::themes::Theme;
 use ratatui::layout::Rect;
 use ratatui::style::Style;
@@ -47,7 +46,7 @@ pub fn render_completion_dropdown(
 
     // calculate max available height (leave some space at bottom)
     let max_available_height = frame.area().height.saturating_sub(dropdown_y + 2);
-    
+
     // height = number of completions + 2 for borders, capped by available space
     let dropdown_height = (completions.len() as u16 + 2).min(max_available_height);
 
@@ -61,9 +60,13 @@ pub fn render_completion_dropdown(
     let mut styled_lines = Vec::new();
     for (i, completion) in completions.iter().enumerate() {
         let style = if Some(i) == completion_index {
-            Style::default().fg(theme.background_color).bg(theme.selected_color)
+            Style::default()
+                .fg(theme.background_color)
+                .bg(theme.selected_color)
         } else {
-            Style::default().fg(theme.text_color).bg(theme.background_color)
+            Style::default()
+                .fg(theme.text_color)
+                .bg(theme.background_color)
         };
         styled_lines.push(Line::from(Span::styled(completion, style)));
     }
@@ -71,28 +74,29 @@ pub fn render_completion_dropdown(
     // first, clear the area to cover results below with solid background
     frame.render_widget(Clear, dropdown_area);
 
-    let dropdown_paragraph = Paragraph::new(styled_lines)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title("Suggestions (↑↓ to navigate, Enter to select)")
-                .title_style(Style::default().fg(theme.warning_color))
-                .border_style(Style::default().fg(theme.warning_color))
-                .style(Style::default().bg(theme.background_color)),
-        );
+    let dropdown_paragraph = Paragraph::new(styled_lines).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title("Suggestions (↑↓ to navigate, Enter to select)")
+            .title_style(Style::default().fg(theme.warning_color))
+            .border_style(Style::default().fg(theme.warning_color))
+            .style(Style::default().bg(theme.background_color)),
+    );
 
     frame.render_widget(dropdown_paragraph, dropdown_area);
-    
+
     // force background color on empty/border cells, preserve styled text cells
     let buffer = frame.buffer_mut();
     let buffer_width = buffer.area.width;
     let buffer_height = buffer.area.height;
+
     // ensure we don't access out of bounds - right() and bottom() are exclusive
     // so we need to clamp them to buffer dimensions
     let start_y = dropdown_area.top();
     let start_x = dropdown_area.left();
     let end_y = dropdown_area.bottom().min(buffer_height);
     let end_x = dropdown_area.right().min(buffer_width);
+
     // only iterate if area is valid and within bounds
     if start_y < buffer_height && start_x < buffer_width && end_y > start_y && end_x > start_x {
         for y in start_y..end_y {
@@ -100,12 +104,21 @@ pub fn render_completion_dropdown(
                 // final bounds check before access
                 if x < buffer_width && y < buffer_height {
                     let cell = &mut buffer[(x, y)];
+
                     // only set background if cell is empty or a border character
                     // this preserves the text colors and backgrounds set by the paragraph
-                    if cell.symbol() == " " || cell.symbol() == "│" || cell.symbol() == "─" || 
-                       cell.symbol() == "┌" || cell.symbol() == "┐" || cell.symbol() == "└" || 
-                       cell.symbol() == "┘" || cell.symbol() == "├" || cell.symbol() == "┤" ||
-                       cell.symbol() == "┬" || cell.symbol() == "┴" {
+                    if cell.symbol() == " "
+                        || cell.symbol() == "│"
+                        || cell.symbol() == "─"
+                        || cell.symbol() == "┌"
+                        || cell.symbol() == "┐"
+                        || cell.symbol() == "└"
+                        || cell.symbol() == "┘"
+                        || cell.symbol() == "├"
+                        || cell.symbol() == "┤"
+                        || cell.symbol() == "┬"
+                        || cell.symbol() == "┴"
+                    {
                         cell.set_bg(theme.background_color);
                     }
                 }
@@ -113,4 +126,3 @@ pub fn render_completion_dropdown(
         }
     }
 }
-

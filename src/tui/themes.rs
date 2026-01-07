@@ -9,7 +9,6 @@
 /// Theme -> Theme structure with color definitions
 /// ThemePalette -> Available theme palette options
 /// --- ---
-
 use ratatui::style::Color;
 
 /// Theme structure
@@ -148,11 +147,11 @@ impl ThemePalette {
         match self {
             ThemePalette::Default => Theme {
                 name: "Default",
-                logo_color: Color::Rgb(30, 30, 150), // dark blue
-                border_color: Color::Red, // red
+                logo_color: Color::Rgb(30, 30, 150),  // dark blue
+                border_color: Color::Red,             // red
                 title_color: Color::Rgb(30, 30, 150), // dark blue
-                text_color: Color::Rgb(20, 20, 20), // very dark gray / black
-                selected_color: Color::Red, // red
+                text_color: Color::Rgb(20, 20, 20),   // very dark gray / black
+                selected_color: Color::Red,           // red
                 background_color: Color::Rgb(255, 255, 255), // white
                 error_color: Color::Rgb(200, 50, 50), // red
                 warning_color: Color::Rgb(200, 150, 50), // orange
@@ -168,7 +167,7 @@ impl ThemePalette {
                 text_color: Color::Rgb(220, 220, 220), // light gray
                 selected_color: Color::Rgb(100, 150, 255), // bright blue for selection
                 background_color: Color::Rgb(18, 18, 18), // very dark gray, almost black
-                error_color: Color::Rgb(255, 85, 85), // light red
+                error_color: Color::Rgb(255, 85, 85),  // light red
                 warning_color: Color::Rgb(255, 184, 108), // light orange
                 success_color: Color::Rgb(85, 255, 85), // light green
                 info_color: Color::Rgb(100, 150, 255), // bright blue
@@ -179,7 +178,7 @@ impl ThemePalette {
                 logo_color: Color::Rgb(135, 206, 235), // sky blue
                 border_color: Color::Rgb(200, 180, 220), // soft purple
                 title_color: Color::Rgb(150, 150, 200), // soft blue
-                text_color: Color::Rgb(60, 60, 80), // dark gray
+                text_color: Color::Rgb(60, 60, 80),    // dark gray
                 selected_color: Color::Rgb(150, 200, 255), // soft blue
                 background_color: Color::Rgb(250, 248, 255), // very light purple/white
                 error_color: Color::Rgb(255, 150, 150), // soft red
@@ -214,7 +213,7 @@ impl ThemePalette {
                 warning_color: Color::Rgb(255, 220, 100), // light yellow
                 success_color: Color::Rgb(100, 255, 150), // bright green
                 info_color: Color::Rgb(100, 200, 255), // bright blue
-                muted_color: Color::Rgb(60, 100, 70), // green-gray
+                muted_color: Color::Rgb(60, 100, 70),  // green-gray
             },
             ThemePalette::Purple => Theme {
                 name: "Purple",
@@ -274,17 +273,17 @@ impl ThemePalette {
             },
             ThemePalette::Cyberpunk => Theme {
                 name: "Cyberpunk",
-                logo_color: Color::Rgb(0, 255, 255), // cyan
-                border_color: Color::Rgb(255, 0, 255), // magenta
-                title_color: Color::Rgb(0, 255, 255), // bright cyan
-                text_color: Color::Rgb(255, 255, 255), // white
+                logo_color: Color::Rgb(0, 255, 255),     // cyan
+                border_color: Color::Rgb(255, 0, 255),   // magenta
+                title_color: Color::Rgb(0, 255, 255),    // bright cyan
+                text_color: Color::Rgb(255, 255, 255),   // white
                 selected_color: Color::Rgb(255, 0, 255), // magenta
                 background_color: Color::Rgb(10, 5, 20), // very dark purple
-                error_color: Color::Rgb(255, 0, 100), // bright pink-red
-                warning_color: Color::Rgb(255, 200, 0), // bright yellow
-                success_color: Color::Rgb(0, 255, 150), // bright cyan-green
-                info_color: Color::Rgb(0, 200, 255), // bright cyan-blue
-                muted_color: Color::Rgb(80, 40, 100), // dark purple-gray
+                error_color: Color::Rgb(255, 0, 100),    // bright pink-red
+                warning_color: Color::Rgb(255, 200, 0),  // bright yellow
+                success_color: Color::Rgb(0, 255, 150),  // bright cyan-green
+                info_color: Color::Rgb(0, 200, 255),     // bright cyan-blue
+                muted_color: Color::Rgb(80, 40, 100),    // dark purple-gray
             },
             ThemePalette::Forest => Theme {
                 name: "Forest",
@@ -298,7 +297,7 @@ impl ThemePalette {
                 warning_color: Color::Rgb(255, 220, 100), // light yellow
                 success_color: Color::Rgb(100, 255, 100), // bright green
                 info_color: Color::Rgb(100, 200, 255), // bright blue
-                muted_color: Color::Rgb(60, 100, 60), // green-gray
+                muted_color: Color::Rgb(60, 100, 60),  // green-gray
             },
             ThemePalette::Ocean => Theme {
                 name: "Ocean",
@@ -331,4 +330,3 @@ impl ThemePalette {
         }
     }
 }
-

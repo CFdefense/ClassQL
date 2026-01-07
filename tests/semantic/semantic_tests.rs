@@ -1,3 +1,4 @@
+use crate::utils;
 /// tests/semantic_tests.rs
 ///
 /// Semantic analyzer tests
@@ -21,13 +22,11 @@
 ///     --- ---
 /// --- ---
 ///
-
 use classql::dsl::lexer::Lexer;
 use classql::dsl::parser::Parser;
 use classql::dsl::semantic::semantic_analysis;
 use classql::tui::errors::SemanticError;
 use serde::{Deserialize, Serialize};
-use crate::utils;
 
 /// Semantic test case struct
 ///
@@ -219,7 +218,3 @@ fn test_semantic_basic_valid_queries() {
 fn test_semantic_basic_invalid_queries() {
     run_test_file("basic_invalid_queries.json");
 }
-
-
-
-

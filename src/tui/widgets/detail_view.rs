@@ -3,7 +3,6 @@
 /// Detail view widget rendering
 ///
 /// Renders detailed class information overlay
-
 use crate::data::sql::Class;
 use crate::tui::themes::Theme;
 use crate::tui::widgets::helpers::{format_day_for_display, get_day_order};
@@ -28,7 +27,7 @@ use ratatui::Frame;
 ///
 pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
     let detail_width = 60_u16;
-    
+
     // calculate description lines needed (before building content)
     let content_width = (detail_width.saturating_sub(4)) as usize; // -4 for borders and padding
     let desc_lines = if let Some(desc) = &class.description {
@@ -37,18 +36,24 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
             let mut remaining = desc.as_str();
             let mut lines_count = 0;
             let max_desc_lines = 8; // maximum description lines
-            
+
             while !remaining.is_empty() && lines_count < max_desc_lines {
                 if remaining.len() <= content_width {
                     lines_count += 1;
                     break;
                 } else {
                     let mut break_point = content_width;
-                    if let Some(space_pos) = remaining[..content_width.min(remaining.len())].rfind(' ') {
+                    if let Some(space_pos) =
+                        remaining[..content_width.min(remaining.len())].rfind(' ')
+                    {
                         break_point = space_pos;
-                    } else if let Some(comma_pos) = remaining[..content_width.min(remaining.len())].rfind(',') {
+                    } else if let Some(comma_pos) =
+                        remaining[..content_width.min(remaining.len())].rfind(',')
+                    {
                         break_point = comma_pos + 1;
-                    } else if let Some(period_pos) = remaining[..content_width.min(remaining.len())].rfind('.') {
+                    } else if let Some(period_pos) =
+                        remaining[..content_width.min(remaining.len())].rfind('.')
+                    {
                         break_point = period_pos + 1;
                     }
                     remaining = remaining[break_point..].trim_start();
@@ -62,7 +67,7 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
     } else {
         1 // "(No description available)" line
     };
-    
+
     // calculate base content lines (without description)
     let mut base_lines = 2; // course code + title
     base_lines += 1; // blank line
@@ -72,10 +77,13 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
     }
     base_lines += 1; // blank line
     base_lines += 1; // "Schedule:" label
-    // count schedule lines
+                     // count schedule lines
     if let Some(meeting_times_str) = &class.meeting_times {
         if !meeting_times_str.is_empty() {
-            base_lines += meeting_times_str.split('|').filter(|mt| !mt.is_empty()).count();
+            base_lines += meeting_times_str
+                .split('|')
+                .filter(|mt| !mt.is_empty())
+                .count();
         } else {
             base_lines += 1; // "TBD"
         }
@@ -93,14 +101,16 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
     base_lines += 1; // enrollment
     base_lines += 1; // credits
     base_lines += 2; // blank line + "Description:" label
-    
+
     // total content lines = base + description lines
     let total_content_lines = base_lines + desc_lines;
-    
+
     // calculate height: content + borders (2) + title (1)
     let min_height = 20_u16; // minimum height when no description
     let max_height = 35_u16; // maximum height
-    let calculated_height = (total_content_lines as u16 + 3).min(max_height).max(min_height);
+    let calculated_height = (total_content_lines as u16 + 3)
+        .min(max_height)
+        .max(min_height);
     let detail_height = calculated_height;
 
     let detail_area = Rect {
@@ -114,15 +124,20 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
     let mut lines: Vec<Line> = Vec::new();
 
     // course code and title
-    lines.push(Line::from(vec![
-        Span::styled(
-            format!("{} {} - {}", class.subject_code, class.course_number, class.section_sequence),
-            Style::default().fg(theme.info_color).add_modifier(Modifier::BOLD),
+    lines.push(Line::from(vec![Span::styled(
+        format!(
+            "{} {} - {}",
+            class.subject_code, class.course_number, class.section_sequence
         ),
-    ]));
+        Style::default()
+            .fg(theme.info_color)
+            .add_modifier(Modifier::BOLD),
+    )]));
     lines.push(Line::from(Span::styled(
         class.title.clone(),
-        Style::default().fg(theme.text_color).add_modifier(Modifier::BOLD),
+        Style::default()
+            .fg(theme.text_color)
+            .add_modifier(Modifier::BOLD),
     )));
     lines.push(Line::from("")); // blank line
 
@@ -146,17 +161,18 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
     lines.push(Line::from("")); // blank line
 
     // schedule
-    lines.push(Line::from(vec![
-        Span::styled("Schedule:", Style::default().fg(theme.success_color)),
-    ]));
-    
+    lines.push(Line::from(vec![Span::styled(
+        "Schedule:",
+        Style::default().fg(theme.success_color),
+    )]));
+
     // helper function to format time
     let format_time = |time: &str| -> String {
         let parts: Vec<&str> = time.split(':').collect();
         if parts.len() >= 2 {
             let hours: i32 = parts[0].parse().unwrap_or(0);
             let minutes: i32 = parts[1].parse().unwrap_or(0);
-            
+
             let (display_hour, period) = if hours == 0 {
                 (12, "am")
             } else if hours < 12 {
@@ -166,20 +182,20 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
             } else {
                 (hours - 12, "pm")
             };
-            
+
             format!("{}:{:02}{}", display_hour, minutes, period)
         } else {
             time.to_string()
         }
     };
-    
+
     // parse meeting_times if available, otherwise fall back to old format
     if let Some(meeting_times_str) = &class.meeting_times {
         if !meeting_times_str.is_empty() {
             // parse meeting times: "M:08:00:00-10:45:00|TH:08:00:00-09:15:00"
             // collect all meeting times with their day codes for sorting
             let mut meeting_times: Vec<(u8, String, String, String)> = Vec::new(); // (day_order, days_part, start, end)
-            
+
             for mt in meeting_times_str.split('|') {
                 if mt.is_empty() {
                     continue;
@@ -207,17 +223,20 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
                     }
                 }
             }
-            
+
             // sort by day order (Monday first)
             meeting_times.sort_by_key(|(day_order, _, _, _)| *day_order);
-            
+
             // display sorted meeting times
             for (_, days_part, start, end) in meeting_times {
                 // format day code for display (add space after single letters)
                 let formatted_days = format_day_for_display(&days_part);
                 lines.push(Line::from(vec![
                     Span::styled("    ", Style::default().fg(theme.text_color)), // 4 spaces for indentation
-                    Span::styled(format!("{} {}-{}", formatted_days, start, end), Style::default().fg(theme.text_color)),
+                    Span::styled(
+                        format!("{} {}-{}", formatted_days, start, end),
+                        Style::default().fg(theme.text_color),
+                    ),
                 ]));
             }
         } else {
@@ -275,15 +294,19 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
     // credit hours
     lines.push(Line::from(vec![
         Span::styled("Credits: ", Style::default().fg(theme.info_color)),
-        Span::styled(format!("{}", class.credit_hours), Style::default().fg(theme.text_color)),
+        Span::styled(
+            format!("{}", class.credit_hours),
+            Style::default().fg(theme.text_color),
+        ),
     ]));
 
     // description
     lines.push(Line::from("")); // blank line
-    lines.push(Line::from(vec![
-        Span::styled("Description: ", Style::default().fg(theme.success_color)),
-    ]));
-    
+    lines.push(Line::from(vec![Span::styled(
+        "Description: ",
+        Style::default().fg(theme.success_color),
+    )]));
+
     if let Some(desc) = &class.description {
         if !desc.trim().is_empty() {
             // wrap description to fit within detail width (account for borders and padding)
@@ -291,22 +314,31 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
             let mut remaining = desc.as_str();
             let mut desc_lines_added = 0;
             let max_desc_lines = 8; // maximum description lines to show
-            
+
             while !remaining.is_empty() && desc_lines_added < max_desc_lines {
                 if remaining.len() <= content_width {
-                    lines.push(Line::from(Span::styled(remaining.to_string(), Style::default().fg(theme.muted_color))));
+                    lines.push(Line::from(Span::styled(
+                        remaining.to_string(),
+                        Style::default().fg(theme.muted_color),
+                    )));
                     break;
                 } else {
                     // find a good break point (space, comma, period, etc.)
                     let mut break_point = content_width;
-                    if let Some(space_pos) = remaining[..content_width.min(remaining.len())].rfind(' ') {
+                    if let Some(space_pos) =
+                        remaining[..content_width.min(remaining.len())].rfind(' ')
+                    {
                         break_point = space_pos;
-                    } else if let Some(comma_pos) = remaining[..content_width.min(remaining.len())].rfind(',') {
+                    } else if let Some(comma_pos) =
+                        remaining[..content_width.min(remaining.len())].rfind(',')
+                    {
                         break_point = comma_pos + 1;
-                    } else if let Some(period_pos) = remaining[..content_width.min(remaining.len())].rfind('.') {
+                    } else if let Some(period_pos) =
+                        remaining[..content_width.min(remaining.len())].rfind('.')
+                    {
                         break_point = period_pos + 1;
                     }
-                    
+
                     let line_text = if desc_lines_added == max_desc_lines - 1 {
                         // last line, truncate if needed
                         if remaining.len() > content_width {
@@ -317,46 +349,60 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
                     } else {
                         remaining[..break_point].to_string()
                     };
-                    
-                    lines.push(Line::from(Span::styled(line_text, Style::default().fg(theme.muted_color))));
+
+                    lines.push(Line::from(Span::styled(
+                        line_text,
+                        Style::default().fg(theme.muted_color),
+                    )));
                     remaining = remaining[break_point..].trim_start();
                     desc_lines_added += 1;
                 }
             }
         } else {
             // description exists but is empty/whitespace
-            lines.push(Line::from(Span::styled("(No description available)", Style::default().fg(theme.muted_color))));
+            lines.push(Line::from(Span::styled(
+                "(No description available)",
+                Style::default().fg(theme.muted_color),
+            )));
         }
     } else {
         // description is None
-        lines.push(Line::from(Span::styled("(No description available)", Style::default().fg(theme.muted_color))));
+        lines.push(Line::from(Span::styled(
+            "(No description available)",
+            Style::default().fg(theme.muted_color),
+        )));
     }
 
     // first, clear the area to cover results below with solid background
     frame.render_widget(Clear, detail_area);
 
-
     let detail_paragraph = Paragraph::new(lines).block(
         Block::default()
             .borders(Borders::ALL)
             .title(" Class Details ")
-            .title_style(Style::default().fg(theme.title_color).add_modifier(Modifier::BOLD))
+            .title_style(
+                Style::default()
+                    .fg(theme.title_color)
+                    .add_modifier(Modifier::BOLD),
+            )
             .border_style(Style::default().fg(theme.border_color))
             .style(Style::default().bg(theme.background_color)),
     );
 
     frame.render_widget(detail_paragraph, detail_area);
-    
+
     // force white background on empty/border cells, preserve styled text cells
     let buffer = frame.buffer_mut();
     let buffer_width = buffer.area.width;
     let buffer_height = buffer.area.height;
+
     // ensure we don't access out of bounds - right() and bottom() are exclusive
     // so we need to clamp them to buffer dimensions
     let start_y = detail_area.top();
     let start_x = detail_area.left();
     let end_y = detail_area.bottom().min(buffer_height);
     let end_x = detail_area.right().min(buffer_width);
+
     // only iterate if area is valid and within bounds
     if start_y < buffer_height && start_x < buffer_width && end_y > start_y && end_x > start_x {
         for y in start_y..end_y {
@@ -366,10 +412,18 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
                     let cell = &mut buffer[(x, y)];
                     // only set background if cell is empty or a border character
                     // this preserves the text colors and backgrounds set by the paragraph
-                    if cell.symbol() == " " || cell.symbol() == "│" || cell.symbol() == "─" || 
-                       cell.symbol() == "┌" || cell.symbol() == "┐" || cell.symbol() == "└" || 
-                       cell.symbol() == "┘" || cell.symbol() == "├" || cell.symbol() == "┤" ||
-                       cell.symbol() == "┬" || cell.symbol() == "┴" {
+                    if cell.symbol() == " "
+                        || cell.symbol() == "│"
+                        || cell.symbol() == "─"
+                        || cell.symbol() == "┌"
+                        || cell.symbol() == "┐"
+                        || cell.symbol() == "└"
+                        || cell.symbol() == "┘"
+                        || cell.symbol() == "├"
+                        || cell.symbol() == "┤"
+                        || cell.symbol() == "┬"
+                        || cell.symbol() == "┴"
+                    {
                         cell.set_bg(theme.background_color);
                     }
                 }
@@ -377,4 +431,3 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
         }
     }
 }
-

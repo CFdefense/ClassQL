@@ -3,7 +3,6 @@
 /// Helper widgets rendering
 ///
 /// Renders help text and other helper UI elements
-
 use crate::data::sql::Class;
 use crate::tui::state::FocusMode;
 use crate::tui::themes::Theme;
@@ -45,15 +44,19 @@ pub fn render_search_helpers_with_data(
         FocusMode::MainMenu => "↑↓ Navigate | Enter: Select | Esc: Quit",
         FocusMode::Settings => "Esc: Back to Main Menu | Ctrl+C: Quit",
         FocusMode::DetailView => "Press Esc or Enter to close detail view",
-        FocusMode::ResultsBrowse => "←↑↓→ Navigate | Enter: Details | Esc: Main Menu | Type to Search",
-        FocusMode::QueryInput => "Enter: Search | Tab: Completions | ↓: Browse Results | Esc: Main Menu",
+        FocusMode::ResultsBrowse => {
+            "←↑↓→ Navigate | Enter: Details | Esc: Main Menu | Type to Search"
+        }
+        FocusMode::QueryInput => {
+            "Enter: Search | Tab: Completions | ↓: Browse Results | Esc: Main Menu"
+        }
     };
 
     let help_width = help_text.len() as u16;
-    
+
     // position navigation controls at the bottom of the screen
     let help_y = frame.area().height.saturating_sub(2);
-    
+
     let help_area = Rect {
         x: frame.area().width.saturating_sub(help_width) / 2,
         y: help_y,
@@ -82,14 +85,14 @@ pub fn render_search_helpers_with_data(
 ///
 pub fn get_day_order(day_code: &str) -> u8 {
     match day_code {
-        "M" => 0,   // monday
-        "T" => 1,   // Tuesday
-        "W" => 2,   // wednesday
-        "TH" => 3,  // thursday
-        "F" => 4,   // friday
-        "S" => 5,   // saturday
-        "SU" => 6,  // sunday
-        _ => 99,    // unknown days go last
+        "M" => 0,  // monday
+        "T" => 1,  // Tuesday
+        "W" => 2,  // wednesday
+        "TH" => 3, // thursday
+        "F" => 4,  // friday
+        "S" => 5,  // saturday
+        "SU" => 6, // sunday
+        _ => 99,   // unknown days go last
     }
 }
 
@@ -108,9 +111,8 @@ pub fn get_day_order(day_code: &str) -> u8 {
 pub fn format_day_for_display(day_code: &str) -> String {
     // check if it's a single letter (not TH, SU, etc.)
     if day_code.len() == 1 {
-        format!("{} ", day_code)  // add space after single letter
+        format!("{} ", day_code) // add space after single letter
     } else {
-        day_code.to_string()  // keep multi-letter codes as-is
+        day_code.to_string() // keep multi-letter codes as-is
     }
 }
-

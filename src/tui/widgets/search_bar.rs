@@ -3,7 +3,6 @@
 /// Search bar widget rendering
 ///
 /// Renders the query input search bar with syntax highlighting
-
 use crate::tui::state::FocusMode;
 use crate::tui::themes::Theme;
 use ratatui::layout::Rect;
@@ -46,7 +45,7 @@ pub fn render_search_bar_with_data(
     let frame_width = frame.area().width;
     let frame_height = frame.area().height;
     let search_height = 3_u16;
-    
+
     // clamp search bar dimensions to fit within frame
     let search_area = Rect {
         x: (frame_width.saturating_sub(search_width.min(frame_width) as u16)) / 2,
@@ -73,7 +72,14 @@ pub fn render_search_bar_with_data(
     if scroll_offset > 0 {
         styled_spans.push(Span::styled("…", Style::default().fg(theme.muted_color)));
     } else {
-        styled_spans.push(Span::styled("> ", Style::default().fg(if is_focused { theme.selected_color } else { theme.muted_color })));
+        styled_spans.push(Span::styled(
+            "> ",
+            Style::default().fg(if is_focused {
+                theme.selected_color
+            } else {
+                theme.muted_color
+            }),
+        ));
     }
 
     // process only the visible portion of the input
@@ -114,7 +120,9 @@ pub fn render_search_bar_with_data(
     };
 
     let title_style = if is_focused {
-        Style::default().fg(theme.title_color).add_modifier(Modifier::BOLD)
+        Style::default()
+            .fg(theme.title_color)
+            .add_modifier(Modifier::BOLD)
     } else {
         Style::default().fg(theme.muted_color)
     };
@@ -131,4 +139,3 @@ pub fn render_search_bar_with_data(
 
     frame.render_widget(search_paragraph, search_area);
 }
-

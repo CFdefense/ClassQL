@@ -1,9 +1,10 @@
+use crate::utils;
 /// tests/parser_tests.rs
-/// 
+///
 /// Parser tests
-/// 
+///
 /// Responsible for testing the parser
-/// 
+///
 /// Contains:
 /// --- ---
 /// ParserTestCase -> Parser test case struct
@@ -24,16 +25,14 @@
 ///     run_test_file -> Run the test file
 ///     --- ---
 /// --- ---
-
 use classql::dsl::lexer::Lexer;
 use classql::dsl::parser::Parser;
 use classql::dsl::token::Token;
 use classql::tui::errors::SyntaxError;
 use serde::{Deserialize, Serialize};
-use crate::utils;
 
 /// Parser test case struct
-/// 
+///
 /// Fields:
 /// --- ---
 /// test_name -> The name of the test
@@ -44,14 +43,14 @@ use crate::utils;
 /// expected_error_message -> The expected error message
 /// expected_problematic_tokens -> The expected problematic tokens
 /// --- ---
-/// 
+///
 /// Implemented Traits:
 /// --- ---
 /// Debug -> Debug trait for ParserTestCase
 /// Deserialize -> Deserialize trait for ParserTestCase
 /// Serialize -> Serialize trait for ParserTestCase
 /// --- ---
-/// 
+///
 #[derive(Debug, Deserialize, Serialize)]
 struct ParserTestCase {
     test_name: String,
@@ -64,21 +63,21 @@ struct ParserTestCase {
 }
 
 /// Expected token struct
-/// 
+///
 /// Fields:
 /// --- ---
 /// lexeme -> The lexeme of the token
 /// start -> The start position of the token
 /// end -> The end position of the token
 /// --- ---
-/// 
+///
 /// Implemented Traits:
 /// --- ---
 /// Debug -> Debug trait for ExpectedToken
 /// Deserialize -> Deserialize trait for ExpectedToken
 /// Serialize -> Serialize trait for ExpectedToken
 /// --- ---
-/// 
+///
 #[derive(Debug, Deserialize, Serialize)]
 struct ExpectedToken {
     lexeme: String,
@@ -87,22 +86,22 @@ struct ExpectedToken {
 }
 
 /// Parser test helper struct
-/// 
+///
 /// Fields:
 /// --- ---
 /// None
 /// --- ---
-/// 
+///
 /// Implemented Traits:
 /// --- ---
 /// Default -> Default trait for ParserTestHelper
 /// --- ---
-/// 
+///
 #[derive(Default)]
 struct ParserTestHelper {}
 
 /// Parser test helper implementation
-/// 
+///
 /// Methods:
 /// --- ---
 /// new -> Create a new ParserTestHelper
@@ -112,22 +111,22 @@ struct ParserTestHelper {}
 /// validate_error_type -> Validate error type
 /// validate_error_message -> Validate error message
 /// --- ---
-/// 
+///
 impl ParserTestHelper {
     /// Create a new ParserTestHelper
-    /// 
+    ///
     /// TODO: This should be implemented further
-    /// 
+    ///
     /// Parameters:
     /// --- ---
     /// None
     /// --- ---
-    /// 
+    ///
     /// Returns:
     /// --- ---
     /// ParserTestHelper -> The new ParserTestHelper
     /// --- ---
-    /// 
+    ///
     fn new() -> Self {
         Self {
             // TODO: ..Default::default()
@@ -135,18 +134,18 @@ impl ParserTestHelper {
     }
 
     /// Create tokens from input
-    /// 
+    ///
     /// Parameters:
     /// --- ---
     /// self -> The ParserTestHelper instance
     /// input -> The input to create tokens from
     /// --- ---
-    /// 
+    ///
     /// Returns:
     /// --- ---
     /// Vec<Token> -> The created tokens
     /// --- ---
-    /// 
+    ///
     fn create_tokens(&mut self, input: &str) -> Vec<Token> {
         let mut lexer = Lexer::new(input.to_string());
         match lexer.analyze() {
@@ -156,18 +155,18 @@ impl ParserTestHelper {
     }
 
     /// Test the parser
-    /// 
+    ///
     /// Parameters:
     /// --- ---
     /// self -> The ParserTestHelper instance
     /// test_case -> The test case to test
     /// --- ---
-    /// 
+    ///
     /// Returns:
     /// --- ---
     /// None
     /// --- ---
-    /// 
+    ///
     fn test_parse(&mut self, test_case: &ParserTestCase) {
         println!("Running test: {}", test_case.test_name);
         println!("Description: {}", test_case.description);
@@ -232,7 +231,7 @@ impl ParserTestHelper {
         println!();
     }
 
-    /// 
+    ///
     /// Parameters:
     /// --- ---
     /// self -> The ParserTestHelper instance
@@ -240,12 +239,12 @@ impl ParserTestHelper {
     /// expected -> The expected tokens
     /// input -> The input to validate the tokens from
     /// --- ---
-    /// 
+    ///
     /// Returns:
     /// --- ---
     /// None
     /// --- ---
-    /// 
+    ///
     fn validate_problematic_tokens(
         &self,
         actual: &[Token],
@@ -299,19 +298,19 @@ impl ParserTestHelper {
     }
 
     /// Validate error type
-    /// 
+    ///
     /// Parameters:
     /// --- ---
     /// self -> The ParserTestHelper instance
     /// actual_error -> The actual error
     /// expected_error_type -> The expected error type
     /// --- ---
-    /// 
+    ///
     /// Returns:
     /// --- ---
     /// None
     /// --- ---
-    /// 
+    ///
     fn validate_error_type(&self, actual_error: &SyntaxError, expected_error_type: &str) {
         let actual_error_type = match actual_error {
             SyntaxError::MissingToken(_) => "MissingToken",
@@ -329,19 +328,19 @@ impl ParserTestHelper {
     }
 
     /// Validate error message
-    /// 
+    ///
     /// Parameters:
     /// --- ---
     /// self -> The ParserTestHelper instance
     /// actual_error -> The actual error
     /// expected_message -> The expected error message
     /// --- ---
-    /// 
+    ///
     /// Returns:
     /// --- ---
     /// None
     /// --- ---
-    /// 
+    ///
     fn validate_error_message(&self, actual_error: &SyntaxError, expected_message: &str) {
         let actual_message = actual_error.to_string();
         assert_eq!(
@@ -352,19 +351,18 @@ impl ParserTestHelper {
     }
 }
 
-
 /// Run the test file
-/// 
+///
 /// Parameters:
 /// --- ---
 /// filename -> The filename to run
 /// --- ---
-/// 
+///
 /// Returns:
 /// --- ---
 /// None
 /// --- ---
-/// 
+///
 fn run_test_file(filename: &str) {
     let mut helper = ParserTestHelper::new();
     let content = utils::load_test_file("parser", filename);
