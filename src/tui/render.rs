@@ -351,7 +351,7 @@ impl Tui {
                                 }
                             }
                             KeyCode::Down => {
-                                let max_index = 2;
+                                let max_index = 3;
                                 if self.settings_index < max_index {
                                     self.settings_index += 1;
                                 }

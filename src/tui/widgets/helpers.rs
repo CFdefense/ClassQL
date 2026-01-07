@@ -30,9 +30,9 @@ use ratatui::Frame;
 ///
 pub fn render_search_helpers_with_data(
     frame: &mut Frame,
-    input: &str,
+    _input: &str,
     toast_message: &Option<String>,
-    query_results: &[Class],
+    _query_results: &[Class],
     focus_mode: &FocusMode,
     theme: &Theme,
 ) {
@@ -45,16 +45,8 @@ pub fn render_search_helpers_with_data(
         FocusMode::MainMenu => "↑↓ Navigate | Enter: Select | Esc: Quit",
         FocusMode::Settings => "Esc: Back to Main Menu | Ctrl+C: Quit",
         FocusMode::DetailView => "Press Esc or Enter to close detail view",
-        FocusMode::ResultsBrowse => "←↑↓→ Navigate | Enter: Details | Esc: Quit | Type to Search",
-        FocusMode::QueryInput => {
-            if !query_results.is_empty() {
-                "Enter: Search | Tab: Complete | ↓: Browse Results | Esc: Main Menu"
-            } else if input.is_empty() {
-                "Type a ClassQL query (e.g., 'prof is Brian') | Esc: Main Menu"
-            } else {
-                "Press Enter to Search, Tab for Completions | ↓: Browse Results | Esc: Main Menu"
-            }
-        }
+        FocusMode::ResultsBrowse => "←↑↓→ Navigate | Enter: Details | Esc: Main Menu | Type to Search",
+        FocusMode::QueryInput => "Enter: Search | Tab: Completions | ↓: Browse Results | Esc: Main Menu",
     };
 
     let help_width = help_text.len() as u16;
