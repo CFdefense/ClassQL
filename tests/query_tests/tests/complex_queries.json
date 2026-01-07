@@ -1,0 +1,98 @@
+[
+  {
+    "test_name": "professor_and_subject",
+    "description": "Complex query with professor and subject",
+    "input": "prof contains Shanley and subject equals MEDT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N",
+        "professor_name": "Shanley",
+        "section_sequence": "020"
+      }
+    ]
+  },
+  {
+    "test_name": "subject_course_and_credit",
+    "description": "Complex query with subject, course, and credit hours",
+    "input": "subject equals CMPT and number equals 103L and credit hours = 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "professor_or_subject",
+    "description": "Complex query with professor OR subject",
+    "input": "prof contains Shanley or subject equals MEDT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N",
+        "professor_name": "Shanley",
+        "section_sequence": "020"
+      }
+    ]
+  },
+  {
+    "test_name": "multiple_conditions_and",
+    "description": "Complex query with multiple conditions using AND",
+    "input": "subject equals CMPT and credit hours >= 3 and enrollment > 0",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "campus_and_method",
+    "description": "Complex query with campus and instruction method",
+    "input": "campus contains Marist and method contains Online",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "meeting_type_and_day",
+    "description": "Complex query with meeting type and day",
+    "input": "type equals LEC and monday",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "time_and_day",
+    "description": "Complex query with time and day",
+    "input": "start >= 9:00am and monday",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "full_section_query",
+    "description": "Complex query checking if section is full",
+    "input": "full equals true",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "not_full_section_query",
+    "description": "Complex query checking if section is not full",
+    "input": "full equals false",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  }
+]
+

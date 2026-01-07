@@ -79,7 +79,7 @@
     "input": "invalid > 9:00",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "'invalid' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
+    "expected_error_message": "'invalid' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
     "expected_problematic_tokens": [
       {
         "lexeme": "invalid",

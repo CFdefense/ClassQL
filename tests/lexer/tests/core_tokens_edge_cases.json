@@ -2,9 +2,9 @@
   {
     "test_name": "core_tokens_whitespace_variations",
     "description": "Test core tokens with various whitespace patterns",
-    "code": "  section  \t  title  \n  number  ",
+    "code": "  subject  \t  title  \n  number  ",
     "result": [
-      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_SUBJECT", "content": "subject"},
       {"token_type": "T_TITLE", "content": "title"},
       {"token_type": "T_NUMBER", "content": "number"}
     ]
@@ -12,9 +12,9 @@
   {
     "test_name": "core_tokens_case_sensitivity",
     "description": "Test core tokens are case sensitive",
-    "code": "SECTION Title NUMBER Description",
+    "code": "SUBJECT Title NUMBER Description",
     "result": [
-      {"token_type": "T_SECTION", "content": "SECTION"},
+      {"token_type": "T_SUBJECT", "content": "SUBJECT"},
       {"token_type": "T_TITLE", "content": "Title"},
       {"token_type": "T_NUMBER", "content": "NUMBER"},
       {"token_type": "T_DESCRIPTION", "content": "Description"}
@@ -23,12 +23,12 @@
   {
     "test_name": "core_tokens_partial_matches",
     "description": "Test that partial matches don't interfere with core tokens",
-    "code": "sectional sectioned sectioning section",
+    "code": "sectional sectioned sectioning subject",
     "result": [
       {"token_type": "T_IDENTIFIER", "content": "sectional"},
       {"token_type": "T_IDENTIFIER", "content": "sectioned"},
       {"token_type": "T_IDENTIFIER", "content": "sectioning"},
-      {"token_type": "T_SECTION", "content": "section"}
+      {"token_type": "T_SUBJECT", "content": "subject"}
     ]
   },
   {
@@ -64,10 +64,10 @@
   {
     "test_name": "core_tokens_with_parentheses",
     "description": "Test core tokens with parentheses",
-    "code": "(section) (title) (number)",
+    "code": "(subject) (title) (number)",
     "result": [
       {"token_type": "T_LEFTPAREN", "content": "("},
-      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_SUBJECT", "content": "subject"},
       {"token_type": "T_RIGHTPAREN", "content": ")"},
       {"token_type": "T_LEFTPAREN", "content": "("},
       {"token_type": "T_TITLE", "content": "title"},
@@ -80,9 +80,9 @@
   {
     "test_name": "core_tokens_with_comparison_operators",
     "description": "Test core tokens with comparison operators",
-    "code": "section = \"CS101\" title != \"Advanced\" number > 100",
+    "code": "subject = \"CS101\" title != \"Advanced\" number > 100",
     "result": [
-      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_SUBJECT", "content": "subject"},
       {"token_type": "T_EQUALS", "content": "="},
       {"token_type": "T_STRING", "content": "\"CS101\""},
       {"token_type": "T_TITLE", "content": "title"},
@@ -96,9 +96,9 @@
   {
     "test_name": "core_tokens_with_contains_operator",
     "description": "Test core tokens with contains operator",
-    "code": "section contains \"101\" title contains \"Introduction\"",
+    "code": "subject contains \"101\" title contains \"Introduction\"",
     "result": [
-      {"token_type": "T_SECTION", "content": "section"},
+      {"token_type": "T_SUBJECT", "content": "subject"},
       {"token_type": "T_CONTAINS", "content": "contains"},
       {"token_type": "T_STRING", "content": "\"101\""},
       {"token_type": "T_TITLE", "content": "title"},

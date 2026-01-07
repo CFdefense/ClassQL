@@ -5,7 +5,7 @@
     "input": "prof",
     "should_succeed": false,
     "expected_error_type": "ExpectedAfter",
-    "expected_error_message": "After 'search field', please add one of: 'is', 'equals', 'contains', 'has', 'starts with', 'ends with', '=', '!='",
+    "expected_error_message": "After 'search field', please add one of: 'is', 'is not', 'equals', 'contains', 'has', 'starts with', 'ends with', '=', '!=', 'does not equal', 'doesn't equal', 'does not contain', 'doesn't contain'",
     "expected_problematic_tokens": []
   },
   {
@@ -23,7 +23,7 @@
     "input": "invalid_entity is value",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "'invalid_entity' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
+    "expected_error_message": "'invalid_entity' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
     "expected_problematic_tokens": [
       {
         "lexeme": "invalid_entity",
@@ -62,7 +62,7 @@
     "input": "prof Alan",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "'Alan' is not valid here. Try: 'is', 'equals', 'contains', 'has', 'starts with', 'ends with'",
+    "expected_error_message": "'Alan' is not valid here. Try: 'is', 'is not', 'equals', 'contains', 'has', 'starts with', 'ends with', 'does not equal', 'doesn't equal', 'does not contain', 'doesn't contain'",
     "expected_problematic_tokens": [
       {
         "lexeme": "Alan",
@@ -77,7 +77,7 @@
     "input": "and prof is Alan",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "'and' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
+    "expected_error_message": "'and' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
     "expected_problematic_tokens": [
       {
         "lexeme": "and",
@@ -92,7 +92,7 @@
     "input": "prof is Alan or",
     "should_succeed": false,
     "expected_error_type": "ExpectedAfter",
-    "expected_error_message": "Please start with one of: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
+    "expected_error_message": "Please start with one of: 'professor', 'course', 'subject', 'title', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
     "expected_problematic_tokens": []
   },
   {
@@ -101,7 +101,7 @@
     "input": "prof is Alan and and course contains CS",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "'and' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
+    "expected_error_message": "'and' is not valid here. Try: 'professor', 'course', 'subject', 'title', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'",
     "expected_problematic_tokens": [
       {
         "lexeme": "and",
@@ -116,7 +116,7 @@
     "input": "prof invalid_field is value",
     "should_succeed": false,
     "expected_error_type": "InvalidContext",
-    "expected_error_message": "'invalid_field' is not valid here. Try: 'is', 'equals', 'contains', 'has', 'starts with', 'ends with'",
+    "expected_error_message": "'invalid_field' is not valid here. Try: 'is', 'is not', 'equals', 'contains', 'has', 'starts with', 'ends with', 'does not equal', 'doesn't equal', 'does not contain', 'doesn't contain'",
     "expected_problematic_tokens": [
       {
         "lexeme": "invalid_field",

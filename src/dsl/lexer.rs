@@ -6,6 +6,7 @@
 ///
 /// Contains:
 /// --- ---
+/// LexerResult -> Result type for lexer
 /// Lexer -> Lexer struct
 ///      Methods:
 ///      --- ---
@@ -18,6 +19,9 @@
 use super::token::{Token, TokenType};
 use crate::tui::errors::AppError;
 use regex::Regex;
+
+/// Type alias for lexer results
+type LexerResult = Result<Vec<Token>, AppError>;
 
 /// Lexer for the query language.
 ///
@@ -93,7 +97,7 @@ impl Lexer {
     ///     Err -> An error occurred, contains message and problematic tokens
     /// --- ---
     ///
-    pub fn analyze(&mut self) -> Result<Vec<Token>, AppError> {
+    pub fn analyze(&mut self) -> LexerResult {
         // Get all patterns in lexing order (longest/most specific first)
         let patterns = TokenType::all_patterns();
 

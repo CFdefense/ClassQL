@@ -316,5 +316,13 @@ pub fn execute_query(sql: &str, db_path: &Path) -> Result<Vec<Class>, String> {
 /// --- ---
 ///
 pub fn get_default_db_path() -> std::path::PathBuf {
+    // Check if we're running tests - if so, use the test database
+    if std::env::var("CARGO_MANIFEST_DIR").is_ok() || cfg!(test) {
+        // Try test database first
+        let test_db = std::path::PathBuf::from("tests/utils/test_db.db");
+        if test_db.exists() {
+            return test_db;
+        }
+    }
     std::path::PathBuf::from("src/data/classes.db")
 }

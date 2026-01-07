@@ -245,7 +245,6 @@ impl Compiler {
                         "course".to_string(),
                         "subject".to_string(),
                         "title".to_string(),
-                        "section".to_string(),
                     ]
                 } else {
                     vec![] // can't provide suggestions for invalid tokens

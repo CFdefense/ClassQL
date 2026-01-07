@@ -1,0 +1,110 @@
+[
+  {
+    "test_name": "professor_query_contains",
+    "description": "Basic professor query with contains condition",
+    "input": "prof contains Shanley",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N",
+        "professor_name": "Shanley"
+      }
+    ]
+  },
+  {
+    "test_name": "professor_query_equals",
+    "description": "Basic professor query with equals condition",
+    "input": "prof equals \"Shanley, Brigid\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N",
+        "professor_name": "Shanley"
+      }
+    ]
+  },
+  {
+    "test_name": "subject_query_equals",
+    "description": "Basic subject query with equals condition",
+    "input": "subject equals CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "subject_query_sub_abbreviation",
+    "description": "Subject query using 'sub' abbreviation",
+    "input": "sub equals CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "course_query_contains",
+    "description": "Basic course query with contains condition",
+    "input": "course contains 103L",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "course_number_query",
+    "description": "Course number query",
+    "input": "number equals 103L",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "title_query_contains",
+    "description": "Title query with contains condition",
+    "input": "title contains TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "title": "TECHNOLOGY",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "description_query_contains",
+    "description": "Description query with contains condition",
+    "input": "description contains technology",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  }
+]
+

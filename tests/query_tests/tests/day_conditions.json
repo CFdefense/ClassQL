@@ -1,0 +1,99 @@
+[
+  {
+    "test_name": "monday_equals_true",
+    "description": "Monday query with explicit equals true condition",
+    "input": "monday equals true",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "monday_equals_false",
+    "description": "Monday query with explicit equals false condition",
+    "input": "monday equals false",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "monday_is_true",
+    "description": "Monday query with explicit is true condition",
+    "input": "monday is true",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "monday_is_not_true",
+    "description": "Monday query with is not true condition",
+    "input": "monday is not true",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "tuesday_equals_true",
+    "description": "Tuesday query with explicit equals true condition",
+    "input": "tuesday equals true",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "wednesday_equals_false",
+    "description": "Wednesday query with explicit equals false condition",
+    "input": "wednesday equals false",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "thursday_is_true",
+    "description": "Thursday query with explicit is true condition",
+    "input": "thursday is true",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "friday_equals_false",
+    "description": "Friday query with explicit equals false condition",
+    "input": "friday equals false",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "saturday_is_true",
+    "description": "Saturday query with explicit is true condition",
+    "input": "saturday is true",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "sunday_equals_false",
+    "description": "Sunday query with explicit equals false condition",
+    "input": "sunday equals false",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "day_abbreviation_m_equals_true",
+    "description": "Monday abbreviation 'm' with equals true",
+    "input": "m equals true",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "day_abbreviation_w_equals_false",
+    "description": "Wednesday abbreviation 'w' with equals false",
+    "input": "w equals false",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  }
+]
+

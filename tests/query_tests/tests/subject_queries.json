@@ -1,0 +1,73 @@
+[
+  {
+    "test_name": "subject_equals",
+    "description": "Subject query with equals condition",
+    "input": "subject equals CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "subject_sub_abbreviation",
+    "description": "Subject query using 'sub' abbreviation",
+    "input": "sub equals CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "subject_contains",
+    "description": "Subject query with contains condition",
+    "input": "subject contains CMP",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "subject_is_not",
+    "description": "Subject query with is not condition",
+    "input": "subject is not CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "subject_does_not_equal",
+    "description": "Subject query with does not equal condition",
+    "input": "subject does not equal CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "subject_does_not_contain",
+    "description": "Subject query with does not contain condition",
+    "input": "subject does not contain CMP",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "subject_not_equals_symbol",
+    "description": "Subject query with != operator",
+    "input": "subject != CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  }
+]
+

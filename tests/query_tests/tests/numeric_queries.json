@@ -1,0 +1,107 @@
+[
+  {
+    "test_name": "credit_hours_equals",
+    "description": "Credit hours query with equals",
+    "input": "credit hours = 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "credit_hours_greater_than",
+    "description": "Credit hours query with greater than",
+    "input": "credit hours > 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "credit_hours_less_than",
+    "description": "Credit hours query with less than",
+    "input": "credit hours < 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "credit_hours_greater_equal",
+    "description": "Credit hours query with greater than or equal",
+    "input": "credit hours >= 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "credit_hours_less_equal",
+    "description": "Credit hours query with less than or equal",
+    "input": "credit hours <= 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "credit_hours_at_least",
+    "description": "Credit hours query with 'at least' (using >= instead)",
+    "input": "credit hours >= 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "credit_hours_at_most",
+    "description": "Credit hours query with 'at most' (using <= instead)",
+    "input": "credit hours <= 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "credit_hours_more_than",
+    "description": "Credit hours query with 'more than' (using > instead)",
+    "input": "credit hours > 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "credit_hours_fewer_than",
+    "description": "Credit hours query with 'fewer than' (using < instead)",
+    "input": "credit hours < 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "enrollment_greater_than",
+    "description": "Enrollment query with greater than",
+    "input": "enrollment > 0",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "enrollment_cap_greater_than",
+    "description": "Enrollment cap query with greater than",
+    "input": "cap > 20",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "enrollment_cap_enrollment_cap_keyword",
+    "description": "Enrollment cap query with 'enrollment cap' keyword",
+    "input": "enrollment cap > 20",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "size_query",
+    "description": "Size query (alias for enrollment)",
+    "input": "size > 0",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  }
+]
+

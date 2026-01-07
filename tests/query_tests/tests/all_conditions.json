@@ -1,0 +1,179 @@
+[
+  {
+    "test_name": "all_string_conditions_equals",
+    "description": "Test equals condition on subject",
+    "input": "subject equals CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_string_conditions_is",
+    "description": "Test is condition on subject",
+    "input": "subject is CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_string_conditions_contains",
+    "description": "Test contains condition on title",
+    "input": "title contains TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_string_conditions_has",
+    "description": "Test has condition on title",
+    "input": "title has TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_string_conditions_starts_with",
+    "description": "Test starts with condition on title",
+    "input": "title starts with TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "all_string_conditions_ends_with",
+    "description": "Test ends with condition on title",
+    "input": "title ends with CENTURY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "all_string_conditions_is_not",
+    "description": "Test is not condition on subject",
+    "input": "subject is not CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_string_conditions_does_not_equal",
+    "description": "Test does not equal condition on subject",
+    "input": "subject does not equal CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_string_conditions_doesnt_equal",
+    "description": "Test doesn't equal condition on subject",
+    "input": "subject doesn't equal CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_string_conditions_does_not_contain",
+    "description": "Test does not contain condition on title",
+    "input": "title does not contain TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "all_string_conditions_doesnt_contain",
+    "description": "Test doesn't contain condition on title",
+    "input": "title doesn't contain TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "all_string_conditions_equals_symbol",
+    "description": "Test = operator on subject",
+    "input": "subject = CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_string_conditions_not_equals_symbol",
+    "description": "Test != operator on subject",
+    "input": "subject != CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_numeric_conditions_equals",
+    "description": "Test equals on credit hours",
+    "input": "credit hours = 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_numeric_conditions_greater_than",
+    "description": "Test greater than on credit hours",
+    "input": "credit hours > 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "all_numeric_conditions_less_than",
+    "description": "Test less than on credit hours",
+    "input": "credit hours < 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "all_numeric_conditions_greater_equal",
+    "description": "Test >= on credit hours",
+    "input": "credit hours >= 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_numeric_conditions_less_equal",
+    "description": "Test <= on credit hours",
+    "input": "credit hours <= 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_numeric_conditions_at_least",
+    "description": "Test 'at least' on credit hours (using >= instead)",
+    "input": "credit hours >= 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_numeric_conditions_at_most",
+    "description": "Test 'at most' on credit hours (using <= instead)",
+    "input": "credit hours <= 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "all_numeric_conditions_more_than",
+    "description": "Test 'more than' on credit hours (using > instead)",
+    "input": "credit hours > 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "all_numeric_conditions_fewer_than",
+    "description": "Test 'fewer than' on credit hours (using < instead)",
+    "input": "credit hours < 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  }
+]
+

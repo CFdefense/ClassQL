@@ -113,41 +113,41 @@
     ]
   },
   {
-    "test_name": "section_all_subqueries",
-    "description": "Test all section subquery types from grammar",
+    "test_name": "section_fields_direct_queries",
+    "description": "Test section-related fields can be queried directly without section keyword",
     "queries": [
       {
-        "input": "section subject is CS",
+        "input": "subject is CS",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "section course contains Programming",
+        "input": "course contains Programming",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "section cap > 20",
+        "input": "cap > 20",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "section enrollment < 50",
+        "input": "enrollment < 50",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "section size >= 10",
+        "input": "size >= 10",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "section campus is Main",
+        "input": "campus is Main",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "section full is yes",
+        "input": "full is yes",
         "expected_result": "success",
         "expected_ast_type": "Query"
       }
@@ -428,6 +428,26 @@
         "input": "subject equals MATH",
         "expected_result": "success",
         "expected_ast_type": "Query"
+      },
+      {
+        "input": "subject does not equal CS",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "title does not contain intro",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "subject doesn't equal CS",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
+      },
+      {
+        "input": "title doesn't contain intro",
+        "expected_result": "success",
+        "expected_ast_type": "Query"
       }
     ]
   },
@@ -470,7 +490,7 @@
         "input": "hours is 3",
         "expected_result": "error",
         "expected_error_type": "InvalidContext",
-        "expected_error_message": "Invalid token 'T_HOURS ('hours')' in context 'query start'. Try: 'professor', 'course', 'subject', 'title', 'section', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'."
+        "expected_error_message": "Invalid token 'T_HOURS ('hours')' in context 'query start'. Try: 'professor', 'course', 'subject', 'title', 'number', 'description', 'credit', 'prerequisites', 'corequisites', 'enrollment', 'campus', 'meeting'."
       },
       {
         "input": "credit = 3",

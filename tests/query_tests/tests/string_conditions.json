@@ -1,0 +1,107 @@
+[
+  {
+    "test_name": "condition_equals",
+    "description": "Test equals condition",
+    "input": "subject equals CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "condition_is",
+    "description": "Test is condition (same as equals)",
+    "input": "subject is CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "condition_contains",
+    "description": "Test contains condition",
+    "input": "title contains TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "condition_has",
+    "description": "Test has condition (same as contains)",
+    "input": "title has TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "condition_starts_with",
+    "description": "Test starts with condition",
+    "input": "title starts with TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "condition_ends_with",
+    "description": "Test ends with condition",
+    "input": "title ends with CENTURY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "condition_is_not",
+    "description": "Test is not condition",
+    "input": "subject is not CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "condition_does_not_equal",
+    "description": "Test does not equal condition",
+    "input": "subject does not equal CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "condition_doesnt_equal",
+    "description": "Test doesn't equal condition (contracted form)",
+    "input": "subject doesn't equal CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "condition_does_not_contain",
+    "description": "Test does not contain condition",
+    "input": "title does not contain TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "condition_doesnt_contain",
+    "description": "Test doesn't contain condition (contracted form)",
+    "input": "title doesn't contain TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "condition_not_equals_symbol",
+    "description": "Test != operator",
+    "input": "subject != CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "condition_equals_symbol",
+    "description": "Test = operator",
+    "input": "subject = CMPT",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  }
+]
+

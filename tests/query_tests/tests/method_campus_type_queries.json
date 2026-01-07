@@ -1,0 +1,75 @@
+[
+  {
+    "test_name": "method_query_contains",
+    "description": "Instruction method query with contains condition",
+    "input": "method contains Online",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "method_query_equals",
+    "description": "Instruction method query with equals condition",
+    "input": "method equals \"On-Line\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "method_query_is",
+    "description": "Instruction method query with is condition",
+    "input": "method is \"On-Line\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "campus_query_contains",
+    "description": "Campus query with contains condition",
+    "input": "campus contains Marist",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "campus_query_equals",
+    "description": "Campus query with equals condition",
+    "input": "campus equals \"Marist College Campus\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "campus_query_is_not",
+    "description": "Campus query with is not condition",
+    "input": "campus is not \"On-Line\"",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "meeting_type_query_equals",
+    "description": "Meeting type query with equals condition (using 'type' keyword)",
+    "input": "type equals LEC",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "meeting_type_query_contains",
+    "description": "Meeting type query with contains condition",
+    "input": "type contains LAB",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "meeting_type_query_is_not",
+    "description": "Meeting type query with is not condition",
+    "input": "type is not WEB",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  }
+]
+

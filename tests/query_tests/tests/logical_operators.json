@@ -1,0 +1,59 @@
+[
+  {
+    "test_name": "and_operator",
+    "description": "Query with AND operator",
+    "input": "subject equals CMPT and credit hours = 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "or_operator",
+    "description": "Query with OR operator",
+    "input": "subject equals CMPT or subject equals MATH",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "multiple_and",
+    "description": "Query with multiple AND operators",
+    "input": "subject equals CMPT and credit hours = 3 and title contains TECHNOLOGY",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "multiple_or",
+    "description": "Query with multiple OR operators",
+    "input": "subject equals CMPT or subject equals MATH or subject equals BIOL",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1
+  },
+  {
+    "test_name": "and_or_combination",
+    "description": "Query with AND and OR operators",
+    "input": "subject equals CMPT and (credit hours = 3 or credit hours = 4)",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "or_and_combination",
+    "description": "Query with OR and AND operators",
+    "input": "(subject equals CMPT or subject equals MATH) and credit hours = 3",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "nested_parentheses",
+    "description": "Query with nested parentheses",
+    "input": "((subject equals CMPT or subject equals MATH) and credit hours = 3) or prof contains Shanley",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  }
+]
+

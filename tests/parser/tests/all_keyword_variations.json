@@ -255,12 +255,12 @@
         "expected_ast_type": "Query"
       },
       {
-        "input": "section subject is BIO",
+        "input": "subject is BIO",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "section sub is CHEM",
+        "input": "sub is CHEM",
         "expected_result": "success",
         "expected_ast_type": "Query"
       }
@@ -343,17 +343,17 @@
         "expected_ast_type": "Query"
       },
       {
-        "input": "section enrollment != 0",
+        "input": "enrollment != 0",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "section size <= 200",
+        "input": "size <= 200",
         "expected_result": "success",
         "expected_ast_type": "Query"
       },
       {
-        "input": "section cap > 30",
+        "input": "cap > 30",
         "expected_result": "success",
         "expected_ast_type": "Query"
       }

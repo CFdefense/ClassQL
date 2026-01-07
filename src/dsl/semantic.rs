@@ -6,6 +6,7 @@
 ///
 /// Contains:
 /// --- ---
+/// SemanticResult -> Result type for semantic analysis
 /// semantic_analysis -> Run semantic analysis on a parsed AST
 /// invalid_context -> Helper to build a `SemanticError`
 /// analyze_node -> Analyze a node in the AST (dispatches to specialized analyzers)
@@ -292,7 +293,7 @@ fn analyze_day_query(node: &TreeNode) -> SemanticResult {
                 let err = invalid_context(
                     child.node_content.clone(),
                     "day condition",
-                    &["is", "equals", "contains", "has", "starts with", "ends with"],
+                    &["is", "is not", "equals", "does not equal", "contains", "does not contain", "has", "starts with", "ends with"],
                 );
         return Err((err, get_span(child)));
             }
@@ -359,7 +360,7 @@ fn analyze_string_field_query(node: &TreeNode) -> SemanticResult {
                 let err = invalid_context(
                     child.node_content.clone(),
                     "string condition",
-                    &["is", "equals", "contains", "has", "starts with", "ends with"],
+                    &["is", "is not", "equals", "does not equal", "contains", "does not contain", "has", "starts with", "ends with"],
                 );
         return Err((err, get_span(child)));
             }

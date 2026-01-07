@@ -6,8 +6,10 @@
 ///
 /// Contains:
 /// --- ---
-/// generate_sql -> Main function to generate SQL from an AST
+/// CodeGenResult -> Result type for code generation
 /// CodeGenError -> Error type for code generation
+/// 
+/// generate_sql -> Main function to generate SQL from an AST
 /// generate_node -> Generate SQL for a single AST node (dispatcher)
 /// generate_query -> Generate SQL for a Query node
 /// generate_logical_term -> Generate SQL for a LogicalTerm node
@@ -18,7 +20,6 @@
 /// generate_professor_query -> Generate SQL for ProfessorQuery node
 /// generate_course_query -> Generate SQL for CourseQuery node
 /// generate_subject_query -> Generate SQL for SubjectQuery node
-/// generate_section_query -> Generate SQL for SectionQuery node
 /// generate_number_query -> Generate SQL for NumberQuery node
 /// generate_title_query -> Generate SQL for TitleQuery node
 /// generate_description_query -> Generate SQL for DescriptionQuery node
@@ -205,7 +206,6 @@ fn generate_node(node: &TreeNode) -> CodeGenResult {
         NodeType::ProfessorQuery => generate_professor_query(node),
         NodeType::CourseQuery => generate_course_query(node),
         NodeType::SubjectQuery => generate_subject_query(node),
-        NodeType::SectionQuery => generate_section_query(node),
         NodeType::NumberQuery => generate_number_query(node),
         NodeType::TitleQuery => generate_title_query(node),
         NodeType::DescriptionQuery => generate_description_query(node),
@@ -494,29 +494,6 @@ fn generate_subject_query(node: &TreeNode) -> CodeGenResult {
     Ok(build_string_condition("c.subject_code", &condition, &value))
 }
 
-/// Generate SQL for SectionQuery node
-///
-/// Section query typically contains sub-queries.
-///
-/// Parameters:
-/// --- ---
-/// node -> The SectionQuery node to generate SQL for
-/// --- ---
-///
-/// Returns:
-/// --- ---
-/// CodeGenResult -> The generated SQL fragment or an error
-/// --- ---
-///
-fn generate_section_query(node: &TreeNode) -> CodeGenResult {
-    if node.children.is_empty() {
-        return Err(CodeGenError::InvalidStructure {
-            message: "SectionQuery has no children".to_string(),
-        });
-    }
-    // Section query typically contains sub-queries
-    generate_node(&node.children[0])
-}
 
 /// Generate SQL for NumberQuery node
 ///
@@ -947,10 +924,19 @@ fn extract_condition(node: &TreeNode) -> CodeGenResult {
         });
     }
     
-    // for "is not", the condition node's node_content is set to "is not"
+    // for multi-word conditions like "is not", "does not equal", "does not contain",
+    // the condition node's node_content is set to the full phrase
     // otherwise, the condition type is stored in the first child's node_content
-    if !node.node_content.is_empty() && node.node_content == "is not" {
-        Ok("is not".to_string())
+    if !node.node_content.is_empty() {
+        let content = node.node_content.to_lowercase();
+        if content == "is not" || content == "does not equal" || content == "does not contain" {
+            Ok(node.node_content.clone())
+        } else if let Some(child) = node.children.first() {
+            let token_str = &child.node_content;
+            Ok(token_str.clone())
+        } else {
+            Ok(node.node_content.clone())
+        }
     } else if let Some(child) = node.children.first() {
         let token_str = &child.node_content;
         Ok(token_str.clone())
@@ -1164,9 +1150,11 @@ fn build_string_condition(column: &str, condition: &str, value: &str) -> String 
         s if s == "IS NOT" || s.contains("IS NOT") => {
             format!("LOWER({}) != LOWER('{}')", column, escaped_value)
         }
-        // check "DOES NOT CONTAIN" / "DOESN'T CONTAIN" before "CONTAINS" since it contains "CONTAINS"
         s if s.contains("DOES NOT CONTAIN") || s.contains("DOESN'T CONTAIN") || s.contains("DOESNT CONTAIN") => {
             format!("{} NOT LIKE '%{}%' COLLATE NOCASE", column, escaped_value)
+        }
+        s if s.contains("DOES NOT EQUAL") || s.contains("DOESN'T EQUAL") || s.contains("DOESNT EQUAL") => {
+            format!("LOWER({}) != LOWER('{}')", column, escaped_value)
         }
         s if s.contains("NOTEQUALS") || (s.contains("NOT") && !s.contains("IS NOT") && !s.contains("DOES NOT")) => {
             format!("LOWER({}) != LOWER('{}')", column, escaped_value)
