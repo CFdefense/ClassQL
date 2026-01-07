@@ -5,8 +5,9 @@
 /// Renders detailed class information overlay
 
 use crate::data::sql::Class;
+use crate::tui::themes::Theme;
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Clear, Paragraph};
 use ratatui::Frame;
@@ -24,7 +25,7 @@ use ratatui::Frame;
 /// None
 /// --- ---
 ///
-pub fn render_detail_view(frame: &mut Frame, class: &Class) {
+pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
     let detail_width = 60_u16;
     
     // calculate description lines needed (before building content)
@@ -115,29 +116,29 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class) {
     lines.push(Line::from(vec![
         Span::styled(
             format!("{} {} - {}", class.subject_code, class.course_number, class.section_sequence),
-            Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD),
+            Style::default().fg(theme.info_color).add_modifier(Modifier::BOLD),
         ),
     ]));
     lines.push(Line::from(Span::styled(
         class.title.clone(),
-        Style::default().fg(Color::Rgb(0, 0, 0)).add_modifier(Modifier::BOLD), // Black text on white
+        Style::default().fg(theme.text_color).add_modifier(Modifier::BOLD),
     )));
     lines.push(Line::from("")); // blank line
 
     // professor
     lines.push(Line::from(vec![
-        Span::styled("Professor: ", Style::default().fg(Color::Yellow)),
+        Span::styled("Professor: ", Style::default().fg(theme.warning_color)),
         Span::styled(
             class.professor_name.as_deref().unwrap_or("TBA"),
-            Style::default().fg(Color::Rgb(0, 0, 0)), // Black text on white
+            Style::default().fg(theme.text_color),
         ),
     ]));
 
     // email
     if let Some(email) = &class.professor_email {
         lines.push(Line::from(vec![
-            Span::styled("Email: ", Style::default().fg(Color::Yellow)),
-            Span::styled(email, Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
+            Span::styled("Email: ", Style::default().fg(theme.warning_color)),
+            Span::styled(email, Style::default().fg(theme.text_color)),
         ]));
     }
 
@@ -145,7 +146,7 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class) {
 
     // schedule
     lines.push(Line::from(vec![
-        Span::styled("Schedule:", Style::default().fg(Color::Green)),
+        Span::styled("Schedule:", Style::default().fg(theme.success_color)),
     ]));
     
     // helper function to format time
@@ -187,8 +188,8 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class) {
                         let end = format_time(&time_part[dash_pos + 1..]);
                         if !days_part.is_empty() && !start.is_empty() && !end.is_empty() {
                             lines.push(Line::from(vec![
-                                Span::styled("    ", Style::default().fg(Color::Rgb(0, 0, 0))), // 4 spaces for indentation
-                                Span::styled(format!("{} {}-{}", days_part, start, end), Style::default().fg(Color::Rgb(0, 0, 0))),
+                                Span::styled("    ", Style::default().fg(theme.text_color)), // 4 spaces for indentation
+                                Span::styled(format!("{} {}-{}", days_part, start, end), Style::default().fg(theme.text_color)),
                             ]));
                         }
                     }
@@ -197,40 +198,40 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class) {
         } else {
             // empty meeting_times
             lines.push(Line::from(vec![
-                Span::styled("    ", Style::default().fg(Color::Rgb(0, 0, 0))), // 4 spaces for indentation
-                Span::styled("TBD", Style::default().fg(Color::Rgb(0, 0, 0))),
+                Span::styled("    ", Style::default().fg(theme.text_color)), // 4 spaces for indentation
+                Span::styled("TBD", Style::default().fg(theme.text_color)),
             ]));
         }
     } else {
         // no meeting_times available
         lines.push(Line::from(vec![
-            Span::styled("    ", Style::default().fg(Color::Rgb(0, 0, 0))), // 4 spaces for indentation
-            Span::styled("TBD", Style::default().fg(Color::Rgb(0, 0, 0))),
+            Span::styled("    ", Style::default().fg(theme.text_color)), // 4 spaces for indentation
+            Span::styled("TBD", Style::default().fg(theme.text_color)),
         ]));
     }
 
     // meeting type
     if let Some(meeting_type) = &class.meeting_type {
         lines.push(Line::from(vec![
-            Span::styled("Type: ", Style::default().fg(Color::Green)),
-            Span::styled(meeting_type, Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
+            Span::styled("Type: ", Style::default().fg(theme.success_color)),
+            Span::styled(meeting_type, Style::default().fg(theme.text_color)),
         ]));
     }
 
     // location/campus
     if let Some(campus) = &class.campus {
         lines.push(Line::from(vec![
-            Span::styled("Campus: ", Style::default().fg(Color::Green)),
-            Span::styled(campus, Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
+            Span::styled("Campus: ", Style::default().fg(theme.success_color)),
+            Span::styled(campus, Style::default().fg(theme.text_color)),
         ]));
     }
 
     // instruction method
     lines.push(Line::from(vec![
-        Span::styled("Method: ", Style::default().fg(Color::Green)),
+        Span::styled("Method: ", Style::default().fg(theme.success_color)),
         Span::styled(
             class.instruction_method.as_deref().unwrap_or("N/A"),
-            Style::default().fg(Color::Rgb(0, 0, 0)), // Black text on white
+            Style::default().fg(theme.text_color),
         ),
     ]));
 
@@ -242,20 +243,20 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class) {
         _ => "Unknown".to_string(),
     };
     lines.push(Line::from(vec![
-        Span::styled("Enrollment: ", Style::default().fg(Color::Magenta)),
-        Span::styled(enrollment_str, Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
+        Span::styled("Enrollment: ", Style::default().fg(theme.info_color)),
+        Span::styled(enrollment_str, Style::default().fg(theme.text_color)),
     ]));
 
     // credit hours
     lines.push(Line::from(vec![
-        Span::styled("Credits: ", Style::default().fg(Color::Magenta)),
-        Span::styled(format!("{}", class.credit_hours), Style::default().fg(Color::Rgb(0, 0, 0))), // Black text on white
+        Span::styled("Credits: ", Style::default().fg(theme.info_color)),
+        Span::styled(format!("{}", class.credit_hours), Style::default().fg(theme.text_color)),
     ]));
 
     // description
     lines.push(Line::from("")); // blank line
     lines.push(Line::from(vec![
-        Span::styled("Description: ", Style::default().fg(Color::Green)),
+        Span::styled("Description: ", Style::default().fg(theme.success_color)),
     ]));
     
     if let Some(desc) = &class.description {
@@ -268,7 +269,7 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class) {
             
             while !remaining.is_empty() && desc_lines_added < max_desc_lines {
                 if remaining.len() <= content_width {
-                    lines.push(Line::from(Span::styled(remaining.to_string(), Style::default().fg(Color::Rgb(60, 60, 60)))));
+                    lines.push(Line::from(Span::styled(remaining.to_string(), Style::default().fg(theme.muted_color))));
                     break;
                 } else {
                     // find a good break point (space, comma, period, etc.)
@@ -292,32 +293,31 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class) {
                         remaining[..break_point].to_string()
                     };
                     
-                    lines.push(Line::from(Span::styled(line_text, Style::default().fg(Color::Rgb(60, 60, 60)))));
+                    lines.push(Line::from(Span::styled(line_text, Style::default().fg(theme.muted_color))));
                     remaining = remaining[break_point..].trim_start();
                     desc_lines_added += 1;
                 }
             }
         } else {
             // description exists but is empty/whitespace
-            lines.push(Line::from(Span::styled("(No description available)", Style::default().fg(Color::Rgb(120, 120, 120)))));
+            lines.push(Line::from(Span::styled("(No description available)", Style::default().fg(theme.muted_color))));
         }
     } else {
         // description is None
-        lines.push(Line::from(Span::styled("(No description available)", Style::default().fg(Color::Rgb(120, 120, 120)))));
+        lines.push(Line::from(Span::styled("(No description available)", Style::default().fg(theme.muted_color))));
     }
 
     // first, clear the area to cover results below with solid background
     frame.render_widget(Clear, detail_area);
 
-    let white_bg = Color::Rgb(255, 255, 255); // True white
 
     let detail_paragraph = Paragraph::new(lines).block(
         Block::default()
             .borders(Borders::ALL)
             .title(" Class Details ")
-            .title_style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
-            .border_style(Style::default().fg(Color::Cyan))
-            .style(Style::default().bg(white_bg)),
+            .title_style(Style::default().fg(theme.title_color).add_modifier(Modifier::BOLD))
+            .border_style(Style::default().fg(theme.border_color))
+            .style(Style::default().bg(theme.background_color)),
     );
 
     frame.render_widget(detail_paragraph, detail_area);
@@ -333,7 +333,7 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class) {
                cell.symbol() == "┌" || cell.symbol() == "┐" || cell.symbol() == "└" || 
                cell.symbol() == "┘" || cell.symbol() == "├" || cell.symbol() == "┤" ||
                cell.symbol() == "┬" || cell.symbol() == "┴" {
-                cell.set_bg(white_bg);
+                cell.set_bg(theme.background_color);
             }
         }
     }

@@ -36,10 +36,11 @@ use crate::data::sql::Class;
 use crate::dsl::compiler::{Compiler, CompilerResult};
 use crate::tui::errors::TUIError;
 use crate::tui::state::{ErrorType, FocusMode};
+use crate::tui::themes::ThemePalette;
 use crate::tui::widgets::{
     render_completion_dropdown, render_detail_view, render_logo, render_main_menu,
     render_query_results, render_search_bar_with_data, render_search_helpers_with_data,
-    render_toast_with_data, MenuOption,
+    render_settings, render_toast_with_data, MenuOption,
 };
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use ratatui::{DefaultTerminal, Frame};
@@ -93,6 +94,8 @@ pub struct Tui {
     last_cursor_blink: Instant,
     max_items_that_fit: usize,
     menu_index: usize,
+    current_theme: ThemePalette,
+    settings_index: usize,
 }
 
 /// Tui Implementation
@@ -143,6 +146,8 @@ impl Tui {
             last_cursor_blink: Instant::now(),
             max_items_that_fit: 0,
             menu_index: 0,
+            current_theme: ThemePalette::Default,
+            settings_index: 0,
         })
     }
 
@@ -202,6 +207,8 @@ impl Tui {
                     selected_result,
                     cursor_visible,
                     menu_index,
+                    self.current_theme,
+                    self.settings_index,
                 );
                 // update max_items_that_fit based on actual rendering
                 self.max_items_that_fit = max_items;
@@ -239,6 +246,9 @@ impl Tui {
                                         MenuOption::Help => {
                                             // TODO: Show help screen
                                             self.show_toast("Help feature coming soon!".to_string(), ErrorType::Semantic);
+                                        }
+                                        MenuOption::Settings => {
+                                            self.focus_mode = FocusMode::Settings;
                                         }
                                         MenuOption::Quit => break Ok(()),
                                     }
@@ -324,6 +334,19 @@ impl Tui {
                             }
                         }
                         continue; // skip normal key handling when completions are shown
+                    }
+
+                    // handle settings mode
+                    if self.focus_mode == FocusMode::Settings {
+                        match key.code {
+                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => break Ok(()),
+                            KeyCode::Esc => {
+                                // exit settings, go back to main menu
+                                self.focus_mode = FocusMode::MainMenu;
+                            }
+                            _ => {}
+                        }
+                        continue;
                     }
 
                     // handle detail view mode
@@ -769,27 +792,39 @@ fn render_frame(
     selected_result: usize,
     cursor_visible: bool,
     menu_index: usize,
+    current_theme: ThemePalette,
+    settings_index: usize,
 ) -> (usize, usize) {
-    render_logo(frame);
+    let theme = current_theme.to_theme();
+    
+    render_logo(frame, &theme);
     
     // render main menu if in menu mode
     if *focus_mode == FocusMode::MainMenu {
-        render_main_menu(frame, menu_index);
-        render_search_helpers_with_data(frame, input, toast_message, query_results, focus_mode);
-        render_toast_with_data(frame, toast_message, error_type);
+        render_main_menu(frame, menu_index, &theme);
+        render_search_helpers_with_data(frame, input, toast_message, query_results, focus_mode, &theme);
+        render_toast_with_data(frame, toast_message, error_type, &theme);
+        return (0, 0);
+    }
+    
+    // render settings if in settings mode
+    if *focus_mode == FocusMode::Settings {
+        render_settings(frame, current_theme, &theme, settings_index);
+        render_search_helpers_with_data(frame, input, toast_message, query_results, focus_mode, &theme);
+        render_toast_with_data(frame, toast_message, error_type, &theme);
         return (0, 0);
     }
     
     // render query interface
-    render_search_bar_with_data(frame, input, problematic_positions, focus_mode, cursor_visible);
-    let (_items_rendered, max_items_that_fit) = render_query_results(frame, query_results, results_scroll, focus_mode, selected_result);
-    render_search_helpers_with_data(frame, input, toast_message, query_results, focus_mode);
-    render_toast_with_data(frame, toast_message, error_type);
-    render_completion_dropdown(frame, completions, completion_index, show_completions);
+    render_search_bar_with_data(frame, input, problematic_positions, focus_mode, cursor_visible, &theme);
+    let (_items_rendered, max_items_that_fit) = render_query_results(frame, query_results, results_scroll, focus_mode, selected_result, &theme);
+    render_search_helpers_with_data(frame, input, toast_message, query_results, focus_mode, &theme);
+    render_toast_with_data(frame, toast_message, error_type, &theme);
+    render_completion_dropdown(frame, completions, completion_index, show_completions, &theme);
     
     // render detail view overlay if in detail mode
     if *focus_mode == FocusMode::DetailView && selected_result < query_results.len() {
-        render_detail_view(frame, &query_results[selected_result]);
+        render_detail_view(frame, &query_results[selected_result], &theme);
     }
     
     (0, max_items_that_fit)

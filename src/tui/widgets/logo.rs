@@ -4,8 +4,9 @@
 ///
 /// Renders the ClassQL ASCII art logo
 
+use crate::tui::themes::Theme;
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Style};
+use ratatui::style::Style;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::Paragraph;
 use ratatui::Frame;
@@ -15,6 +16,7 @@ use ratatui::Frame;
 /// Parameters:
 /// --- ---
 /// frame -> The frame to render
+/// theme -> The current theme
 /// --- ---
 ///
 /// Returns:
@@ -22,7 +24,7 @@ use ratatui::Frame;
 /// None
 /// --- ---
 ///
-pub fn render_logo(frame: &mut Frame) {
+pub fn render_logo(frame: &mut Frame, theme: &Theme) {
     // logo ascii art
     let ascii_art = r#"            
     ██████╗  ██╗         █████╗    ███████╗   ███████╗   ██████╗   ██╗     
@@ -38,7 +40,7 @@ pub fn render_logo(frame: &mut Frame) {
         .map(|line| {
             Line::from(Span::styled(
                 line,
-                Style::default().fg(Color::Rgb(135, 206, 235)),
+                Style::default().fg(theme.logo_color),
             ))
         })
         .collect();

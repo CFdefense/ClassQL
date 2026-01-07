@@ -12,6 +12,7 @@ pub mod toast;
 pub mod completion;
 pub mod menu;
 pub mod helpers;
+pub mod settings;
 
 pub use logo::render_logo;
 pub use search_bar::render_search_bar_with_data;
@@ -21,4 +22,5 @@ pub use toast::render_toast_with_data;
 pub use completion::render_completion_dropdown;
 pub use menu::{render_main_menu, MenuOption};
 pub use helpers::render_search_helpers_with_data;
+pub use settings::render_settings;
 

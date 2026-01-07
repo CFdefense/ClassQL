@@ -5,8 +5,9 @@
 /// Renders error toast notifications
 
 use crate::tui::state::ErrorType;
+use crate::tui::themes::Theme;
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Style};
+use ratatui::style::Style;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
@@ -29,6 +30,7 @@ pub fn render_toast_with_data(
     frame: &mut Frame,
     toast_message: &Option<String>,
     error_type: &Option<ErrorType>,
+    theme: &Theme,
 ) {
     if let Some(message) = toast_message {
         // use the passed error type to determine toast dimensions
@@ -85,16 +87,16 @@ pub fn render_toast_with_data(
         // create styled lines for the toast
         let styled_lines: Vec<Line> = wrapped_lines
             .iter()
-            .map(|line| Line::from(Span::styled(line, Style::default().fg(Color::White))))
+            .map(|line| Line::from(Span::styled(line, Style::default().fg(theme.text_color))))
             .collect();
 
         let toast_paragraph = Paragraph::new(styled_lines).block(
             Block::default()
                 .borders(Borders::ALL)
                 .title("Error")
-                .title_style(Style::default().fg(Color::Yellow))
-                .border_style(Style::default().fg(Color::Red))
-                .style(Style::default().bg(Color::DarkGray)),
+                .title_style(Style::default().fg(theme.warning_color))
+                .border_style(Style::default().fg(theme.error_color))
+                .style(Style::default().bg(theme.muted_color)),
         );
 
         frame.render_widget(toast_paragraph, toast_area);

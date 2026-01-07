@@ -5,8 +5,9 @@
 /// Renders the query input search bar with syntax highlighting
 
 use crate::tui::state::FocusMode;
+use crate::tui::themes::Theme;
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
@@ -33,6 +34,7 @@ pub fn render_search_bar_with_data(
     problematic_positions: &[(usize, usize)],
     focus_mode: &FocusMode,
     cursor_visible: bool,
+    theme: &Theme,
 ) {
     let search_width = 50;
     let is_focused = *focus_mode == FocusMode::QueryInput;
@@ -64,9 +66,9 @@ pub fn render_search_bar_with_data(
 
     // start with the "> " prefix (or "…" if scrolled)
     if scroll_offset > 0 {
-        styled_spans.push(Span::styled("…", Style::default().fg(Color::DarkGray)));
+        styled_spans.push(Span::styled("…", Style::default().fg(theme.muted_color)));
     } else {
-        styled_spans.push(Span::styled("> ", Style::default().fg(if is_focused { Color::Cyan } else { Color::DarkGray })));
+        styled_spans.push(Span::styled("> ", Style::default().fg(if is_focused { theme.selected_color } else { theme.muted_color })));
     }
 
     // process only the visible portion of the input
@@ -82,9 +84,9 @@ pub fn render_search_bar_with_data(
         });
 
         let style = if is_problematic {
-            Style::default().fg(Color::Red)
+            Style::default().fg(theme.error_color)
         } else {
-            Style::default().fg(Color::White)
+            Style::default().fg(theme.text_color)
         };
 
         styled_spans.push(Span::styled(ch.to_string(), style));
@@ -92,7 +94,7 @@ pub fn render_search_bar_with_data(
 
     // add flashing cursor if focused
     if is_focused && cursor_visible {
-        styled_spans.push(Span::styled("|", Style::default().fg(Color::Cyan)));
+        styled_spans.push(Span::styled("|", Style::default().fg(theme.selected_color)));
     } else if is_focused {
         styled_spans.push(Span::styled(" ", Style::default()));
     }
@@ -101,19 +103,19 @@ pub fn render_search_bar_with_data(
 
     // border color depends on focus state
     let border_color = if is_focused {
-        Color::Cyan
+        theme.border_color
     } else {
-        Color::Rgb(60, 60, 70)
+        theme.muted_color
     };
 
     let title_style = if is_focused {
-        Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+        Style::default().fg(theme.title_color).add_modifier(Modifier::BOLD)
     } else {
-        Style::default().fg(Color::DarkGray)
+        Style::default().fg(theme.muted_color)
     };
 
     let search_paragraph = Paragraph::new(styled_line)
-        .style(Style::default().fg(Color::White))
+        .style(Style::default().fg(theme.text_color))
         .block(
             Block::default()
                 .borders(Borders::ALL)

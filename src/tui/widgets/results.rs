@@ -6,8 +6,9 @@
 
 use crate::data::sql::Class;
 use crate::tui::state::FocusMode;
+use crate::tui::themes::Theme;
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::style::{Modifier, Style};
 use ratatui::text::Line;
 use ratatui::text::Span;
 use ratatui::widgets::{Block, Borders, Paragraph};
@@ -35,6 +36,7 @@ pub fn render_query_results(
     scroll: usize,
     focus_mode: &FocusMode,
     selected_result: usize,
+    theme: &Theme,
 ) -> (usize, usize) {
     if classes.is_empty() {
         return (0, 0);
@@ -89,35 +91,35 @@ pub fn render_query_results(
         // build styled lines for the card
         let mut styled_lines: Vec<Line> = Vec::new();
 
-        // line 1: course code (bold cyan)
+        // line 1: course code (bold title color)
         if let Some(line) = display_lines.first() {
             let style = Style::default()
-                    .fg(Color::Cyan)
+                    .fg(theme.title_color)
                 .add_modifier(Modifier::BOLD);
             styled_lines.push(Line::from(Span::styled(line.clone(), style)));
         }
 
-        // line 2: title (white)
+        // line 2: title (text color)
         if let Some(line) = display_lines.get(1) {
-            let style = Style::default().fg(Color::White);
+            let style = Style::default().fg(theme.text_color);
             styled_lines.push(Line::from(Span::styled(line.clone(), style)));
         }
 
-        // line 3: professor (yellow)
+        // line 3: professor (warning color)
         if let Some(line) = display_lines.get(2) {
-            let style = Style::default().fg(Color::Yellow);
+            let style = Style::default().fg(theme.warning_color);
             styled_lines.push(Line::from(Span::styled(line.clone(), style)));
         }
 
-        // line 4: days/time (green)
+        // line 4: days/time (success color)
         if let Some(line) = display_lines.get(3) {
-            let style = Style::default().fg(Color::Green);
+            let style = Style::default().fg(theme.success_color);
             styled_lines.push(Line::from(Span::styled(line.clone(), style)));
         }
 
-        // line 5: enrollment (gray)
+        // line 5: enrollment (muted color)
         if let Some(line) = display_lines.get(4) {
-            let style = Style::default().fg(Color::DarkGray);
+            let style = Style::default().fg(theme.muted_color);
             styled_lines.push(Line::from(Span::styled(line.clone(), style)));
         }
 
@@ -130,9 +132,9 @@ pub fn render_query_results(
 
         // border color depends on selection state
         let border_color = if is_selected {
-            Color::Cyan
+            theme.selected_color
         } else {
-            Color::Rgb(70, 70, 90)
+            theme.muted_color
         };
 
         let card = Paragraph::new(styled_lines).block(
