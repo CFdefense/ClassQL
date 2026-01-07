@@ -2099,13 +2099,13 @@ impl Parser {
         let day_token = tokens[self.token_pointer - 1];
         let mut day_node = TreeNode::new(NodeType::String, day_name.to_string(), Some(day_token));
 
-        // check if next token is a logical operator (and/or) or end of input
+        // check if next token is a logical operator (and/or), closing parenthesis, or end of input
         // if so, default to "= true" for convenience
         let condition_query = if self.token_pointer < tokens.len() {
             let next_token = &tokens[self.token_pointer];
             match *next_token.get_token_type() {
-                TokenType::And | TokenType::Or => {
-                    // default to "= true" when followed by logical operator
+                TokenType::And | TokenType::Or | TokenType::RightParen => {
+                    // default to "= true" when followed by logical operator or closing parenthesis
                     let equals_token = Token::new(TokenType::Equals, 0, 0);
                     TreeNode::new(NodeType::Condition, "=".to_string(), Some(equals_token))
                 }
@@ -2122,8 +2122,8 @@ impl Parser {
         let string_query = if self.token_pointer < tokens.len() {
             let next_token = &tokens[self.token_pointer];
             match *next_token.get_token_type() {
-                TokenType::And | TokenType::Or => {
-                    // Default to "true" when followed by logical operator
+                TokenType::And | TokenType::Or | TokenType::RightParen => {
+                    // Default to "true" when followed by logical operator or closing parenthesis
                     let true_token = Token::new(TokenType::Identifier, 0, 0);
                     TreeNode::new(NodeType::Identifier, "true".to_string(), Some(true_token))
                 }
