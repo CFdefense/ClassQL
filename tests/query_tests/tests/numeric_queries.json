@@ -13,7 +13,14 @@
     "input": "credit hours > 3",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "ART",
+        "course_number": "403N",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "credit_hours_less_than",
@@ -21,7 +28,14 @@
     "input": "credit hours < 3",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "ACCT",
+        "course_number": "380N",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "credit_hours_greater_equal",
@@ -61,7 +75,14 @@
     "input": "credit hours > 3",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "ART",
+        "course_number": "403N",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "credit_hours_fewer_than",
@@ -69,7 +90,14 @@
     "input": "credit hours < 3",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "ACCT",
+        "course_number": "380N",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "enrollment_greater_than",
@@ -77,7 +105,14 @@
     "input": "enrollment > 0",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "EDUC",
+        "course_number": "150N",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "enrollment_cap_greater_than",
@@ -85,7 +120,14 @@
     "input": "cap > 20",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "ACCT",
+        "course_number": "203N",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "enrollment_cap_enrollment_cap_keyword",
@@ -93,7 +135,14 @@
     "input": "enrollment cap > 20",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "ACCT",
+        "course_number": "203N",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "size_query",
@@ -101,7 +150,14 @@
     "input": "size > 0",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "EDUC",
+        "course_number": "150N",
+        "section_sequence": "111"
+      }
+    ]
   }
 ]
 

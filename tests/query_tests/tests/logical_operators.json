@@ -21,7 +21,14 @@
     "input": "subject equals CMPT and credit hours = 3 and title contains TECHNOLOGY",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "multiple_or",
@@ -37,7 +44,14 @@
     "input": "subject equals CMPT and (credit hours = 3 or credit hours = 4)",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "or_and_combination",
@@ -45,7 +59,14 @@
     "input": "(subject equals CMPT or subject equals MATH) and credit hours = 3",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "nested_parentheses",
@@ -53,7 +74,84 @@
     "input": "((subject equals CMPT or subject equals MATH) and credit hours = 3) or prof contains Shanley",
     "should_succeed": true,
     "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
+  },
+  {
+    "test_name": "deeply_nested_triple",
+    "description": "Triple nested parentheses",
+    "input": "(((subject equals CMPT or subject equals MATH) and credit hours = 3) or prof contains Shanley) and enrollment > 0",
+    "should_succeed": true,
+    "expected_count": null,
     "min_count": 0
+  },
+  {
+    "test_name": "four_level_nesting",
+    "description": "Four levels of nested parentheses",
+    "input": "((((subject equals CMPT and credit hours = 3) or subject equals MATH) and enrollment > 0) or prof contains Shanley) and cap > 20",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "complex_mixed_nesting",
+    "description": "Complex mixed nesting with multiple operators",
+    "input": "((subject equals CMPT and (credit hours = 3 or credit hours = 4)) or ((prof contains Shanley or prof contains Macur) and subject equals MEDT)) and (enrollment > 0 or cap > 20)",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 0
+  },
+  {
+    "test_name": "asymmetric_nesting",
+    "description": "Asymmetric nesting patterns",
+    "input": "((subject equals CMPT and credit hours = 3) or subject equals MATH) and (prof contains Macur or (enrollment > 0 and cap > 20))",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "112",
+        "professor_name": "Macur"
+      }
+    ]
+  },
+  {
+    "test_name": "multiple_or_groups",
+    "description": "Multiple OR groups with AND",
+    "input": "(subject equals CMPT or subject equals MATH or subject equals BIOL) and (credit hours = 3 or credit hours = 4) and (enrollment > 0 or cap > 20)",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "BIOL",
+        "course_number": "101L",
+        "section_sequence": "200"
+      }
+    ]
+  },
+  {
+    "test_name": "complex_and_within_or",
+    "description": "Complex AND groups within OR",
+    "input": "(subject equals CMPT and credit hours = 3 and title contains TECHNOLOGY) or (subject equals MEDT and prof contains Shanley) or (subject equals MATH and credit hours >= 4)",
+    "should_succeed": true,
+    "expected_count": null,
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
   }
 ]
 

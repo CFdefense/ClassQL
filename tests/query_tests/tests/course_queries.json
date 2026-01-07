@@ -28,7 +28,14 @@
     "input": "number equals 203N",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "ACCT",
+        "course_number": "203N",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "title_contains",
@@ -52,7 +59,14 @@
     "input": "title starts with TECHNOLOGY",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "title_ends_with",
@@ -60,7 +74,14 @@
     "input": "title ends with CENTURY",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "description_contains",

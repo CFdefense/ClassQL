@@ -13,7 +13,15 @@
     "input": "prof equals \"Alan.Labouseur@marist.edu\"",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "424N",
+        "section_sequence": "111",
+        "professor_name": "Labouseur"
+      }
+    ]
   },
   {
     "test_name": "professor_email_contains_domain",
@@ -29,7 +37,15 @@
     "input": "prof contains \"Alan.Labouseur\"",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "424N",
+        "section_sequence": "111",
+        "professor_name": "Labouseur"
+      }
+    ]
   },
   {
     "test_name": "professor_email_starts_with",
@@ -37,7 +53,15 @@
     "input": "prof starts with Alan",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "424N",
+        "section_sequence": "111",
+        "professor_name": "Labouseur"
+      }
+    ]
   },
   {
     "test_name": "professor_email_has",
@@ -69,7 +93,15 @@
     "input": "prof contains Alan",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "424N",
+        "section_sequence": "111",
+        "professor_name": "Labouseur"
+      }
+    ]
   },
   {
     "test_name": "professor_email_full_address",
@@ -77,7 +109,15 @@
     "input": "prof contains \"Aaron.Suma@marist.edu\"",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "PHED",
+        "course_number": "124N",
+        "section_sequence": "111",
+        "professor_name": "Suma"
+      }
+    ]
   }
 ]
 

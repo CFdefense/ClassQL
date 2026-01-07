@@ -5,7 +5,13 @@
     "input": "start >= 9:00am",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N"
+      }
+    ]
   },
   {
     "test_name": "start_time_less_than",
@@ -13,7 +19,7 @@
     "input": "start < 12:00pm",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1
   },
   {
     "test_name": "end_time_greater_than",
@@ -21,7 +27,7 @@
     "input": "end >= 3:00pm",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1
   },
   {
     "test_name": "start_time_range",
@@ -29,7 +35,7 @@
     "input": "start 9:00am to 12:00pm",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1
   },
   {
     "test_name": "end_time_range",
@@ -37,7 +43,7 @@
     "input": "end 12:00pm to 3:00pm",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1
   },
   {
     "test_name": "begins_time_range",
@@ -45,7 +51,7 @@
     "input": "start 9:00am to 12:00pm",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1
   }
 ]
 

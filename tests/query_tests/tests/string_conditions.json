@@ -37,7 +37,14 @@
     "input": "title starts with TECHNOLOGY",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "condition_ends_with",
@@ -45,7 +52,14 @@
     "input": "title ends with CENTURY",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "condition_is_not",

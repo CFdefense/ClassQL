@@ -37,7 +37,14 @@
     "input": "title starts with TECHNOLOGY",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "all_string_conditions_ends_with",
@@ -45,7 +52,14 @@
     "input": "title ends with CENTURY",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "CMPT",
+        "course_number": "103L",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "all_string_conditions_is_not",
@@ -117,7 +131,14 @@
     "input": "credit hours > 3",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "ART",
+        "course_number": "403N",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "all_numeric_conditions_less_than",
@@ -125,7 +146,14 @@
     "input": "credit hours < 3",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "ACCT",
+        "course_number": "380N",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "all_numeric_conditions_greater_equal",
@@ -165,7 +193,14 @@
     "input": "credit hours > 3",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "ART",
+        "course_number": "403N",
+        "section_sequence": "111"
+      }
+    ]
   },
   {
     "test_name": "all_numeric_conditions_fewer_than",
@@ -173,7 +208,14 @@
     "input": "credit hours < 3",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "ACCT",
+        "course_number": "380N",
+        "section_sequence": "111"
+      }
+    ]
   }
 ]
 

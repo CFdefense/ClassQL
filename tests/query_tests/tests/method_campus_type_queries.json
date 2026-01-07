@@ -37,7 +37,13 @@
     "input": "campus equals \"Marist College Campus\"",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N"
+      }
+    ]
   },
   {
     "test_name": "campus_query_is_not",
@@ -53,7 +59,13 @@
     "input": "type equals LEC",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N"
+      }
+    ]
   },
   {
     "test_name": "meeting_type_query_contains",
@@ -61,7 +73,13 @@
     "input": "type contains LAB",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1,
+    "expected_classes": [
+      {
+        "subject_code": "MEDT",
+        "course_number": "301N"
+      }
+    ]
   },
   {
     "test_name": "meeting_type_query_is_not",
@@ -69,7 +87,7 @@
     "input": "type is not WEB",
     "should_succeed": true,
     "expected_count": null,
-    "min_count": 0
+    "min_count": 1
   }
 ]
 
