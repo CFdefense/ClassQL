@@ -344,6 +344,31 @@ impl Tui {
                                 // exit settings, go back to main menu
                                 self.focus_mode = FocusMode::MainMenu;
                             }
+                            KeyCode::Up => {
+                                if self.settings_index > 0 {
+                                    self.settings_index -= 1;
+                                }
+                            }
+                            KeyCode::Down => {
+                                let max_index = 2;
+                                if self.settings_index < max_index {
+                                    self.settings_index += 1;
+                                }
+                            }
+                            KeyCode::Left | KeyCode::Right => {
+                                // Change theme when on Theme option
+                                if self.settings_index == 0 {
+                                    let themes = ThemePalette::all();
+                                    let current_idx = themes.iter().position(|&t| t == self.current_theme).unwrap_or(0);
+                                    if key.code == KeyCode::Left {
+                                        let new_idx = if current_idx > 0 { current_idx - 1 } else { themes.len() - 1 };
+                                        self.current_theme = themes[new_idx];
+                                    } else {
+                                        let new_idx = if current_idx < themes.len() - 1 { current_idx + 1 } else { 0 };
+                                        self.current_theme = themes[new_idx];
+                                    }
+                                }
+                            }
                             _ => {}
                         }
                         continue;
@@ -796,6 +821,15 @@ fn render_frame(
     settings_index: usize,
 ) -> (usize, usize) {
     let theme = current_theme.to_theme();
+    
+    // Clear the entire frame with the theme background color
+    let buffer = frame.buffer_mut();
+    for y in 0..buffer.area.height {
+        for x in 0..buffer.area.width {
+            let cell = &mut buffer[(x, y)];
+            cell.set_bg(theme.background_color);
+        }
+    }
     
     render_logo(frame, &theme);
     

@@ -54,9 +54,9 @@ pub struct Theme {
 ///
 /// ThemePalette types:
 /// --- ---
-/// Default -> Default theme with cyan accents
-/// Dark -> Dark theme with gray tones
-/// Light -> Light theme with dark text on light background
+/// Default -> Default light theme with dark text on light background
+/// Dark -> Traditional dark theme with light text on dark background
+/// Pastel -> Pastel theme with soft colors
 /// Blue -> Blue-themed color scheme
 /// Green -> Green-themed color scheme
 /// Purple -> Purple-themed color scheme
@@ -66,7 +66,7 @@ pub struct Theme {
 pub enum ThemePalette {
     Default,
     Dark,
-    Light,
+    Pastel,
     Blue,
     Green,
     Purple,
@@ -84,7 +84,7 @@ impl ThemePalette {
         vec![
             ThemePalette::Default,
             ThemePalette::Dark,
-            ThemePalette::Light,
+            ThemePalette::Pastel,
             ThemePalette::Blue,
             ThemePalette::Green,
             ThemePalette::Purple,
@@ -102,7 +102,7 @@ impl ThemePalette {
         match self {
             ThemePalette::Default => "Default",
             ThemePalette::Dark => "Dark",
-            ThemePalette::Light => "Light",
+            ThemePalette::Pastel => "Pastel",
             ThemePalette::Blue => "Blue",
             ThemePalette::Green => "Green",
             ThemePalette::Purple => "Purple",
@@ -120,45 +120,45 @@ impl ThemePalette {
         match self {
             ThemePalette::Default => Theme {
                 name: "Default",
-                logo_color: Color::Rgb(135, 206, 235), // Sky blue
-                border_color: Color::Cyan,
-                title_color: Color::Cyan,
-                text_color: Color::White,
-                selected_color: Color::Cyan,
-                background_color: Color::Black,
-                error_color: Color::Red,
-                warning_color: Color::Yellow,
-                success_color: Color::Green,
-                info_color: Color::Blue,
-                muted_color: Color::DarkGray,
-            },
-            ThemePalette::Dark => Theme {
-                name: "Dark",
-                logo_color: Color::Rgb(200, 200, 200), // Light gray
-                border_color: Color::Rgb(100, 100, 100),
-                title_color: Color::Rgb(220, 220, 220),
-                text_color: Color::Rgb(200, 200, 200),
-                selected_color: Color::Rgb(150, 150, 255),
-                background_color: Color::Black,
-                error_color: Color::Rgb(255, 100, 100),
-                warning_color: Color::Rgb(255, 200, 100),
-                success_color: Color::Rgb(100, 255, 100),
-                info_color: Color::Rgb(100, 150, 255),
-                muted_color: Color::Rgb(80, 80, 80),
-            },
-            ThemePalette::Light => Theme {
-                name: "Light",
                 logo_color: Color::Rgb(30, 30, 150), // Dark blue
-                border_color: Color::Rgb(50, 50, 200),
+                border_color: Color::Red,
                 title_color: Color::Rgb(30, 30, 150),
                 text_color: Color::Rgb(20, 20, 20),
-                selected_color: Color::Rgb(50, 50, 200),
+                selected_color: Color::Red,
                 background_color: Color::Rgb(255, 255, 255),
                 error_color: Color::Rgb(200, 50, 50),
                 warning_color: Color::Rgb(200, 150, 50),
                 success_color: Color::Rgb(50, 150, 50),
                 info_color: Color::Rgb(50, 100, 200),
                 muted_color: Color::Rgb(120, 120, 120),
+            },
+            ThemePalette::Dark => Theme {
+                name: "Dark",
+                logo_color: Color::Rgb(200, 200, 200), // Light gray
+                border_color: Color::Rgb(100, 100, 100),
+                title_color: Color::Rgb(255, 255, 255),
+                text_color: Color::Rgb(220, 220, 220),
+                selected_color: Color::Rgb(100, 150, 255), // Bright blue for selection
+                background_color: Color::Rgb(18, 18, 18), // Very dark gray, almost black
+                error_color: Color::Rgb(255, 85, 85),
+                warning_color: Color::Rgb(255, 184, 108),
+                success_color: Color::Rgb(85, 255, 85),
+                info_color: Color::Rgb(100, 150, 255),
+                muted_color: Color::Rgb(100, 100, 100),
+            },
+            ThemePalette::Pastel => Theme {
+                name: "Pastel",
+                logo_color: Color::Rgb(135, 206, 235), // Sky blue
+                border_color: Color::Rgb(200, 180, 220), // Soft purple
+                title_color: Color::Rgb(150, 150, 200), // Soft blue
+                text_color: Color::Rgb(60, 60, 80), // Dark gray
+                selected_color: Color::Rgb(150, 200, 255), // Soft blue
+                background_color: Color::Rgb(250, 248, 255), // Very light purple/white
+                error_color: Color::Rgb(255, 150, 150), // Soft red
+                warning_color: Color::Rgb(255, 220, 150), // Soft yellow
+                success_color: Color::Rgb(150, 255, 200), // Soft green
+                info_color: Color::Rgb(150, 200, 255), // Soft blue
+                muted_color: Color::Rgb(180, 180, 200), // Soft gray
             },
             ThemePalette::Blue => Theme {
                 name: "Blue",
