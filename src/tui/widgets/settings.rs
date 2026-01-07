@@ -97,7 +97,7 @@ pub fn render_settings(frame: &mut Frame, current_theme: ThemePalette, theme: &T
     };
     lines.push(Line::from(vec![
         Span::styled(sync_prefix, sync_style),
-        Span::styled("Sync Data: ", sync_style),
+        Span::styled("Sync: ", sync_style),
         Span::styled("N/A", Style::default().fg(theme.muted_color)),
     ]));
 
