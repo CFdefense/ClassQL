@@ -8,7 +8,7 @@
 /// --- ---
 /// CodeGenResult -> Result type for code generation
 /// CodeGenError -> Error type for code generation
-/// 
+///
 /// generate_sql -> Main function to generate SQL from an AST
 /// generate_node -> Generate SQL for a single AST node (dispatcher)
 /// generate_query -> Generate SQL for a Query node
@@ -79,7 +79,11 @@ impl std::fmt::Display for CodeGenError {
         match self {
             CodeGenError::EmptyAst => write!(f, "Cannot generate SQL from an empty AST"),
             CodeGenError::UnsupportedNode { node_type } => {
-                write!(f, "Unsupported node type for code generation: {}", node_type)
+                write!(
+                    f,
+                    "Unsupported node type for code generation: {}",
+                    node_type
+                )
             }
             CodeGenError::InvalidStructure { message } => {
                 write!(f, "Invalid AST structure: {}", message)
@@ -101,10 +105,7 @@ impl std::fmt::Display for CodeGenError {
 /// --- ---
 ///
 pub fn generate_sql(ast: &Ast) -> CodeGenResult {
-    let root = ast
-        .head
-        .as_ref()
-        .ok_or(CodeGenError::EmptyAst)?;
+    let root = ast.head.as_ref().ok_or(CodeGenError::EmptyAst)?;
 
     // generate WHERE clause - day queries use the joined mt table directly
     let where_clause = generate_node(root)?;
@@ -133,7 +134,7 @@ pub fn generate_sql(ast: &Ast) -> CodeGenResult {
                  CASE WHEN mt.is_thursday = 1 THEN 'TH' ELSE '' END || \
                  CASE WHEN mt.is_friday = 1 THEN 'F' ELSE '' END || \
                  CASE WHEN mt.is_saturday = 1 THEN 'S' ELSE '' END || \
-                 CASE WHEN mt.is_sunday = 1 THEN 'U' ELSE '' END) || \
+                 CASE WHEN mt.is_sunday = 1 THEN 'SU' ELSE '' END) || \
                 ':' || mt.start_minutes || '-' || mt.end_minutes, \
                 '|' \
             ) AS meeting_times, \
@@ -265,11 +266,11 @@ fn generate_logical_term(node: &TreeNode) -> CodeGenResult {
             message: "LogicalTerm node has no children".to_string(),
         });
     }
-    
+
     // collect all conditions from the AND chain
     let mut conditions = Vec::new();
     let mut current = &node.children[0];
-    
+
     // traverse the AND chain to collect all conditions
     loop {
         match &current.node_type {
@@ -287,7 +288,7 @@ fn generate_logical_term(node: &TreeNode) -> CodeGenResult {
             }
         }
     }
-    
+
     // sort: non-EXISTS conditions first, then EXISTS subqueries
     // this ensures more selective filters (like professor) are evaluated before
     // expensive EXISTS subqueries (like day queries)
@@ -295,12 +296,12 @@ fn generate_logical_term(node: &TreeNode) -> CodeGenResult {
         let a_is_exists = a.starts_with("EXISTS");
         let b_is_exists = b.starts_with("EXISTS");
         match (a_is_exists, b_is_exists) {
-            (true, false) => std::cmp::Ordering::Greater,  // exists goes after
-            (false, true) => std::cmp::Ordering::Less,     // non-exists goes first
-            _ => std::cmp::Ordering::Equal,                // keep original order
+            (true, false) => std::cmp::Ordering::Greater, // exists goes after
+            (false, true) => std::cmp::Ordering::Less,    // non-exists goes first
+            _ => std::cmp::Ordering::Equal,               // keep original order
         }
     });
-    
+
     Ok(conditions.join(" AND "))
 }
 
@@ -366,14 +367,14 @@ fn generate_and(node: &TreeNode) -> CodeGenResult {
     }
     let left = generate_node(&node.children[0])?;
     let right = generate_node(&node.children[1])?;
-    
+
     // put non-EXISTS conditions first so they filter rows before EXISTS subqueries
     let (first, second) = if right.starts_with("EXISTS") && !left.starts_with("EXISTS") {
-        (left, right)  // non-exists first
+        (left, right) // non-exists first
     } else {
-        (left, right)  // keep original order if both are exists or left is exists
+        (left, right) // keep original order if both are exists or left is exists
     };
-    
+
     Ok(format!("({} AND {})", first, second))
 }
 
@@ -423,11 +424,11 @@ fn generate_professor_query(node: &TreeNode) -> CodeGenResult {
     }
     let condition = extract_condition(&node.children[0])?;
     let value = extract_string_value(&node.children[1])?;
-    
+
     // search in professor name and email
     let sql_condition = build_string_condition("p.name", &condition, &value);
     let email_condition = build_string_condition("p.email_address", &condition, &value);
-    
+
     Ok(format!("({} OR {})", sql_condition, email_condition))
 }
 
@@ -458,11 +459,11 @@ fn generate_course_query(node: &TreeNode) -> CodeGenResult {
         // direct condition: course <condition> <value>
         let condition = extract_condition(&node.children[0])?;
         let value = extract_string_value(&node.children[1])?;
-        
+
         // search in title and subject code combined
         let title_cond = build_string_condition("c.title", &condition, &value);
         let subject_cond = build_string_condition("c.subject_code", &condition, &value);
-        
+
         Ok(format!("({} OR {})", title_cond, subject_cond))
     } else {
         // sub-query
@@ -490,10 +491,9 @@ fn generate_subject_query(node: &TreeNode) -> CodeGenResult {
     }
     let condition = extract_condition(&node.children[0])?;
     let value = extract_string_value(&node.children[1])?;
-    
+
     Ok(build_string_condition("c.subject_code", &condition, &value))
 }
-
 
 /// Generate SQL for NumberQuery node
 ///
@@ -515,7 +515,7 @@ fn generate_number_query(node: &TreeNode) -> CodeGenResult {
     }
     let condition = extract_condition(&node.children[0])?;
     let value = extract_string_value(&node.children[1])?;
-    
+
     Ok(build_string_condition("c.number", &condition, &value))
 }
 
@@ -539,7 +539,7 @@ fn generate_title_query(node: &TreeNode) -> CodeGenResult {
     }
     let condition = extract_condition(&node.children[0])?;
     let value = extract_string_value(&node.children[1])?;
-    
+
     Ok(build_string_condition("c.title", &condition, &value))
 }
 
@@ -563,7 +563,7 @@ fn generate_description_query(node: &TreeNode) -> CodeGenResult {
     }
     let condition = extract_condition(&node.children[0])?;
     let value = extract_string_value(&node.children[1])?;
-    
+
     Ok(build_string_condition("c.description", &condition, &value))
 }
 
@@ -589,7 +589,7 @@ fn generate_credit_hours_query(node: &TreeNode) -> CodeGenResult {
     }
     let operator = extract_binop(&node.children[0])?;
     let value = extract_integer_value(&node.children[1])?;
-    
+
     Ok(format!("c.credit_hours {} {}", operator, value))
 }
 
@@ -615,8 +615,12 @@ fn generate_prereqs_query(node: &TreeNode) -> CodeGenResult {
     }
     let condition = extract_condition(&node.children[0])?;
     let value = extract_string_value(&node.children[1])?;
-    
-    Ok(build_string_condition("c.prerequisites", &condition, &value))
+
+    Ok(build_string_condition(
+        "c.prerequisites",
+        &condition,
+        &value,
+    ))
 }
 
 /// Generate SQL for CoreqsQuery node
@@ -641,7 +645,7 @@ fn generate_coreqs_query(node: &TreeNode) -> CodeGenResult {
     }
     let condition = extract_condition(&node.children[0])?;
     let value = extract_string_value(&node.children[1])?;
-    
+
     Ok(build_string_condition("c.corequisites", &condition, &value))
 }
 
@@ -665,7 +669,7 @@ fn generate_enrollment_cap_query(node: &TreeNode) -> CodeGenResult {
     }
     let operator = extract_binop(&node.children[0])?;
     let value = extract_integer_value(&node.children[1])?;
-    
+
     Ok(format!("s.max_enrollment {} {}", operator, value))
 }
 
@@ -689,8 +693,12 @@ fn generate_instruction_method_query(node: &TreeNode) -> CodeGenResult {
     }
     let condition = extract_condition(&node.children[0])?;
     let value = extract_string_value(&node.children[1])?;
-    
-    Ok(build_string_condition("s.instruction_method", &condition, &value))
+
+    Ok(build_string_condition(
+        "s.instruction_method",
+        &condition,
+        &value,
+    ))
 }
 
 /// Generate SQL for CampusQuery node
@@ -713,7 +721,7 @@ fn generate_campus_query(node: &TreeNode) -> CodeGenResult {
     }
     let condition = extract_condition(&node.children[0])?;
     let value = extract_string_value(&node.children[1])?;
-    
+
     Ok(build_string_condition("s.campus", &condition, &value))
 }
 
@@ -737,7 +745,7 @@ fn generate_enrollment_query(node: &TreeNode) -> CodeGenResult {
     }
     let operator = extract_binop(&node.children[0])?;
     let value = extract_integer_value(&node.children[1])?;
-    
+
     Ok(format!("s.enrollment {} {}", operator, value))
 }
 
@@ -763,7 +771,7 @@ fn generate_full_query(node: &TreeNode) -> CodeGenResult {
     }
     let value = extract_string_value(&node.children[1])?;
     let is_full = value.to_lowercase() == "true";
-    
+
     if is_full {
         Ok("s.enrollment >= s.max_enrollment".to_string())
     } else {
@@ -791,8 +799,12 @@ fn generate_meeting_type_query(node: &TreeNode) -> CodeGenResult {
     }
     let condition = extract_condition(&node.children[0])?;
     let value = extract_string_value(&node.children[1])?;
-    
-    Ok(build_string_condition("mt.meeting_type", &condition, &value))
+
+    Ok(build_string_condition(
+        "mt.meeting_type",
+        &condition,
+        &value,
+    ))
 }
 
 /// Generate SQL for TimeQuery node
@@ -832,7 +844,10 @@ fn generate_time_query(node: &TreeNode) -> CodeGenResult {
         if time_range.node_type == NodeType::TimeRange {
             let start_time = extract_time_value(&time_range.children[0])?;
             let end_time = extract_time_value(&time_range.children[1])?;
-            Ok(format!("({} >= '{}' AND {} <= '{}')", column, start_time, column, end_time))
+            Ok(format!(
+                "({} >= '{}' AND {} <= '{}')",
+                column, start_time, column, end_time
+            ))
         } else {
             Err(CodeGenError::InvalidStructure {
                 message: "Expected TimeRange node".to_string(),
@@ -873,16 +888,16 @@ fn generate_day_query(node: &TreeNode) -> CodeGenResult {
 
     let day_node = &node.children[0];
     let day_name = day_node.node_content.to_lowercase();
-    
-    // map day names to column names
-    let column = match day_name.as_str() {
-        "monday" => "mt.is_monday",
-        "tuesday" => "mt.is_tuesday",
-        "wednesday" => "mt.is_wednesday",
-        "thursday" => "mt.is_thursday",
-        "friday" => "mt.is_friday",
-        "saturday" => "mt.is_saturday",
-        "sunday" => "mt.is_sunday",
+
+    // map day names to column names for the EXISTS subquery
+    let column_filter = match day_name.as_str() {
+        "monday" => "mt_filter.is_monday",
+        "tuesday" => "mt_filter.is_tuesday",
+        "wednesday" => "mt_filter.is_wednesday",
+        "thursday" => "mt_filter.is_thursday",
+        "friday" => "mt_filter.is_friday",
+        "saturday" => "mt_filter.is_saturday",
+        "sunday" => "mt_filter.is_sunday",
         _ => {
             return Err(CodeGenError::InvalidStructure {
                 message: format!("Unknown day: {}", day_name),
@@ -895,14 +910,24 @@ fn generate_day_query(node: &TreeNode) -> CodeGenResult {
             message: "Day node missing condition and value".to_string(),
         });
     }
-    
+
     let value = extract_string_value(&day_node.children[1])?;
     let is_true = value.to_lowercase() == "true";
     let day_value = if is_true { 1 } else { 0 };
-    
-    // use the joined mt table directly in WHERE clause
-    // this is efficient because we're already joining meeting_times
-    Ok(format!("{} = {}", column, day_value))
+
+    // use EXISTS subquery to filter sections that have at least one meeting_time
+    // matching the day condition, but still include ALL meeting_times for those sections
+    // this ensures that when filtering by "monday", we still see Thursday times for the same class
+    Ok(format!(
+        "EXISTS (SELECT 1 FROM meeting_times mt_filter \
+         WHERE mt_filter.section_sequence = s.sequence \
+         AND mt_filter.term_collection_id = s.term_collection_id \
+         AND mt_filter.school_id = s.school_id \
+         AND mt_filter.subject_code = s.subject_code \
+         AND mt_filter.course_number = s.course_number \
+         AND {} = {})",
+        column_filter, day_value
+    ))
 }
 
 /// Extract the condition type from a Condition node
@@ -923,7 +948,7 @@ fn extract_condition(node: &TreeNode) -> CodeGenResult {
             message: format!("Expected Condition node, got {:?}", node.node_type),
         });
     }
-    
+
     // for multi-word conditions like "is not", "does not equal", "does not contain",
     // the condition node's node_content is set to the full phrase
     // otherwise, the condition type is stored in the first child's node_content
@@ -967,13 +992,16 @@ fn extract_binop(node: &TreeNode) -> CodeGenResult {
             message: format!("Expected Binop node, got {:?}", node.node_type),
         });
     }
-    
+
     // get the operator from the child node's content or lexical token
     if let Some(child) = node.children.first() {
         let token_str = &child.node_content;
         Ok(token_to_sql_operator(token_str))
     } else if let Some(token) = node.lexical_token {
-        Ok(token_to_sql_operator(&format!("{:?}", token.get_token_type())))
+        Ok(token_to_sql_operator(&format!(
+            "{:?}",
+            token.get_token_type()
+        )))
     } else {
         Err(CodeGenError::InvalidStructure {
             message: "Binop node has no content".to_string(),
@@ -1052,7 +1080,7 @@ fn extract_integer_value(node: &TreeNode) -> Result<i64, CodeGenError> {
             message: format!("Expected Integer node, got {:?}", node.node_type),
         });
     }
-    
+
     node.node_content
         .parse()
         .map_err(|_| CodeGenError::InvalidStructure {
@@ -1078,7 +1106,7 @@ fn extract_time_value(node: &TreeNode) -> CodeGenResult {
             message: format!("Expected Time node, got {:?}", node.node_type),
         });
     }
-    
+
     let time_str = &node.node_content;
     Ok(normalize_time(time_str))
 }
@@ -1101,19 +1129,25 @@ fn normalize_time(time: &str) -> String {
     let time_lower = time.to_lowercase();
     let is_pm = time_lower.contains("pm");
     let is_am = time_lower.contains("am");
-    
+
     // remove am/pm suffix
     let clean = time_lower
         .replace("am", "")
         .replace("pm", "")
         .trim()
         .to_string();
-    
+
     // parse hours and minutes
     let parts: Vec<&str> = clean.split(':').collect();
-    let hours: i32 = parts.first().and_then(|s| s.trim().parse().ok()).unwrap_or(0);
-    let minutes: i32 = parts.get(1).and_then(|s| s.trim().parse().ok()).unwrap_or(0);
-    
+    let hours: i32 = parts
+        .first()
+        .and_then(|s| s.trim().parse().ok())
+        .unwrap_or(0);
+    let minutes: i32 = parts
+        .get(1)
+        .and_then(|s| s.trim().parse().ok())
+        .unwrap_or(0);
+
     // convert to 24-hour format
     let hours_24 = if is_pm && hours != 12 {
         hours + 12
@@ -1122,7 +1156,7 @@ fn normalize_time(time: &str) -> String {
     } else {
         hours
     };
-    
+
     format!("{:02}:{:02}:00", hours_24, minutes)
 }
 
@@ -1145,18 +1179,26 @@ fn normalize_time(time: &str) -> String {
 fn build_string_condition(column: &str, condition: &str, value: &str) -> String {
     let escaped_value = value.replace('\'', "''");
     let upper = condition.to_uppercase();
-    
+
     match upper.as_str() {
         s if s == "IS NOT" || s.contains("IS NOT") => {
             format!("LOWER({}) != LOWER('{}')", column, escaped_value)
         }
-        s if s.contains("DOES NOT CONTAIN") || s.contains("DOESN'T CONTAIN") || s.contains("DOESNT CONTAIN") => {
+        s if s.contains("DOES NOT CONTAIN")
+            || s.contains("DOESN'T CONTAIN")
+            || s.contains("DOESNT CONTAIN") =>
+        {
             format!("{} NOT LIKE '%{}%' COLLATE NOCASE", column, escaped_value)
         }
-        s if s.contains("DOES NOT EQUAL") || s.contains("DOESN'T EQUAL") || s.contains("DOESNT EQUAL") => {
+        s if s.contains("DOES NOT EQUAL")
+            || s.contains("DOESN'T EQUAL")
+            || s.contains("DOESNT EQUAL") =>
+        {
             format!("LOWER({}) != LOWER('{}')", column, escaped_value)
         }
-        s if s.contains("NOTEQUALS") || (s.contains("NOT") && !s.contains("IS NOT") && !s.contains("DOES NOT")) => {
+        s if s.contains("NOTEQUALS")
+            || (s.contains("NOT") && !s.contains("IS NOT") && !s.contains("DOES NOT")) =>
+        {
             format!("LOWER({}) != LOWER('{}')", column, escaped_value)
         }
         s if s.contains("EQUALS") || s.contains("IS") || s.contains("EQUAL") => {

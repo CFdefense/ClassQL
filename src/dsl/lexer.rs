@@ -192,10 +192,11 @@ impl Lexer {
                 .collect();
 
             // get the actual character(s) for the example
-            let example_char = unrecognized_tokens.first()
+            let example_char = unrecognized_tokens
+                .first()
                 .map(|token| self.get_lexeme(token))
                 .unwrap_or("");
-            
+
             let message = format!(
                 "Unrecognized character{}: {}. Try wrapping in quotes if this is part of a value (e.g., \"{}\")",
                 if unrecognized_chars.len() > 1 {

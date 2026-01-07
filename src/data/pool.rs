@@ -2,7 +2,7 @@
     src/data/pool.rs
 
     For database connection management
-    
+
     This module provides a simple database path configuration.
     The actual connection is handled per-query in sql.rs.
 */

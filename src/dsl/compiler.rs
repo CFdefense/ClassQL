@@ -1,3 +1,4 @@
+use crate::data::sql::{execute_query, get_default_db_path, Class};
 /// src/dsl/compiler.rs
 ///
 /// Compiler for the DSL
@@ -19,11 +20,10 @@
 use crate::dsl::{
     codegen::generate_sql,
     lexer::Lexer,
-    semantic::semantic_analysis,
     parser::{Ast, Parser},
+    semantic::semantic_analysis,
 };
 use crate::tui::errors::AppError;
-use crate::data::sql::{Class, execute_query, get_default_db_path};
 
 /// Result Types for the Compiler
 ///

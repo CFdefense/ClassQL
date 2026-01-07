@@ -15,12 +15,9 @@
 /// --- ---
 use clap::Parser;
 
-use classql::dsl::compiler::{
-    Compiler,
-    CompilerResult,
-};
-use classql::tui::render::Tui;
 use classql::debug_utils::visualizetree::ast_to_dot;
+use classql::dsl::compiler::{Compiler, CompilerResult};
+use classql::tui::render::Tui;
 
 /// Args struct
 ///

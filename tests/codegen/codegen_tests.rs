@@ -1,3 +1,4 @@
+use crate::utils;
 /// tests/codegen_tests.rs
 ///
 /// Code generator tests
@@ -21,13 +22,11 @@
 ///     --- ---
 /// --- ---
 ///
-
 use classql::dsl::codegen::generate_sql;
 use classql::dsl::lexer::Lexer;
 use classql::dsl::parser::Parser;
 use classql::dsl::semantic::semantic_analysis;
 use serde::{Deserialize, Serialize};
-use crate::utils;
 
 /// Codegen test case struct
 ///
@@ -209,7 +208,10 @@ impl CodegenTestHelper {
                         test_case.test_name, error
                     );
                 } else {
-                    println!("Code generation failed as expected with error: {:?}\n", error);
+                    println!(
+                        "Code generation failed as expected with error: {:?}\n",
+                        error
+                    );
                 }
             }
         }
@@ -283,4 +285,3 @@ fn test_codegen_keyword_variations() {
 fn test_codegen_edge_cases() {
     run_test_file("edge_cases.json");
 }
-

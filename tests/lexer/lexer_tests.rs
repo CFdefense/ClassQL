@@ -1,23 +1,21 @@
+use crate::utils;
 /// tests/lexer_tests.rs
-/// 
+///
 /// Lexer tests
-/// 
+///
 /// Responsible for testing the lexer
-/// 
+///
 /// Contains:
 /// --- ---
 /// TestCase -> Test case struct
 /// ExpectedToken -> Expected token struct
 /// TestHelper -> Test helper struct
 /// --- ---
-
 use classql::dsl::lexer::Lexer;
 use serde::{Deserialize, Serialize};
-use crate::utils;
-
 
 /// Test case struct
-/// 
+///
 /// Fields:
 /// --- ---
 /// test_name -> The name of the test
@@ -27,14 +25,14 @@ use crate::utils;
 /// expected_error -> The expected error
 /// result -> The expected result
 /// --- ---
-/// 
+///
 /// Implemented Traits:
 /// --- ---
 /// Debug -> Debug trait for TestCase
 /// Deserialize -> Deserialize trait for TestCase
 /// Serialize -> Serialize trait for TestCase
 /// --- ---
-/// 
+///
 #[derive(Debug, Deserialize, Serialize)]
 struct TestCase {
     test_name: String,
@@ -48,20 +46,20 @@ struct TestCase {
 }
 
 /// Expected token struct
-/// 
+///
 /// Fields:
 /// --- ---
 /// token_type -> The type of the token
 /// content -> The content of the token
 /// --- ---
-/// 
+///
 /// Implemented Traits:
 /// --- ---
 /// Debug -> Debug trait for ExpectedToken
 /// Deserialize -> Deserialize trait for ExpectedToken
 /// Serialize -> Serialize trait for ExpectedToken
 /// --- ---
-/// 
+///
 #[derive(Debug, Deserialize, Serialize)]
 struct ExpectedToken {
     token_type: String,
@@ -69,44 +67,44 @@ struct ExpectedToken {
 }
 
 /// Test helper struct
-/// 
+///
 /// Fields:
 /// --- ---
 /// None
 /// --- ---
-/// 
+///
 /// Implemented Traits:
 /// --- ---
 /// Default -> Default trait for TestHelper
 /// --- ---
-/// 
+///
 #[derive(Default)]
 struct TestHelper {}
 
 /// Test helper implementation
-/// 
+///
 /// Methods:
 /// --- ---
 /// new -> Create a new TestHelper
 /// parse_json_tests -> Parse the JSON tests
 /// run_test -> Run a test
 /// --- ---
-/// 
+///
 impl TestHelper {
     /// Create a new TestHelper
-    /// 
+    ///
     /// TODO: This should be implemented further
-    /// 
+    ///
     /// Parameters:
     /// --- ---
     /// None
     /// --- ---
-    /// 
+    ///
     /// Returns:
     /// --- ---
     /// TestHelper -> The new TestHelper
     /// --- ---
-    /// 
+    ///
     fn new() -> Self {
         Self {
             // TODO: ..Default::default()
@@ -114,35 +112,35 @@ impl TestHelper {
     }
 
     /// Parse the JSON tests
-    /// 
+    ///
     /// Parameters:
     /// --- ---
     /// self -> The TestHelper instance
     /// json_content -> The JSON content to parse
     /// --- ---
-    /// 
+    ///
     /// Returns:
     /// --- ---
     /// Vec<TestCase> -> The parsed test cases
     /// --- ---
-    /// 
+    ///
     fn parse_json_tests(&self, json_content: &str) -> Vec<TestCase> {
         serde_json::from_str(json_content).expect("Failed to parse JSON test file")
     }
 
     /// Run a test
-    /// 
+    ///
     /// Parameters:
     /// --- ---
     /// self -> The TestHelper instance
     /// test_case -> The test case to run
     /// --- ---
-    /// 
+    ///
     /// Returns:
     /// --- ---
     /// None
     /// --- ---
-    /// 
+    ///
     fn run_test(&mut self, test_case: &TestCase) {
         println!("Running test: {}", test_case.test_name);
         println!("Description: {}", test_case.description);
@@ -281,19 +279,18 @@ impl TestHelper {
     }
 }
 
-
 /// Run the test file
-/// 
+///
 /// Parameters:
 /// --- ---
 /// filename -> The filename to run
 /// --- ---
-/// 
+///
 /// Returns:
 /// --- ---
 /// None
 /// --- ---
-/// 
+///
 fn run_test_file(filename: &str) {
     let mut helper = TestHelper::new();
     let content = utils::load_test_file("lexer", filename);
