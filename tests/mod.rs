@@ -1,6 +1,6 @@
 mod codegen;
 mod lexer;
 mod parser;
-mod query_tests;
+mod query;
 mod semantic;
 mod utils;
