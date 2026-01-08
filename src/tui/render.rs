@@ -265,11 +265,9 @@ impl Tui {
                                             self.focus_mode = FocusMode::QueryInput;
                                         }
                                         MenuOption::Help => {
-                                            // TODO: Show help screen
-                                            self.show_toast(
-                                                "Help feature coming soon!".to_string(),
-                                                ErrorType::Semantic,
-                                            );
+                                            // open the query guide as the help page
+                                            self.focus_mode = FocusMode::QueryGuide;
+                                            self.guide_scroll = 0;
                                         }
                                         MenuOption::Settings => {
                                             self.focus_mode = FocusMode::Settings;
@@ -1076,6 +1074,14 @@ fn render_frame(
         return (0, 0);
     }
 
+    // render help/query guide as a full-screen overlay (no query box)
+    if *focus_mode == FocusMode::QueryGuide {
+        let (_total_lines, max_scroll) = render_query_guide(frame, &theme, guide_scroll);
+        // store max_scroll for clamping in keyboard handlers
+        *guide_max_scroll = max_scroll;
+        return (0, 0);
+    }
+
     // render query interface
     render_search_bar_with_data(
         frame,
@@ -1113,13 +1119,6 @@ fn render_frame(
     // render detail view overlay if in detail mode
     if *focus_mode == FocusMode::DetailView && selected_result < query_results.len() {
         render_detail_view(frame, &query_results[selected_result], &theme);
-    }
-
-    // render query guide overlay if in guide mode
-    if *focus_mode == FocusMode::QueryGuide {
-        let (_total_lines, max_scroll) = render_query_guide(frame, &theme, guide_scroll);
-        // store max_scroll for clamping in keyboard handlers
-        *guide_max_scroll = max_scroll;
     }
 
     (0, max_items_that_fit)

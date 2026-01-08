@@ -615,6 +615,23 @@ fn build_guide_lines(theme: &Theme) -> Vec<Line<'_>> {
     lines.push(Line::from("")); // blank line
 
     // footer
+    lines.push(Line::from("")); // blank line
+    lines.push(Line::from(vec![Span::styled(
+        "PROJECT & LICENSE",
+        Style::default()
+            .fg(theme.success_color)
+            .add_modifier(Modifier::BOLD),
+    )]));
+    lines.push(Line::from("")); // blank line
+    lines.push(Line::from(Span::styled(
+        "GitHub: https://github.com/CFdefense/ClassQL",
+        Style::default().fg(theme.muted_color),
+    )));
+    lines.push(Line::from(Span::styled(
+        "Author: christian farrell (cfdefense) | License: MIT",
+        Style::default().fg(theme.muted_color),
+    )));
+    lines.push(Line::from("")); // blank line
     lines.push(Line::from(vec![Span::styled(
         "Navigation: ↑↓ Scroll | Page Up/Down | Alt+G or Esc: Close",
         Style::default().fg(theme.muted_color),

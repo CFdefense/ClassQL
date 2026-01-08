@@ -51,6 +51,7 @@ pub fn render_search_helpers_with_data(
             "Enter: Search | Tab: Completions | ↓: Browse Results | Esc: Main Menu | Alt+G: Guide"
         }
         FocusMode::QueryGuide => "↑↓ Scroll | Page Up/Down | Home/End | Alt+G or Esc: Close",
+        FocusMode::Help => "↑↓ Scroll | Page Up/Down | Home/End | Esc: Close",
     };
 
     let help_width = help_text.len() as u16;

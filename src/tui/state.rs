@@ -42,6 +42,7 @@ pub enum ErrorType {
 /// DetailView -> User is viewing detailed class info
 /// Settings -> User is in the settings menu
 /// QueryGuide -> User is viewing the query guide
+/// Help -> User is viewing the help page
 /// --- ---
 ///
 #[derive(Debug, Clone, PartialEq)]
@@ -52,4 +53,5 @@ pub enum FocusMode {
     DetailView,
     Settings,
     QueryGuide,
+    Help,
 }
