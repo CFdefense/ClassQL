@@ -59,15 +59,17 @@ pub fn render_logo(frame: &mut Frame, theme: &Theme) {
     };
 
     // ensure x + width doesn't exceed frame width (account for the 3-space shift)
+    // clamp to ensure the area is within frame bounds
     let final_width = clamped_width.min(frame_width.saturating_sub(logo_x));
     let final_height = clamped_height.min(frame_height.saturating_sub(logo_y));
-
+    
+    // ensure logo_x + final_width doesn't exceed frame_width
     let logo_area = Rect {
-        x: logo_x,
-        y: logo_y,
-        width: final_width,
-        height: final_height,
-    };
+        x: logo_x.min(frame_width.saturating_sub(1)),
+        y: logo_y.min(frame_height.saturating_sub(1)),
+        width: final_width.min(frame_width.saturating_sub(logo_x.min(frame_width.saturating_sub(1)))),
+        height: final_height.min(frame_height.saturating_sub(logo_y.min(frame_height.saturating_sub(1)))),
+    }.intersection(frame.area()); // Use intersection to ensure it's within frame
 
     let logo_paragraph = Paragraph::new(lines);
     frame.render_widget(logo_paragraph, logo_area);

@@ -52,7 +52,7 @@ pub fn render_search_bar_with_data(
         y: search_y.min(frame_height.saturating_sub(search_height)),
         width: (search_width as u16).min(frame_width),
         height: search_height.min(frame_height),
-    };
+    }.intersection(frame.area()); // ensure it's within frame bounds
 
     // calculate visible width (minus borders and "> " prefix and cursor)
     let visible_width = search_width.saturating_sub(5) as usize; // 2 for borders, 2 for "> ", 1 for cursor

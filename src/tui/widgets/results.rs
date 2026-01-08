@@ -128,7 +128,7 @@ pub fn render_query_results(
             y: cell_y,
             width: cell_width,
             height: cell_height,
-        };
+        }.intersection(frame.area()); // ensure it's within frame bounds
 
         // border color depends on selection state
         let border_color = if is_selected {

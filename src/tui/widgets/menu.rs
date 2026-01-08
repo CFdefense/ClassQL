@@ -73,7 +73,7 @@ pub fn render_main_menu(frame: &mut Frame, selected_index: usize, theme: &Theme)
         y: menu_y.min(frame_height.saturating_sub(menu_height.min(frame_height))),
         width: menu_width.min(frame_width),
         height: menu_height.min(frame_height),
-    };
+    }.intersection(frame.area()); // ensure it's within frame bounds
 
     let mut styled_lines = Vec::new();
     for (i, option) in menu_options.iter().enumerate() {

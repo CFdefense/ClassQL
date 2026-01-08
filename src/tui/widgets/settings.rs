@@ -48,7 +48,7 @@ pub fn render_settings(
         y: settings_y.min(frame_height.saturating_sub(settings_height.min(frame_height))),
         width: settings_width.min(frame_width),
         height: settings_height.min(frame_height),
-    };
+    }.intersection(frame.area()); // ensure it's within frame bounds
 
     let mut lines = Vec::new();
 

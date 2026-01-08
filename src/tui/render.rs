@@ -39,8 +39,8 @@ use crate::tui::state::{ErrorType, FocusMode};
 use crate::tui::themes::ThemePalette;
 use crate::tui::widgets::{
     render_completion_dropdown, render_detail_view, render_logo, render_main_menu,
-    render_query_results, render_search_bar_with_data, render_search_helpers_with_data,
-    render_settings, render_toast_with_data, MenuOption,
+    render_query_guide, render_query_results, render_search_bar_with_data,
+    render_search_helpers_with_data, render_settings, render_toast_with_data, MenuOption,
 };
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use ratatui::layout::Rect;
@@ -97,6 +97,8 @@ pub struct Tui {
     menu_index: usize,
     current_theme: ThemePalette,
     settings_index: usize,
+    guide_scroll: usize,
+    guide_max_scroll: usize,
 }
 
 /// Tui Implementation
@@ -149,6 +151,8 @@ impl Tui {
             menu_index: 0,
             current_theme: ThemePalette::Default,
             settings_index: 0,
+            guide_scroll: 0,
+            guide_max_scroll: 0,
         })
     }
 
@@ -192,6 +196,7 @@ impl Tui {
 
             // draw the current state
             let terminal = &mut self.terminal;
+            let mut new_guide_max_scroll = self.guide_max_scroll;
             terminal.draw(|f| {
                 let (_, max_items) = render_frame(
                     f,
@@ -210,10 +215,23 @@ impl Tui {
                     menu_index,
                     self.current_theme,
                     self.settings_index,
+                    self.guide_scroll,
+                    &mut new_guide_max_scroll,
                 );
                 // update max_items_that_fit based on actual rendering
                 self.max_items_that_fit = max_items;
             })?;
+            
+            // update guide_max_scroll after render
+            if focus_mode == FocusMode::QueryGuide {
+                self.guide_max_scroll = new_guide_max_scroll;
+                // clamp guide_scroll to valid range
+                if self.guide_max_scroll > 0 {
+                    self.guide_scroll = self.guide_scroll.min(self.guide_max_scroll);
+                } else {
+                    self.guide_scroll = 0;
+                }
+            }
 
             // handle input events with timeout for cursor blinking
             if crossterm::event::poll(Duration::from_millis(100))? {
@@ -398,12 +416,92 @@ impl Tui {
                         continue;
                     }
 
+                    // handle query guide mode
+                    if self.focus_mode == FocusMode::QueryGuide {
+                        match key.code {
+                            KeyCode::Esc => {
+                                // exit query guide, go back to previous mode
+                                // default to QueryInput if we don't have a better state
+                                if !self.query_results.is_empty() {
+                                    self.focus_mode = FocusMode::ResultsBrowse;
+                                } else {
+                                    self.focus_mode = FocusMode::QueryInput;
+                                }
+                                self.guide_scroll = 0; // reset scroll when closing
+                            }
+                            KeyCode::Char('g') | KeyCode::Char('G')
+                                if key.modifiers.contains(KeyModifiers::ALT) =>
+                            {
+                                // exit query guide, go back to previous mode
+                                // default to QueryInput if we don't have a better state
+                                if !self.query_results.is_empty() {
+                                    self.focus_mode = FocusMode::ResultsBrowse;
+                                } else {
+                                    self.focus_mode = FocusMode::QueryInput;
+                                }
+                                self.guide_scroll = 0; // reset scroll when closing
+                            }
+                            KeyCode::Up => {
+                                // scroll up
+                                if self.guide_scroll > 0 {
+                                    self.guide_scroll -= 1;
+                                }
+                            }
+                            KeyCode::Down => {
+                                // scroll down - clamp to max_scroll
+                                if self.guide_max_scroll > 0 {
+                                    self.guide_scroll = (self.guide_scroll + 1).min(self.guide_max_scroll);
+                                } else {
+                                    // max_scroll not calculated yet, allow incrementing
+                                    self.guide_scroll += 1;
+                                }
+                            }
+                            KeyCode::PageUp => {
+                                // scroll up by page (10 lines)
+                                if self.guide_scroll >= 10 {
+                                    self.guide_scroll -= 10;
+                                } else {
+                                    self.guide_scroll = 0;
+                                }
+                            }
+                            KeyCode::PageDown => {
+                                // scroll down by page (10 lines) - clamp to max_scroll
+                                if self.guide_max_scroll > 0 {
+                                    self.guide_scroll = (self.guide_scroll + 10).min(self.guide_max_scroll);
+                                } else {
+                                    self.guide_scroll += 10;
+                                }
+                            }
+                            KeyCode::Home => {
+                                // scroll to top
+                                self.guide_scroll = 0;
+                            }
+                            KeyCode::End => {
+                                // scroll to bottom
+                                if self.guide_max_scroll > 0 {
+                                    self.guide_scroll = self.guide_max_scroll;
+                                } else {
+                                    // max_scroll not calculated yet, set large value
+                                    self.guide_scroll = 10000;
+                                }
+                            }
+                            _ => {}
+                        }
+                        continue;
+                    }
+
                     // handle detail view mode
                     if self.focus_mode == FocusMode::DetailView {
                         match key.code {
                             KeyCode::Esc | KeyCode::Enter | KeyCode::Backspace => {
                                 // exit detail view, go back to results browse
                                 self.focus_mode = FocusMode::ResultsBrowse;
+                            }
+                            KeyCode::Char('g') | KeyCode::Char('G')
+                                if key.modifiers.contains(KeyModifiers::ALT) =>
+                            {
+                                // open query guide
+                                self.focus_mode = FocusMode::QueryGuide;
                             }
                             _ => {}
                         }
@@ -420,6 +518,12 @@ impl Tui {
                             // esc goes back to main menu
                             KeyCode::Esc => {
                                 self.focus_mode = FocusMode::MainMenu;
+                            }
+                            KeyCode::Char('g') | KeyCode::Char('G')
+                                if key.modifiers.contains(KeyModifiers::ALT) =>
+                            {
+                                // open query guide
+                                self.focus_mode = FocusMode::QueryGuide;
                             }
                             KeyCode::Up => {
                                 // if at top of results, go back to query input
@@ -530,9 +634,15 @@ impl Tui {
                         KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                             break Ok(())
                         }
-                        // Esc goes back to main menu
+                        // esc goes back to main menu
                         KeyCode::Esc => {
                             self.focus_mode = FocusMode::MainMenu;
+                        }
+                        // alt+g opens query guide
+                        KeyCode::Char('g') | KeyCode::Char('G')
+                            if key.modifiers.contains(KeyModifiers::ALT) =>
+                        {
+                            self.focus_mode = FocusMode::QueryGuide;
                         }
                         KeyCode::Down => {
                             // if we have results, move to top left result
@@ -848,6 +958,8 @@ fn render_frame(
     menu_index: usize,
     current_theme: ThemePalette,
     settings_index: usize,
+    guide_scroll: usize,
+    guide_max_scroll: &mut usize,
 ) -> (usize, usize) {
     let theme = current_theme.to_theme();
 
@@ -918,10 +1030,16 @@ fn render_frame(
     }
 
     // use exclusive range: 0..actual_width gives 0 to actual_width-1
-    for y in 0..actual_height {
-        for x in 0..actual_width {
-            let cell = &mut buffer[(x, y)];
-            cell.set_bg(theme.background_color);
+    // add extra safety check to ensure we never access out of bounds
+    let safe_width = actual_width.min(buffer.area.width);
+    let safe_height = actual_height.min(buffer.area.height);
+    for y in 0..safe_height {
+        for x in 0..safe_width {
+            // double-check bounds before access
+            if x < buffer.area.width && y < buffer.area.height {
+                let cell = &mut buffer[(x, y)];
+                cell.set_bg(theme.background_color);
+            }
         }
     }
 
@@ -995,6 +1113,13 @@ fn render_frame(
     // render detail view overlay if in detail mode
     if *focus_mode == FocusMode::DetailView && selected_result < query_results.len() {
         render_detail_view(frame, &query_results[selected_result], &theme);
+    }
+
+    // render query guide overlay if in guide mode
+    if *focus_mode == FocusMode::QueryGuide {
+        let (_total_lines, max_scroll) = render_query_guide(frame, &theme, guide_scroll);
+        // store max_scroll for clamping in keyboard handlers
+        *guide_max_scroll = max_scroll;
     }
 
     (0, max_items_that_fit)
