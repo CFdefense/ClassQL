@@ -40,7 +40,8 @@ pub fn render_completion_dropdown(
 
     // position below the search bar
     let logo_height = 7; // height of the ASCII art logo
-    let search_y = logo_height + 2; // search bar position
+    // keep in sync with search_bar.rs (logo_height + 6)
+    let search_y = logo_height + 6; // search bar vertical position
     let search_height = 3; // search bar height
     let dropdown_y = search_y + search_height + 1; // 1 line below search bar
 
@@ -55,7 +56,7 @@ pub fn render_completion_dropdown(
         y: dropdown_y,
         width: dropdown_width,
         height: dropdown_height,
-    };
+    }.intersection(frame.area()); // ensure it's within frame bounds
 
     let mut styled_lines = Vec::new();
     for (i, completion) in completions.iter().enumerate() {
@@ -94,13 +95,14 @@ pub fn render_completion_dropdown(
     // so we need to clamp them to buffer dimensions
     let start_y = dropdown_area.top();
     let start_x = dropdown_area.left();
+    // right() and bottom() return exclusive coordinates, so clamp to buffer bounds
     let end_y = dropdown_area.bottom().min(buffer_height);
     let end_x = dropdown_area.right().min(buffer_width);
 
     // only iterate if area is valid and within bounds
     if start_y < buffer_height && start_x < buffer_width && end_y > start_y && end_x > start_x {
         for y in start_y..end_y {
-            for x in start_x..end_x {
+            for x in start_x..end_x.min(buffer_width) {
                 // final bounds check before access
                 if x < buffer_width && y < buffer_height {
                     let cell = &mut buffer[(x, y)];

@@ -118,7 +118,7 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
         y: (frame.area().height.saturating_sub(detail_height)) / 2,
         width: detail_width,
         height: detail_height,
-    };
+    }.intersection(frame.area()); // ensure it's within frame bounds
 
     // build detailed content
     let mut lines: Vec<Line> = Vec::new();
@@ -400,13 +400,14 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme) {
     // so we need to clamp them to buffer dimensions
     let start_y = detail_area.top();
     let start_x = detail_area.left();
+    // right() and bottom() return exclusive coordinates, so clamp to buffer bounds
     let end_y = detail_area.bottom().min(buffer_height);
     let end_x = detail_area.right().min(buffer_width);
 
     // only iterate if area is valid and within bounds
     if start_y < buffer_height && start_x < buffer_width && end_y > start_y && end_x > start_x {
         for y in start_y..end_y {
-            for x in start_x..end_x {
+            for x in start_x..end_x.min(buffer_width) {
                 // final bounds check before access
                 if x < buffer_width && y < buffer_height {
                     let cell = &mut buffer[(x, y)];

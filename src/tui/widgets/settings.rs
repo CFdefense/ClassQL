@@ -36,7 +36,7 @@ pub fn render_settings(
 
     // Position settings below the logo
     let logo_height = 7_u16;
-    let spacing = 3_u16;
+    let spacing = 6_u16;
     let settings_y = logo_height + spacing;
 
     let frame_width = frame.area().width;
@@ -48,7 +48,7 @@ pub fn render_settings(
         y: settings_y.min(frame_height.saturating_sub(settings_height.min(frame_height))),
         width: settings_width.min(frame_width),
         height: settings_height.min(frame_height),
-    };
+    }.intersection(frame.area()); // ensure it's within frame bounds
 
     let mut lines = Vec::new();
 

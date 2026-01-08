@@ -59,9 +59,9 @@ pub fn render_main_menu(frame: &mut Frame, selected_index: usize, theme: &Theme)
     let menu_height = (menu_options.len() as u16 + 4).min(10); // options + borders + title
 
     // Position menu below the logo
-    // Logo is 7 lines tall and positioned near the top
+    // Logo is 7 lines tall
     let logo_height = 7_u16;
-    let spacing = 3_u16; // spacing between logo and menu
+    let spacing = 6_u16; // vertical gap between logo and menu
     let menu_y = logo_height + spacing;
 
     let frame_width = frame.area().width;
@@ -73,7 +73,7 @@ pub fn render_main_menu(frame: &mut Frame, selected_index: usize, theme: &Theme)
         y: menu_y.min(frame_height.saturating_sub(menu_height.min(frame_height))),
         width: menu_width.min(frame_width),
         height: menu_height.min(frame_height),
-    };
+    }.intersection(frame.area()); // ensure it's within frame bounds
 
     let mut styled_lines = Vec::new();
     for (i, option) in menu_options.iter().enumerate() {
