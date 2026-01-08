@@ -48,15 +48,12 @@ pub fn render_logo(frame: &mut Frame, theme: &Theme) {
     let clamped_width = logo_width.min(frame_width);
     let clamped_height = logo_height.min(frame_height);
     let logo_x = if frame_width >= clamped_width {
-        (frame_width.saturating_sub(clamped_width)) / 2 + 3 // shift 3 spaces to the right
+        (frame_width.saturating_sub(clamped_width)) / 2 + 2 // shift 2 spaces to the right
     } else {
-        3.min(frame_width.saturating_sub(1)) // still shift right if possible
+        2.min(frame_width.saturating_sub(1)) // still shift right if possible
     };
-    let logo_y = if frame_height >= clamped_height {
-        frame_height.saturating_sub(clamped_height + 1)
-    } else {
-        0
-    };
+    // position logo a few rows down from the top
+    let logo_y = 3.min(frame_height.saturating_sub(1));
 
     // ensure x + width doesn't exceed frame width (account for the 3-space shift)
     // clamp to ensure the area is within frame bounds

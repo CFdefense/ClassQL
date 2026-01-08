@@ -631,11 +631,6 @@ fn build_guide_lines(theme: &Theme) -> Vec<Line<'_>> {
         "Author: christian farrell (cfdefense) | License: MIT",
         Style::default().fg(theme.muted_color),
     )));
-    lines.push(Line::from("")); // blank line
-    lines.push(Line::from(vec![Span::styled(
-        "Navigation: ↑↓ Scroll | Page Up/Down | Alt+G or Esc: Close",
-        Style::default().fg(theme.muted_color),
-    )]));
 
     lines
 }

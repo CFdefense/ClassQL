@@ -59,9 +59,9 @@ pub fn render_main_menu(frame: &mut Frame, selected_index: usize, theme: &Theme)
     let menu_height = (menu_options.len() as u16 + 4).min(10); // options + borders + title
 
     // Position menu below the logo
-    // Logo is 7 lines tall and positioned near the top
+    // Logo is 7 lines tall
     let logo_height = 7_u16;
-    let spacing = 3_u16; // spacing between logo and menu
+    let spacing = 6_u16; // vertical gap between logo and menu
     let menu_y = logo_height + spacing;
 
     let frame_width = frame.area().width;

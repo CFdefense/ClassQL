@@ -40,7 +40,8 @@ pub fn render_completion_dropdown(
 
     // position below the search bar
     let logo_height = 7; // height of the ASCII art logo
-    let search_y = logo_height + 2; // search bar position
+    // keep in sync with search_bar.rs (logo_height + 6)
+    let search_y = logo_height + 6; // search bar vertical position
     let search_height = 3; // search bar height
     let dropdown_y = search_y + search_height + 1; // 1 line below search bar
 

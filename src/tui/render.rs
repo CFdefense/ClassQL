@@ -99,6 +99,7 @@ pub struct Tui {
     settings_index: usize,
     guide_scroll: usize,
     guide_max_scroll: usize,
+    guide_return_focus: FocusMode,
 }
 
 /// Tui Implementation
@@ -153,6 +154,7 @@ impl Tui {
             settings_index: 0,
             guide_scroll: 0,
             guide_max_scroll: 0,
+            guide_return_focus: FocusMode::QueryInput,
         })
     }
 
@@ -217,6 +219,7 @@ impl Tui {
                     self.settings_index,
                     self.guide_scroll,
                     &mut new_guide_max_scroll,
+                    &self.user_query,
                 );
                 // update max_items_that_fit based on actual rendering
                 self.max_items_that_fit = max_items;
@@ -265,7 +268,8 @@ impl Tui {
                                             self.focus_mode = FocusMode::QueryInput;
                                         }
                                         MenuOption::Help => {
-                                            // open the query guide as the help page
+                                            // open the query guide as the help page from main menu
+                                            self.guide_return_focus = FocusMode::MainMenu;
                                             self.focus_mode = FocusMode::QueryGuide;
                                             self.guide_scroll = 0;
                                         }
@@ -418,25 +422,15 @@ impl Tui {
                     if self.focus_mode == FocusMode::QueryGuide {
                         match key.code {
                             KeyCode::Esc => {
-                                // exit query guide, go back to previous mode
-                                // default to QueryInput if we don't have a better state
-                                if !self.query_results.is_empty() {
-                                    self.focus_mode = FocusMode::ResultsBrowse;
-                                } else {
-                                    self.focus_mode = FocusMode::QueryInput;
-                                }
+                                // exit query guide, go back to the saved previous focus mode
+                                self.focus_mode = self.guide_return_focus.clone();
                                 self.guide_scroll = 0; // reset scroll when closing
                             }
                             KeyCode::Char('g') | KeyCode::Char('G')
                                 if key.modifiers.contains(KeyModifiers::ALT) =>
                             {
-                                // exit query guide, go back to previous mode
-                                // default to QueryInput if we don't have a better state
-                                if !self.query_results.is_empty() {
-                                    self.focus_mode = FocusMode::ResultsBrowse;
-                                } else {
-                                    self.focus_mode = FocusMode::QueryInput;
-                                }
+                                // exit query guide, go back to the saved previous focus mode
+                                self.focus_mode = self.guide_return_focus.clone();
                                 self.guide_scroll = 0; // reset scroll when closing
                             }
                             KeyCode::Up => {
@@ -498,8 +492,10 @@ impl Tui {
                             KeyCode::Char('g') | KeyCode::Char('G')
                                 if key.modifiers.contains(KeyModifiers::ALT) =>
                             {
-                                // open query guide
+                                // open query guide from detail view
+                                self.guide_return_focus = FocusMode::DetailView;
                                 self.focus_mode = FocusMode::QueryGuide;
+                                self.guide_scroll = 0;
                             }
                             _ => {}
                         }
@@ -520,8 +516,10 @@ impl Tui {
                             KeyCode::Char('g') | KeyCode::Char('G')
                                 if key.modifiers.contains(KeyModifiers::ALT) =>
                             {
-                                // open query guide
+                                // open query guide from results browse
+                                self.guide_return_focus = FocusMode::ResultsBrowse;
                                 self.focus_mode = FocusMode::QueryGuide;
+                                self.guide_scroll = 0;
                             }
                             KeyCode::Up => {
                                 // if at top of results, go back to query input
@@ -640,7 +638,10 @@ impl Tui {
                         KeyCode::Char('g') | KeyCode::Char('G')
                             if key.modifiers.contains(KeyModifiers::ALT) =>
                         {
+                            // open query guide from query input
+                            self.guide_return_focus = FocusMode::QueryInput;
                             self.focus_mode = FocusMode::QueryGuide;
+                            self.guide_scroll = 0;
                         }
                         KeyCode::Down => {
                             // if we have results, move to top left result
@@ -958,6 +959,7 @@ fn render_frame(
     settings_index: usize,
     guide_scroll: usize,
     guide_max_scroll: &mut usize,
+    user_query: &str,
 ) -> (usize, usize) {
     let theme = current_theme.to_theme();
 
@@ -1074,11 +1076,22 @@ fn render_frame(
         return (0, 0);
     }
 
-    // render help/query guide as a full-screen overlay (no query box)
+    // render help/query guide as a full-screen overlay (no query box),
     if *focus_mode == FocusMode::QueryGuide {
         let (_total_lines, max_scroll) = render_query_guide(frame, &theme, guide_scroll);
         // store max_scroll for clamping in keyboard handlers
         *guide_max_scroll = max_scroll;
+
+        render_search_helpers_with_data(
+            frame,
+            input,
+            toast_message,
+            query_results,
+            focus_mode,
+            &theme,
+        );
+        render_toast_with_data(frame, toast_message, error_type, &theme);
+
         return (0, 0);
     }
 
@@ -1099,6 +1112,30 @@ fn render_frame(
         selected_result,
         &theme,
     );
+    
+    // Show "No results" message if a query was executed but returned no results
+    if query_results.is_empty() && !user_query.is_empty() 
+        && (*focus_mode == FocusMode::QueryInput || *focus_mode == FocusMode::ResultsBrowse) {
+        let logo_height = 7;
+        let search_y = logo_height + 6;
+        let search_height = 3;
+        let results_y = search_y + search_height + 1;
+        
+        let no_results_msg = "No results";
+        let msg_width = no_results_msg.len() as u16;
+        let msg_x = (frame.area().width.saturating_sub(msg_width)) / 2;
+        let msg_area = Rect {
+            x: msg_x,
+            y: results_y + 2,
+            width: msg_width,
+            height: 1,
+        };
+        
+        let no_results_paragraph = ratatui::widgets::Paragraph::new(no_results_msg)
+            .style(ratatui::style::Style::default().fg(theme.error_color));
+        frame.render_widget(no_results_paragraph, msg_area);
+    }
+    
     render_search_helpers_with_data(
         frame,
         input,

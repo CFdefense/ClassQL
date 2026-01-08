@@ -36,7 +36,7 @@ pub fn render_settings(
 
     // Position settings below the logo
     let logo_height = 7_u16;
-    let spacing = 3_u16;
+    let spacing = 6_u16;
     let settings_y = logo_height + spacing;
 
     let frame_width = frame.area().width;
