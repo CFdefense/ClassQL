@@ -78,6 +78,9 @@ use std::time::{Duration, Instant};
 /// cart -> Set of class IDs in the cart
 /// generated_schedules -> All generated non-conflicting schedules
 /// current_schedule_index -> Index of currently displayed schedule
+/// schedule_cart_focus -> Whether the cart is focused
+/// selected_cart_index -> Index of currently selected cart item
+/// schedule_selection_mode -> Whether the schedule selection mode is active
 /// --- ---
 ///
 pub struct Tui {
@@ -107,11 +110,12 @@ pub struct Tui {
     guide_max_scroll: usize,
     guide_return_focus: FocusMode,
     cart: std::collections::HashSet<String>,
-    selected_for_schedule: std::collections::HashSet<String>, // classes selected for schedule generation
+    selected_for_schedule: std::collections::HashSet<String>,
     generated_schedules: Vec<Vec<Class>>,
     current_schedule_index: usize,
-    schedule_cart_focus: bool, // true = cart focused, false = schedule focused
-    selected_cart_index: usize, // index of selected cart item
+    schedule_cart_focus: bool,
+    selected_cart_index: usize,
+    schedule_selection_mode: bool,
 }
 
 /// Tui Implementation
@@ -173,6 +177,7 @@ impl Tui {
             current_schedule_index: 0,
             schedule_cart_focus: true, // start focused on cart
             selected_cart_index: 0,
+            schedule_selection_mode: true, // start in class selection mode
         })
     }
 
@@ -219,6 +224,7 @@ impl Tui {
             let current_schedule_index = self.current_schedule_index;
             let schedule_cart_focus = self.schedule_cart_focus;
             let selected_cart_index = self.selected_cart_index;
+            let schedule_selection_mode = self.schedule_selection_mode;
 
             // draw the current state
             let terminal = &mut self.terminal;
@@ -251,6 +257,7 @@ impl Tui {
                     current_schedule_index,
                     schedule_cart_focus,
                     selected_cart_index,
+                    schedule_selection_mode,
                 );
                 // update max_items_that_fit based on actual rendering
                 self.max_items_that_fit = max_items;
@@ -309,20 +316,13 @@ impl Tui {
                                                 if self.selected_for_schedule.is_empty() {
                                                     self.selected_for_schedule = self.cart.clone();
                                                 }
-                                                // generate schedules from selected classes
-                                                use crate::tui::widgets::schedule::generate_schedules;
-                                                self.generated_schedules = generate_schedules(&self.query_results, &self.selected_for_schedule);
-                                                if self.generated_schedules.is_empty() {
-                                                    self.show_toast(
-                                                        "No valid schedules found. All classes conflict.".to_string(),
-                                                        ErrorType::Semantic,
-                                                    );
-                                                } else {
-                                                    self.focus_mode = FocusMode::ScheduleCreation;
-                                                    self.current_schedule_index = 0;
-                                                    self.schedule_cart_focus = true;
-                                                    self.selected_cart_index = 0;
-                                                }
+                                                // enter class selection mode (don't generate schedules yet)
+                                                self.focus_mode = FocusMode::ScheduleCreation;
+                                                self.schedule_selection_mode = true;
+                                                self.current_schedule_index = 0;
+                                                self.schedule_cart_focus = true;
+                                                self.selected_cart_index = 0;
+                                                self.generated_schedules.clear(); // clear any previous schedules
                                             }
                                         }
                                         MenuOption::Help => {
@@ -432,22 +432,18 @@ impl Tui {
                                 break Ok(())
                             }
                             KeyCode::Esc => {
-                                // exit schedule creation, go back to main menu
-                                self.focus_mode = FocusMode::MainMenu;
-                            }
-                            KeyCode::Tab | KeyCode::Left | KeyCode::Right => {
-                                // switch focus between cart and schedule
-                                if key.code == KeyCode::Left {
-                                    self.schedule_cart_focus = true; // focus cart
-                                } else if key.code == KeyCode::Right {
-                                    self.schedule_cart_focus = false; // focus schedule
+                                if self.schedule_selection_mode {
+                                    // exit schedule creation, go back to main menu
+                                    self.focus_mode = FocusMode::MainMenu;
                                 } else {
-                                    // Tab toggles focus
-                                    self.schedule_cart_focus = !self.schedule_cart_focus;
+                                    // go back to class selection mode
+                                    self.schedule_selection_mode = true;
+                                    self.schedule_cart_focus = true;
+                                    self.generated_schedules.clear();
                                 }
                             }
                             KeyCode::Up => {
-                                if self.schedule_cart_focus {
+                                if self.schedule_selection_mode {
                                     // navigate cart items up
                                     let cart_classes: Vec<String> = self
                                         .query_results
@@ -459,7 +455,7 @@ impl Tui {
                                         self.selected_cart_index -= 1;
                                     }
                                 } else {
-                                    // navigate to previous schedule
+                                    // navigate to previous schedule (in viewing mode)
                                     if !self.generated_schedules.is_empty() {
                                         if self.current_schedule_index > 0 {
                                             self.current_schedule_index -= 1;
@@ -470,7 +466,7 @@ impl Tui {
                                 }
                             }
                             KeyCode::Down => {
-                                if self.schedule_cart_focus {
+                                if self.schedule_selection_mode {
                                     // navigate cart items down
                                     let cart_classes: Vec<String> = self
                                         .query_results
@@ -483,7 +479,7 @@ impl Tui {
                                         self.selected_cart_index += 1;
                                     }
                                 } else {
-                                    // navigate to next schedule
+                                    // navigate to next schedule (in viewing mode)
                                     if !self.generated_schedules.is_empty() {
                                         if self.current_schedule_index < self.generated_schedules.len() - 1 {
                                             self.current_schedule_index += 1;
@@ -493,8 +489,31 @@ impl Tui {
                                     }
                                 }
                             }
-                            KeyCode::Enter | KeyCode::Char(' ') => {
-                                if self.schedule_cart_focus {
+                            KeyCode::Enter => {
+                                if self.schedule_selection_mode {
+                                    // generate schedules and switch to viewing mode
+                                    if self.selected_for_schedule.is_empty() {
+                                        self.show_toast(
+                                            "No classes selected! Select classes first.".to_string(),
+                                            ErrorType::Semantic,
+                                        );
+                                    } else {
+                                        use crate::tui::widgets::schedule::generate_schedules;
+                                        self.generated_schedules = generate_schedules(&self.query_results, &self.selected_for_schedule);
+                                        if self.generated_schedules.is_empty() {
+                                            self.show_toast(
+                                                "No valid schedules found. All classes conflict.".to_string(),
+                                                ErrorType::Semantic,
+                                            );
+                                        } else {
+                                            self.schedule_selection_mode = false;
+                                            self.current_schedule_index = 0;
+                                        }
+                                    }
+                                }
+                            }
+                            KeyCode::Char(' ') => {
+                                if self.schedule_selection_mode {
                                     // toggle selected cart item for schedule generation
                                     let cart_classes: Vec<String> = self
                                         .query_results
@@ -510,15 +529,11 @@ impl Tui {
                                         } else {
                                             self.selected_for_schedule.insert(class_id.clone());
                                         }
-                                        // Regenerate schedules
-                                        use crate::tui::widgets::schedule::generate_schedules;
-                                        self.generated_schedules = generate_schedules(&self.query_results, &self.selected_for_schedule);
-                                        self.current_schedule_index = 0;
                                     }
                                 }
                             }
                             KeyCode::Char('d') | KeyCode::Char('D') => {
-                                if self.schedule_cart_focus {
+                                if self.schedule_selection_mode {
                                     // remove selected cart item from cart
                                     let cart_classes: Vec<String> = self
                                         .query_results
@@ -531,10 +546,6 @@ impl Tui {
                                         // Remove from cart and selected_for_schedule
                                         self.cart.remove(class_id);
                                         self.selected_for_schedule.remove(class_id);
-                                        // Regenerate schedules
-                                        use crate::tui::widgets::schedule::generate_schedules;
-                                        self.generated_schedules = generate_schedules(&self.query_results, &self.selected_for_schedule);
-                                        self.current_schedule_index = 0;
                                         // Adjust selected index if needed
                                         if self.selected_cart_index >= self.cart.len() && !self.cart.is_empty() {
                                             self.selected_cart_index = self.cart.len() - 1;
@@ -1166,6 +1177,7 @@ fn render_frame(
     current_schedule_index: usize,
     schedule_cart_focus: bool,
     selected_cart_index: usize,
+    schedule_selection_mode: bool,
 ) -> (usize, usize) {
     let theme = current_theme.to_theme();
 
@@ -1310,6 +1322,7 @@ fn render_frame(
             current_schedule_index,
             schedule_cart_focus,
             selected_cart_index,
+            schedule_selection_mode,
             &theme,
         );
         render_search_helpers_with_data(

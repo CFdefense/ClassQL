@@ -19,9 +19,13 @@ use ratatui::Frame;
 /// --- ---
 /// frame -> The frame to render
 /// cart -> Set of class IDs in the cart
+/// selected_for_schedule -> Set of class IDs selected for schedule generation
 /// query_results -> All query results to look up classes by ID
 /// generated_schedules -> All generated non-conflicting schedules
 /// current_schedule_index -> Index of currently displayed schedule
+/// cart_focused -> Whether the cart section is focused
+/// selected_cart_index -> Index of currently selected cart item
+/// selection_mode -> Whether in class selection mode (true) or schedule viewing mode (false)
 /// theme -> The current theme
 /// --- ---
 ///
@@ -39,6 +43,7 @@ pub fn render_schedule_creation(
     current_schedule_index: usize,
     cart_focused: bool,
     selected_cart_index: usize,
+    selection_mode: bool,
     theme: &Theme,
 ) {
     let frame_width = frame.area().width;
@@ -62,28 +67,45 @@ pub fn render_schedule_creation(
         height: max_height,
     };
 
-    // create main layout: cart on left, schedule on right
-    let chunks = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
-        .split(area);
-
-    // render cart section
-    render_cart_section(frame, chunks[0], cart, selected_for_schedule, query_results, cart_focused, selected_cart_index, theme);
-
-    // render schedule section
-    if !generated_schedules.is_empty() && current_schedule_index < generated_schedules.len() {
-        render_schedule_section(
-            frame,
-            chunks[1],
-            &generated_schedules[current_schedule_index],
-            current_schedule_index,
-            generated_schedules.len(),
-            !cart_focused,
-            theme,
-        );
+    if selection_mode {
+        // in selection mode, show only cart (narrower width)
+        let cart_width = 35_u16.min(frame_width.saturating_sub(4));
+        let message_width = 50_u16.min(frame_width.saturating_sub(4)); // wider for messages
+        let cart_x = (frame_width.saturating_sub(cart_width)) / 2;
+        let message_x = (frame_width.saturating_sub(message_width)) / 2;
+        // calculate cart height (leave room for messages below)
+        let cart_height = (max_height.saturating_sub(4)).min(15); // leave 4 lines for messages
+        let cart_area = Rect {
+            x: cart_x,
+            y: start_y,
+            width: cart_width,
+            height: cart_height,
+        };
+        
+        // position messages below cart
+        let message_y = start_y + cart_height + 1;
+        let message_area = Rect {
+            x: message_x,
+            y: message_y,
+            width: message_width,
+            height: 3, // 3 lines for messages
+        };
+        render_cart_section(frame, cart_area, message_area, cart, selected_for_schedule, query_results, cart_focused, selected_cart_index, theme);
     } else {
-        render_empty_schedule_section(frame, chunks[1], !cart_focused, theme);
+        // in viewing mode, show only schedules (full width)
+        if !generated_schedules.is_empty() && current_schedule_index < generated_schedules.len() {
+            render_schedule_section(
+                frame,
+                area,
+                &generated_schedules[current_schedule_index],
+                current_schedule_index,
+                generated_schedules.len(),
+                true, // always focused in viewing mode
+                theme,
+            );
+        } else {
+            render_empty_schedule_section(frame, area, true, theme);
+        }
     }
 }
 
@@ -92,7 +114,8 @@ pub fn render_schedule_creation(
 /// Parameters:
 /// --- ---
 /// frame -> The frame to render
-/// area -> The area to render the cart section in
+/// cart_area -> The area to render the cart section in
+/// message_area -> The area to render messages below the cart
 /// cart -> Set of class IDs in the cart
 /// selected_for_schedule -> Set of class IDs selected for schedule generation
 /// query_results -> All query results to look up classes by ID
@@ -108,7 +131,8 @@ pub fn render_schedule_creation(
 ///
 fn render_cart_section(
     frame: &mut Frame,
-    area: Rect,
+    cart_area: Rect,
+    message_area: Rect,
     cart: &std::collections::HashSet<String>,
     selected_for_schedule: &std::collections::HashSet<String>,
     query_results: &[Class],
@@ -116,30 +140,21 @@ fn render_cart_section(
     selected_index: usize,
     theme: &Theme,
 ) {
-    let chunks = Layout::default()
+    let cart_chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(4), Constraint::Min(0)])
-        .split(area);
+        .constraints([Constraint::Min(0)])
+        .split(cart_area);
+    
+    let message_chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Length(1), Constraint::Length(1), Constraint::Length(1)])
+        .split(message_area);
 
-    // title
     let border_color = if focused {
         theme.selected_color
     } else {
         theme.border_color
     };
-    let title = Paragraph::new("")
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(" Shopping Cart ")
-                .title_style(
-                    Style::default()
-                        .fg(theme.title_color)
-                        .add_modifier(Modifier::BOLD),
-                )
-                .border_style(Style::default().fg(border_color)),
-        );
-    frame.render_widget(title, chunks[0]);
 
     // cart items - show class names with checkboxes
     let cart_classes: Vec<(usize, &Class)> = query_results
@@ -160,40 +175,70 @@ fn render_cart_section(
             .map(|(idx, (_, class))| {
                 let is_selected = focused && idx == selected_index;
                 let class_id = class.unique_id();
-                let checkbox = if selected_for_schedule.contains(&class_id) { "☑" } else { "☐" };
+                let checkbox = if selected_for_schedule.contains(&class_id) { "☑ " } else { "☐ " };
                 let prefix = if is_selected { "> " } else { "  " };
-                let style = if is_selected {
+                let base_style = if is_selected {
                     Style::default()
                         .fg(theme.selected_color)
                         .add_modifier(Modifier::BOLD)
                 } else {
-                    Style::default().fg(theme.text_color)
+                    Style::default()
+                        .fg(theme.text_color)
+                        .add_modifier(Modifier::BOLD)
                 };
                 Line::from(vec![
-                    Span::styled(prefix, style),
+                    Span::styled(prefix, base_style),
+                    Span::styled(checkbox, base_style),
                     Span::styled(
                         format!(
-                            "{} {} {}-{}",
-                            checkbox,
+                            "{} {}-{}",
                             class.subject_code,
                             class.course_number,
                             class.section_sequence
                         ),
-                        style,
+                        base_style,
                     ),
                 ])
             })
             .collect()
     };
 
-    let cart_widget = Paragraph::new(cart_text)
+    // add tiny gap at top, then classes from top down
+    let mut padded_text: Vec<Line> = vec![Line::from("")]; // tiny gap
+    padded_text.extend(cart_text);
+    
+    let cart_widget = Paragraph::new(padded_text)
         .block(
             Block::default()
                 .borders(Borders::ALL)
+                .title(" Cart ")
+                .title_style(
+                    Style::default()
+                        .fg(theme.title_color)
+                        .add_modifier(Modifier::BOLD),
+                )
                 .border_style(Style::default().fg(border_color)),
         )
-        .style(Style::default().bg(theme.background_color));
-    frame.render_widget(cart_widget, chunks[1]);
+        .style(Style::default().bg(theme.background_color))
+        .alignment(Alignment::Center);
+    frame.render_widget(cart_widget, cart_chunks[0]);
+
+    // messages below cart (using message_area for proper width)
+    let message1 = Paragraph::new("Select desired classes to build a schedule")
+        .style(Style::default().fg(theme.muted_color))
+        .alignment(Alignment::Center);
+    frame.render_widget(message1, message_chunks[0]);
+    
+    // empty line for gap
+    let empty_line = Paragraph::new("")
+        .style(Style::default().fg(theme.background_color));
+    frame.render_widget(empty_line, message_chunks[1]);
+    
+    // use different color for enter message
+    let message2 = Paragraph::new("Enter to continue")
+        .style(Style::default().fg(theme.info_color))
+        .alignment(Alignment::Center);
+    frame.render_widget(message2, message_chunks[2]);
 }
 
 /// render schedule section
