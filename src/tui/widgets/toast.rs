@@ -81,7 +81,7 @@ pub fn render_toast_with_data(
             y: frame.area().height.saturating_sub(toast_height + 1),
             width: toast_width,
             height: toast_height,
-        };
+        }.intersection(frame.area()); // ensure it's within frame bounds
 
         // create styled lines for the toast
         let styled_lines: Vec<Line> = wrapped_lines

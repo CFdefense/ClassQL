@@ -46,7 +46,8 @@ pub fn render_query_results(
 
     // position the results grid below the search bar
     let logo_height = 7; // height of the ASCII art logo
-    let search_y = logo_height + 2; // search bar position
+    // keep in sync with search_bar.rs (logo_height + 6)
+    let search_y = logo_height + 6; // search bar vertical position
     let search_height = 3; // search bar height
     let results_y = search_y + search_height + 1; // 1 line below search bar
 
@@ -128,7 +129,7 @@ pub fn render_query_results(
             y: cell_y,
             width: cell_width,
             height: cell_height,
-        };
+        }.intersection(frame.area()); // ensure it's within frame bounds
 
         // border color depends on selection state
         let border_color = if is_selected {

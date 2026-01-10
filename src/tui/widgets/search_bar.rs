@@ -38,9 +38,9 @@ pub fn render_search_bar_with_data(
     let search_width = 50;
     let is_focused = *focus_mode == FocusMode::QueryInput;
 
-    // position search bar directly below the logo
+    // position search bar below the logo with same vertical gap as menus
     let logo_height = 7; // Height of the ASCII art logo
-    let search_y = logo_height + 2; // 2 lines below the logo
+    let search_y = logo_height + 6; // 6 lines below the logo
 
     let frame_width = frame.area().width;
     let frame_height = frame.area().height;
@@ -52,7 +52,7 @@ pub fn render_search_bar_with_data(
         y: search_y.min(frame_height.saturating_sub(search_height)),
         width: (search_width as u16).min(frame_width),
         height: search_height.min(frame_height),
-    };
+    }.intersection(frame.area()); // ensure it's within frame bounds
 
     // calculate visible width (minus borders and "> " prefix and cursor)
     let visible_width = search_width.saturating_sub(5) as usize; // 2 for borders, 2 for "> ", 1 for cursor

@@ -45,11 +45,13 @@ pub fn render_search_helpers_with_data(
         FocusMode::Settings => "Esc: Back to Main Menu | Ctrl+C: Quit",
         FocusMode::DetailView => "Press Esc or Enter to close detail view",
         FocusMode::ResultsBrowse => {
-            "←↑↓→ Navigate | Enter: Details | Esc: Main Menu | Type to Search"
+            "←↑↓→ Navigate | Enter: Details | Esc: Main Menu | Type to Search | Alt+G: Guide"
         }
         FocusMode::QueryInput => {
-            "Enter: Search | Tab: Completions | ↓: Browse Results | Esc: Main Menu"
+            "Enter: Search | Tab: Completions | ↓: Browse Results | Esc: Main Menu | Alt+G: Guide"
         }
+        FocusMode::QueryGuide => "↑↓ Scroll | Page Up/Down | Home/End | Alt+G or Esc: Close",
+        FocusMode::Help => "↑↓ Scroll | Page Up/Down | Home/End | Esc: Close",
     };
 
     let help_width = help_text.len() as u16;
@@ -62,7 +64,7 @@ pub fn render_search_helpers_with_data(
         y: help_y,
         width: help_width,
         height: 2,
-    };
+    }.intersection(frame.area()); // ensure it's within frame bounds
 
     let help_paragraph = Paragraph::new(help_text)
         .style(Style::default().fg(theme.muted_color))
