@@ -14,6 +14,7 @@ use ratatui::Frame;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MenuOption {
     Search,
+    ScheduleCreation,
     Help,
     Settings,
     Quit,
@@ -23,6 +24,7 @@ impl MenuOption {
     pub fn as_str(&self) -> &'static str {
         match self {
             MenuOption::Search => "Search Classes",
+            MenuOption::ScheduleCreation => "Create Schedule",
             MenuOption::Help => "Help",
             MenuOption::Settings => "Settings",
             MenuOption::Quit => "Quit",
@@ -32,6 +34,7 @@ impl MenuOption {
     pub fn all() -> Vec<MenuOption> {
         vec![
             MenuOption::Search,
+            MenuOption::ScheduleCreation,
             MenuOption::Help,
             MenuOption::Settings,
             MenuOption::Quit,

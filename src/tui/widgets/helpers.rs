@@ -43,7 +43,7 @@ pub fn render_search_helpers_with_data(
     let help_text = match focus_mode {
         FocusMode::MainMenu => "↑↓ Navigate | Enter: Select | Esc: Quit",
         FocusMode::Settings => "Esc: Back to Main Menu | Ctrl+C: Quit",
-        FocusMode::DetailView => "Press Esc or Enter to close detail view",
+        FocusMode::DetailView => "Press Esc or Enter to close detail view | C: Toggle Cart",
         FocusMode::ResultsBrowse => {
             "←↑↓→ Navigate | Enter: Details | Esc: Main Menu | Type to Search | Alt+G: Guide"
         }
@@ -52,6 +52,9 @@ pub fn render_search_helpers_with_data(
         }
         FocusMode::QueryGuide => "↑↓ Scroll | Page Up/Down | Home/End | Alt+G or Esc: Close",
         FocusMode::Help => "↑↓ Scroll | Page Up/Down | Home/End | Esc: Close",
+        FocusMode::ScheduleCreation => {
+            "Tab/←→ Switch Columns | ↑↓ Navigate | Space/Enter: Toggle | D: Remove from Cart | Esc: Back"
+        }
     };
 
     let help_width = help_text.len() as u16;

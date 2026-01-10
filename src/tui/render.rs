@@ -72,6 +72,12 @@ use std::time::{Duration, Instant};
 /// cursor_visible -> Whether the input cursor is visible (for blinking)
 /// last_cursor_blink -> Timestamp of last cursor blink toggle
 /// max_items_that_fit -> Maximum number of items that fit on the screen
+/// menu_index -> Index of currently selected menu option
+/// current_theme -> Current theme
+/// settings_index -> Index of currently selected settings option
+/// cart -> Set of class IDs in the cart
+/// generated_schedules -> All generated non-conflicting schedules
+/// current_schedule_index -> Index of currently displayed schedule
 /// --- ---
 ///
 pub struct Tui {
@@ -100,6 +106,12 @@ pub struct Tui {
     guide_scroll: usize,
     guide_max_scroll: usize,
     guide_return_focus: FocusMode,
+    cart: std::collections::HashSet<String>,
+    selected_for_schedule: std::collections::HashSet<String>, // classes selected for schedule generation
+    generated_schedules: Vec<Vec<Class>>,
+    current_schedule_index: usize,
+    schedule_cart_focus: bool, // true = cart focused, false = schedule focused
+    selected_cart_index: usize, // index of selected cart item
 }
 
 /// Tui Implementation
@@ -155,6 +167,12 @@ impl Tui {
             guide_scroll: 0,
             guide_max_scroll: 0,
             guide_return_focus: FocusMode::QueryInput,
+            cart: std::collections::HashSet::new(),
+            selected_for_schedule: std::collections::HashSet::new(),
+            generated_schedules: Vec::new(),
+            current_schedule_index: 0,
+            schedule_cart_focus: true, // start focused on cart
+            selected_cart_index: 0,
         })
     }
 
@@ -195,6 +213,12 @@ impl Tui {
             let selected_result = self.selected_result;
             let cursor_visible = self.cursor_visible;
             let menu_index = self.menu_index;
+            let cart = self.cart.clone();
+            let selected_for_schedule = self.selected_for_schedule.clone();
+            let generated_schedules = self.generated_schedules.clone();
+            let current_schedule_index = self.current_schedule_index;
+            let schedule_cart_focus = self.schedule_cart_focus;
+            let selected_cart_index = self.selected_cart_index;
 
             // draw the current state
             let terminal = &mut self.terminal;
@@ -220,14 +244,20 @@ impl Tui {
                     self.guide_scroll,
                     &mut new_guide_max_scroll,
                     &self.user_query,
+                    &cart,
+                    &selected_for_schedule,
+                    &self.query_results,
+                    &generated_schedules,
+                    current_schedule_index,
+                    schedule_cart_focus,
+                    selected_cart_index,
                 );
                 // update max_items_that_fit based on actual rendering
                 self.max_items_that_fit = max_items;
             })?;
-            
             // update guide_max_scroll after render
+            self.guide_max_scroll = new_guide_max_scroll;
             if focus_mode == FocusMode::QueryGuide {
-                self.guide_max_scroll = new_guide_max_scroll;
                 // clamp guide_scroll to valid range
                 if self.guide_max_scroll > 0 {
                     self.guide_scroll = self.guide_scroll.min(self.guide_max_scroll);
@@ -266,6 +296,34 @@ impl Tui {
                                     match options[self.menu_index] {
                                         MenuOption::Search => {
                                             self.focus_mode = FocusMode::QueryInput;
+                                        }
+                                        MenuOption::ScheduleCreation => {
+                                            // check if cart is empty
+                                            if self.cart.is_empty() {
+                                                self.show_toast(
+                                                    "Cart is empty! Add classes to cart first.".to_string(),
+                                                    ErrorType::Semantic,
+                                                );
+                                            } else {
+                                                // Initialize selected_for_schedule with all cart items if empty
+                                                if self.selected_for_schedule.is_empty() {
+                                                    self.selected_for_schedule = self.cart.clone();
+                                                }
+                                                // generate schedules from selected classes
+                                                use crate::tui::widgets::schedule::generate_schedules;
+                                                self.generated_schedules = generate_schedules(&self.query_results, &self.selected_for_schedule);
+                                                if self.generated_schedules.is_empty() {
+                                                    self.show_toast(
+                                                        "No valid schedules found. All classes conflict.".to_string(),
+                                                        ErrorType::Semantic,
+                                                    );
+                                                } else {
+                                                    self.focus_mode = FocusMode::ScheduleCreation;
+                                                    self.current_schedule_index = 0;
+                                                    self.schedule_cart_focus = true;
+                                                    self.selected_cart_index = 0;
+                                                }
+                                            }
                                         }
                                         MenuOption::Help => {
                                             // open the query guide as the help page from main menu
@@ -365,6 +423,130 @@ impl Tui {
                             }
                         }
                         continue; // skip normal key handling when completions are shown
+                    }
+
+                    // handle schedule creation mode
+                    if self.focus_mode == FocusMode::ScheduleCreation {
+                        match key.code {
+                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                                break Ok(())
+                            }
+                            KeyCode::Esc => {
+                                // exit schedule creation, go back to main menu
+                                self.focus_mode = FocusMode::MainMenu;
+                            }
+                            KeyCode::Tab | KeyCode::Left | KeyCode::Right => {
+                                // switch focus between cart and schedule
+                                if key.code == KeyCode::Left {
+                                    self.schedule_cart_focus = true; // focus cart
+                                } else if key.code == KeyCode::Right {
+                                    self.schedule_cart_focus = false; // focus schedule
+                                } else {
+                                    // Tab toggles focus
+                                    self.schedule_cart_focus = !self.schedule_cart_focus;
+                                }
+                            }
+                            KeyCode::Up => {
+                                if self.schedule_cart_focus {
+                                    // navigate cart items up
+                                    let cart_classes: Vec<String> = self
+                                        .query_results
+                                        .iter()
+                                        .filter(|class| self.cart.contains(&class.unique_id()))
+                                        .map(|class| class.unique_id())
+                                        .collect();
+                                    if !cart_classes.is_empty() && self.selected_cart_index > 0 {
+                                        self.selected_cart_index -= 1;
+                                    }
+                                } else {
+                                    // navigate to previous schedule
+                                    if !self.generated_schedules.is_empty() {
+                                        if self.current_schedule_index > 0 {
+                                            self.current_schedule_index -= 1;
+                                        } else {
+                                            self.current_schedule_index = self.generated_schedules.len() - 1;
+                                        }
+                                    }
+                                }
+                            }
+                            KeyCode::Down => {
+                                if self.schedule_cart_focus {
+                                    // navigate cart items down
+                                    let cart_classes: Vec<String> = self
+                                        .query_results
+                                        .iter()
+                                        .filter(|class| self.cart.contains(&class.unique_id()))
+                                        .map(|class| class.unique_id())
+                                        .collect();
+                                    if !cart_classes.is_empty() 
+                                        && self.selected_cart_index < cart_classes.len() - 1 {
+                                        self.selected_cart_index += 1;
+                                    }
+                                } else {
+                                    // navigate to next schedule
+                                    if !self.generated_schedules.is_empty() {
+                                        if self.current_schedule_index < self.generated_schedules.len() - 1 {
+                                            self.current_schedule_index += 1;
+                                        } else {
+                                            self.current_schedule_index = 0;
+                                        }
+                                    }
+                                }
+                            }
+                            KeyCode::Enter | KeyCode::Char(' ') => {
+                                if self.schedule_cart_focus {
+                                    // toggle selected cart item for schedule generation
+                                    let cart_classes: Vec<String> = self
+                                        .query_results
+                                        .iter()
+                                        .filter(|class| self.cart.contains(&class.unique_id()))
+                                        .map(|class| class.unique_id())
+                                        .collect();
+                                    if self.selected_cart_index < cart_classes.len() {
+                                        let class_id = &cart_classes[self.selected_cart_index];
+                                        // Toggle: add/remove from selected_for_schedule (not cart)
+                                        if self.selected_for_schedule.contains(class_id) {
+                                            self.selected_for_schedule.remove(class_id);
+                                        } else {
+                                            self.selected_for_schedule.insert(class_id.clone());
+                                        }
+                                        // Regenerate schedules
+                                        use crate::tui::widgets::schedule::generate_schedules;
+                                        self.generated_schedules = generate_schedules(&self.query_results, &self.selected_for_schedule);
+                                        self.current_schedule_index = 0;
+                                    }
+                                }
+                            }
+                            KeyCode::Char('d') | KeyCode::Char('D') => {
+                                if self.schedule_cart_focus {
+                                    // remove selected cart item from cart
+                                    let cart_classes: Vec<String> = self
+                                        .query_results
+                                        .iter()
+                                        .filter(|class| self.cart.contains(&class.unique_id()))
+                                        .map(|class| class.unique_id())
+                                        .collect();
+                                    if self.selected_cart_index < cart_classes.len() {
+                                        let class_id = &cart_classes[self.selected_cart_index];
+                                        // Remove from cart and selected_for_schedule
+                                        self.cart.remove(class_id);
+                                        self.selected_for_schedule.remove(class_id);
+                                        // Regenerate schedules
+                                        use crate::tui::widgets::schedule::generate_schedules;
+                                        self.generated_schedules = generate_schedules(&self.query_results, &self.selected_for_schedule);
+                                        self.current_schedule_index = 0;
+                                        // Adjust selected index if needed
+                                        if self.selected_cart_index >= self.cart.len() && !self.cart.is_empty() {
+                                            self.selected_cart_index = self.cart.len() - 1;
+                                        } else if self.cart.is_empty() {
+                                            self.selected_cart_index = 0;
+                                        }
+                                    }
+                                }
+                            }
+                            _ => {}
+                        }
+                        continue;
                     }
 
                     // handle settings mode
@@ -485,7 +667,11 @@ impl Tui {
                     // handle detail view mode
                     if self.focus_mode == FocusMode::DetailView {
                         match key.code {
-                            KeyCode::Esc | KeyCode::Enter | KeyCode::Backspace => {
+                            KeyCode::Esc | KeyCode::Backspace => {
+                                // exit detail view, go back to results browse
+                                self.focus_mode = FocusMode::ResultsBrowse;
+                            }
+                            KeyCode::Enter => {
                                 // exit detail view, go back to results browse
                                 self.focus_mode = FocusMode::ResultsBrowse;
                             }
@@ -496,6 +682,18 @@ impl Tui {
                                 self.guide_return_focus = FocusMode::DetailView;
                                 self.focus_mode = FocusMode::QueryGuide;
                                 self.guide_scroll = 0;
+                            }
+                            KeyCode::Char('c') | KeyCode::Char('C') => {
+                                // toggle cart for current class
+                                if self.selected_result < self.query_results.len() {
+                                    let class = &self.query_results[self.selected_result];
+                                    let class_id = class.unique_id();
+                                    if self.cart.contains(&class_id) {
+                                        self.cart.remove(&class_id);
+                                    } else {
+                                        self.cart.insert(class_id);
+                                    }
+                                }
                             }
                             _ => {}
                         }
@@ -910,6 +1108,7 @@ impl Tui {
         self.toast_start_time = Some(Instant::now());
         self.error_type = Some(error_type);
     }
+
 }
 
 /// Main render function that orchestrates all rendering
@@ -960,6 +1159,13 @@ fn render_frame(
     guide_scroll: usize,
     guide_max_scroll: &mut usize,
     user_query: &str,
+    cart: &std::collections::HashSet<String>,
+    selected_for_schedule: &std::collections::HashSet<String>,
+    all_query_results: &[Class],
+    generated_schedules: &[Vec<Class>],
+    current_schedule_index: usize,
+    schedule_cart_focus: bool,
+    selected_cart_index: usize,
 ) -> (usize, usize) {
     let theme = current_theme.to_theme();
 
@@ -1081,7 +1287,6 @@ fn render_frame(
         let (_total_lines, max_scroll) = render_query_guide(frame, &theme, guide_scroll);
         // store max_scroll for clamping in keyboard handlers
         *guide_max_scroll = max_scroll;
-
         render_search_helpers_with_data(
             frame,
             input,
@@ -1091,7 +1296,31 @@ fn render_frame(
             &theme,
         );
         render_toast_with_data(frame, toast_message, error_type, &theme);
+        return (0, 0);
+    }
 
+    // render schedule creation if in schedule creation mode
+    if *focus_mode == FocusMode::ScheduleCreation {
+        crate::tui::widgets::schedule::render_schedule_creation(
+            frame,
+            cart,
+            selected_for_schedule,
+            all_query_results,
+            generated_schedules,
+            current_schedule_index,
+            schedule_cart_focus,
+            selected_cart_index,
+            &theme,
+        );
+        render_search_helpers_with_data(
+            frame,
+            input,
+            toast_message,
+            query_results,
+            focus_mode,
+            &theme,
+        );
+        render_toast_with_data(frame, toast_message, error_type, &theme);
         return (0, 0);
     }
 
@@ -1155,7 +1384,10 @@ fn render_frame(
 
     // render detail view overlay if in detail mode
     if *focus_mode == FocusMode::DetailView && selected_result < query_results.len() {
-        render_detail_view(frame, &query_results[selected_result], &theme);
+        let class = &query_results[selected_result];
+        let class_id = class.unique_id();
+        let is_in_cart = cart.contains(&class_id);
+        render_detail_view(frame, class, &theme, is_in_cart);
     }
 
     (0, max_items_that_fit)
