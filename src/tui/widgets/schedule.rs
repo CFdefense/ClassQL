@@ -1,9 +1,9 @@
 /// src/tui/widgets/schedule.rs
 ///
-/// Schedule creation widget rendering
+/// schedule creation widget rendering
 ///
-/// Renders the schedule creation interface with cart and generated schedules
-/// Also contains schedule generation logic for finding non-conflicting schedules
+/// renders the schedule creation interface with cart and generated schedules
+/// also contains schedule generation logic for finding non-conflicting schedules
 use crate::data::sql::Class;
 use crate::tui::themes::Theme;
 use crate::tui::widgets::helpers::{format_day_for_display, get_day_order};
@@ -13,7 +13,7 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
 
-/// Render the schedule creation interface
+/// render the schedule creation interface
 ///
 /// Parameters:
 /// --- ---
@@ -44,12 +44,12 @@ pub fn render_schedule_creation(
     let frame_width = frame.area().width;
     let frame_height = frame.area().height;
 
-    // Position below logo at top (logo is 7 lines tall, add spacing)
+    // position below logo at top (logo is 7 lines tall, add spacing)
     let logo_height = 7_u16;
-    let spacing = 2_u16;
+    let spacing = 6_u16;
     let start_y = logo_height + spacing;
 
-    // Calculate compact size - limit width and height
+    // calculate compact size - limit width and height
     let max_width = 90_u16.min(frame_width.saturating_sub(4)); // leave margins, max 90 chars wide
     let max_height = (frame_height.saturating_sub(start_y + 3)).min(20); // leave room for help text, max 20 lines
     
@@ -62,16 +62,16 @@ pub fn render_schedule_creation(
         height: max_height,
     };
 
-    // Create main layout: cart on left, schedule on right
+    // create main layout: cart on left, schedule on right
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
         .split(area);
 
-    // Render cart section
+    // render cart section
     render_cart_section(frame, chunks[0], cart, selected_for_schedule, query_results, cart_focused, selected_cart_index, theme);
 
-    // Render schedule section
+    // render schedule section
     if !generated_schedules.is_empty() && current_schedule_index < generated_schedules.len() {
         render_schedule_section(
             frame,
@@ -87,7 +87,25 @@ pub fn render_schedule_creation(
     }
 }
 
-/// Render the cart section
+/// render cart section
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// area -> The area to render the cart section in
+/// cart -> Set of class IDs in the cart
+/// selected_for_schedule -> Set of class IDs selected for schedule generation
+/// query_results -> All query results to look up classes by ID
+/// focused -> Whether the cart section is focused
+/// selected_index -> Index of currently selected cart item
+/// theme -> The current theme
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
 fn render_cart_section(
     frame: &mut Frame,
     area: Rect,
@@ -103,7 +121,7 @@ fn render_cart_section(
         .constraints([Constraint::Length(4), Constraint::Min(0)])
         .split(area);
 
-    // Title
+    // title
     let border_color = if focused {
         theme.selected_color
     } else {
@@ -123,7 +141,7 @@ fn render_cart_section(
         );
     frame.render_widget(title, chunks[0]);
 
-    // Cart items - show class names with checkboxes
+    // cart items - show class names with checkboxes
     let cart_classes: Vec<(usize, &Class)> = query_results
         .iter()
         .enumerate()
@@ -178,7 +196,24 @@ fn render_cart_section(
     frame.render_widget(cart_widget, chunks[1]);
 }
 
-/// Render the schedule section
+/// render schedule section
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// area -> The area to render the schedule section in
+/// schedule -> The schedule classes to display
+/// current_index -> Index of currently displayed schedule
+/// total_schedules -> Total number of schedules available
+/// focused -> Whether the schedule section is focused
+/// theme -> The current theme
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
 fn render_schedule_section(
     frame: &mut Frame,
     area: Rect,
@@ -193,7 +228,7 @@ fn render_schedule_section(
         .constraints([Constraint::Length(4), Constraint::Min(0)])
         .split(area);
 
-    // Title with schedule navigation
+    // title with schedule navigation
     let border_color = if focused {
         theme.selected_color
     } else {
@@ -224,10 +259,10 @@ fn render_schedule_section(
         .alignment(Alignment::Center);
     frame.render_widget(title, chunks[0]);
 
-    // Schedule classes
+    // schedule classes
     let mut schedule_lines = Vec::new();
 
-    // Helper function to format time
+    // helper function to format time
     let format_time = |time: &str| -> String {
         let parts: Vec<&str> = time.split(':').collect();
         if parts.len() >= 2 {
@@ -327,7 +362,21 @@ fn render_schedule_section(
     frame.render_widget(schedule_widget, chunks[1]);
 }
 
-/// Render empty schedule section
+/// render empty schedule section
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// area -> The area to render the empty schedule section in
+/// focused -> Whether the schedule section is focused
+/// theme -> The current theme
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
 fn render_empty_schedule_section(frame: &mut Frame, area: Rect, focused: bool, theme: &Theme) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -369,7 +418,7 @@ fn render_empty_schedule_section(frame: &mut Frame, area: Rect, focused: bool, t
     frame.render_widget(empty_widget, chunks[1]);
 }
 
-/// Generate all possible non-conflicting schedules from classes in the cart
+/// generate all possible non-conflicting schedules from classes in the cart
 ///
 /// Parameters:
 /// --- ---
@@ -386,7 +435,7 @@ pub fn generate_schedules(
     query_results: &[Class],
     cart: &std::collections::HashSet<String>,
 ) -> Vec<Vec<Class>> {
-    // Get all classes from cart
+    // get all classes from cart
     let cart_classes: Vec<Class> = query_results
         .iter()
         .filter(|class| cart.contains(&class.unique_id()))
@@ -397,11 +446,11 @@ pub fn generate_schedules(
         return Vec::new();
     }
 
-    // Generate all possible combinations and filter out conflicts
+    // generate all possible combinations and filter out conflicts
     find_valid_schedules(&cart_classes)
 }
 
-/// Find all valid (non-conflicting) schedules from a list of classes
+/// find all valid (non-conflicting) schedules from a list of classes
 ///
 /// Parameters:
 /// --- ---
@@ -416,7 +465,7 @@ pub fn generate_schedules(
 pub fn find_valid_schedules(classes: &[Class]) -> Vec<Vec<Class>> {
     let mut valid_schedules = Vec::new();
 
-    // Use backtracking to generate all combinations
+    // use backtracking to generate all combinations
     fn backtrack(
         classes: &[Class],
         current_schedule: &mut Vec<Class>,
@@ -459,7 +508,7 @@ pub fn find_valid_schedules(classes: &[Class]) -> Vec<Vec<Class>> {
     valid_schedules
 }
 
-/// Check if two classes conflict (overlap in time)
+/// check if two classes conflict (overlap in time)
 ///
 /// Parameters:
 /// --- ---
@@ -473,7 +522,7 @@ pub fn find_valid_schedules(classes: &[Class]) -> Vec<Vec<Class>> {
 /// --- ---
 ///
 pub fn classes_conflict(class1: &Class, class2: &Class) -> bool {
-    // If either class has no meeting times, they don't conflict
+    // if either class has no meeting times, they don't conflict
     let times1 = match &class1.meeting_times {
         Some(t) if !t.is_empty() => t,
         _ => return false,
@@ -483,11 +532,11 @@ pub fn classes_conflict(class1: &Class, class2: &Class) -> bool {
         _ => return false,
     };
 
-    // Parse meeting times for both classes
+    // parse meeting times for both classes
     let meetings1 = parse_meeting_times(times1);
     let meetings2 = parse_meeting_times(times2);
 
-    // Check for any overlap
+    // check for any overlap
     for m1 in &meetings1 {
         for m2 in &meetings2 {
             if meetings_overlap(m1, m2) {
@@ -499,7 +548,7 @@ pub fn classes_conflict(class1: &Class, class2: &Class) -> bool {
     false
 }
 
-/// Parse meeting times string into structured format
+/// parse meeting times string into structured format
 ///
 /// Parameters:
 /// --- ---
@@ -543,7 +592,7 @@ pub fn parse_meeting_times(times_str: &str) -> Vec<(Vec<String>, i32, i32)> {
     meetings
 }
 
-/// Parse day codes into individual days
+/// parse day codes into individual days
 ///
 /// Parameters:
 /// --- ---
@@ -592,7 +641,7 @@ pub fn parse_days(days_str: &str) -> Vec<String> {
     days
 }
 
-/// Convert time string (HH:MM:SS) to minutes since midnight
+/// convert time string (HH:MM:SS) to minutes since midnight
 ///
 /// Parameters:
 /// --- ---
@@ -615,7 +664,7 @@ pub fn time_to_minutes(time_str: &str) -> i32 {
     }
 }
 
-/// Check if two meetings overlap
+/// check if two meetings overlap
 ///
 /// Parameters:
 /// --- ---
@@ -632,16 +681,16 @@ pub fn meetings_overlap(
     m1: &(Vec<String>, i32, i32),
     m2: &(Vec<String>, i32, i32),
 ) -> bool {
-    // Check if they share any day
+    // check if they share any day
     let days_overlap = m1.0.iter().any(|d| m2.0.contains(d));
     if !days_overlap {
         return false;
     }
 
-    // Check if time ranges overlap
+    // check if time ranges overlap
     let (_, start1, end1) = m1;
     let (_, start2, end2) = m2;
 
-    // Overlap if: start1 < end2 && start2 < end1
+    // overlap if: start1 < end2 && start2 < end1
     start1 < end2 && start2 < end1
 }
