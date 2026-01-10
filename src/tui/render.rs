@@ -75,12 +75,15 @@ use std::time::{Duration, Instant};
 /// menu_index -> Index of currently selected menu option
 /// current_theme -> Current theme
 /// settings_index -> Index of currently selected settings option
+/// detail_return_focus -> Where to return when closing detail view
 /// cart -> Set of class IDs in the cart
 /// generated_schedules -> All generated non-conflicting schedules
 /// current_schedule_index -> Index of currently displayed schedule
 /// schedule_cart_focus -> Whether the cart is focused
 /// selected_cart_index -> Index of currently selected cart item
 /// schedule_selection_mode -> Whether the schedule selection mode is active
+/// selected_time_block_day -> Index of currently selected day in schedule viewing mode
+/// selected_time_block_slot -> Index of currently selected time slot in schedule viewing mode
 /// --- ---
 ///
 pub struct Tui {
@@ -109,6 +112,7 @@ pub struct Tui {
     guide_scroll: usize,
     guide_max_scroll: usize,
     guide_return_focus: FocusMode,
+    detail_return_focus: FocusMode,
     cart: std::collections::HashSet<String>,
     selected_for_schedule: std::collections::HashSet<String>,
     generated_schedules: Vec<Vec<Class>>,
@@ -116,6 +120,8 @@ pub struct Tui {
     schedule_cart_focus: bool,
     selected_cart_index: usize,
     schedule_selection_mode: bool,
+    selected_time_block_day: usize,
+    selected_time_block_slot: usize,
 }
 
 /// Tui Implementation
@@ -171,6 +177,7 @@ impl Tui {
             guide_scroll: 0,
             guide_max_scroll: 0,
             guide_return_focus: FocusMode::QueryInput,
+            detail_return_focus: FocusMode::ResultsBrowse,
             cart: std::collections::HashSet::new(),
             selected_for_schedule: std::collections::HashSet::new(),
             generated_schedules: Vec::new(),
@@ -178,6 +185,8 @@ impl Tui {
             schedule_cart_focus: true, // start focused on cart
             selected_cart_index: 0,
             schedule_selection_mode: true, // start in class selection mode
+            selected_time_block_day: 0, // Monday
+            selected_time_block_slot: 0, // first time slot
         })
     }
 
@@ -225,6 +234,9 @@ impl Tui {
             let schedule_cart_focus = self.schedule_cart_focus;
             let selected_cart_index = self.selected_cart_index;
             let schedule_selection_mode = self.schedule_selection_mode;
+            let selected_time_block_day = self.selected_time_block_day;
+            let selected_time_block_slot = self.selected_time_block_slot;
+            let detail_return_focus = self.detail_return_focus.clone();
 
             // draw the current state
             let terminal = &mut self.terminal;
@@ -258,6 +270,9 @@ impl Tui {
                     schedule_cart_focus,
                     selected_cart_index,
                     schedule_selection_mode,
+                    selected_time_block_day,
+                    selected_time_block_slot,
+                    detail_return_focus,
                 );
                 // update max_items_that_fit based on actual rendering
                 self.max_items_that_fit = max_items;
@@ -455,13 +470,12 @@ impl Tui {
                                         self.selected_cart_index -= 1;
                                     }
                                 } else {
-                                    // navigate to previous schedule (in viewing mode)
-                                    if !self.generated_schedules.is_empty() {
-                                        if self.current_schedule_index > 0 {
-                                            self.current_schedule_index -= 1;
-                                        } else {
-                                            self.current_schedule_index = self.generated_schedules.len() - 1;
-                                        }
+                                    // navigate time blocks: up = previous time slot
+                                    if self.selected_time_block_slot > 0 {
+                                        self.selected_time_block_slot -= 1;
+                                    } else {
+                                        // wrap to last time slot
+                                        self.selected_time_block_slot = 28; // 29 time slots (0-28) for 8am-10:30pm
                                     }
                                 }
                             }
@@ -479,7 +493,52 @@ impl Tui {
                                         self.selected_cart_index += 1;
                                     }
                                 } else {
-                                    // navigate to next schedule (in viewing mode)
+                                    // navigate time blocks: down = next time slot
+                                    if self.selected_time_block_slot < 28 {
+                                        self.selected_time_block_slot += 1;
+                                    } else {
+                                        // wrap to first time slot
+                                        self.selected_time_block_slot = 0;
+                                    }
+                                }
+                            }
+                            KeyCode::Left => {
+                                if !self.schedule_selection_mode {
+                                    // navigate time blocks: left = previous day
+                                    if self.selected_time_block_day > 0 {
+                                        self.selected_time_block_day -= 1;
+                                    } else {
+                                        // wrap to Sunday
+                                        self.selected_time_block_day = 6;
+                                    }
+                                }
+                            }
+                            KeyCode::Right => {
+                                if !self.schedule_selection_mode {
+                                    // navigate time blocks: right = next day
+                                    if self.selected_time_block_day < 6 {
+                                        self.selected_time_block_day += 1;
+                                    } else {
+                                        // wrap to Monday
+                                        self.selected_time_block_day = 0;
+                                    }
+                                }
+                            }
+                            KeyCode::PageUp => {
+                                if !self.schedule_selection_mode {
+                                    // navigate to previous schedule
+                                    if !self.generated_schedules.is_empty() {
+                                        if self.current_schedule_index > 0 {
+                                            self.current_schedule_index -= 1;
+                                        } else {
+                                            self.current_schedule_index = self.generated_schedules.len() - 1;
+                                        }
+                                    }
+                                }
+                            }
+                            KeyCode::PageDown => {
+                                if !self.schedule_selection_mode {
+                                    // navigate to next schedule
                                     if !self.generated_schedules.is_empty() {
                                         if self.current_schedule_index < self.generated_schedules.len() - 1 {
                                             self.current_schedule_index += 1;
@@ -508,6 +567,28 @@ impl Tui {
                                         } else {
                                             self.schedule_selection_mode = false;
                                             self.current_schedule_index = 0;
+                                            self.selected_time_block_day = 0;
+                                            self.selected_time_block_slot = 0;
+                                        }
+                                    }
+                                } else {
+                                    // open detail view for class at selected time block
+                                    if !self.generated_schedules.is_empty() 
+                                        && self.current_schedule_index < self.generated_schedules.len() {
+                                        let schedule = &self.generated_schedules[self.current_schedule_index];
+                                        // find class at selected time block
+                                        use crate::tui::widgets::schedule::find_class_at_time_block;
+                                        if let Some(class) = find_class_at_time_block(
+                                            schedule,
+                                            self.selected_time_block_day,
+                                            self.selected_time_block_slot,
+                                        ) {
+                                            // find class index in query_results for detail view
+                                            if let Some(class_idx) = self.query_results.iter().position(|c| c.unique_id() == class.unique_id()) {
+                                                self.selected_result = class_idx;
+                                                self.detail_return_focus = FocusMode::ScheduleCreation;
+                                                self.focus_mode = FocusMode::DetailView;
+                                            }
                                         }
                                     }
                                 }
@@ -679,12 +760,12 @@ impl Tui {
                     if self.focus_mode == FocusMode::DetailView {
                         match key.code {
                             KeyCode::Esc | KeyCode::Backspace => {
-                                // exit detail view, go back to results browse
-                                self.focus_mode = FocusMode::ResultsBrowse;
+                                // exit detail view, go back to where we came from
+                                self.focus_mode = self.detail_return_focus.clone();
                             }
                             KeyCode::Enter => {
-                                // exit detail view, go back to results browse
-                                self.focus_mode = FocusMode::ResultsBrowse;
+                                // exit detail view, go back to where we came from
+                                self.focus_mode = self.detail_return_focus.clone();
                             }
                             KeyCode::Char('g') | KeyCode::Char('G')
                                 if key.modifiers.contains(KeyModifiers::ALT) =>
@@ -695,14 +776,16 @@ impl Tui {
                                 self.guide_scroll = 0;
                             }
                             KeyCode::Char('c') | KeyCode::Char('C') => {
-                                // toggle cart for current class
-                                if self.selected_result < self.query_results.len() {
-                                    let class = &self.query_results[self.selected_result];
-                                    let class_id = class.unique_id();
-                                    if self.cart.contains(&class_id) {
-                                        self.cart.remove(&class_id);
-                                    } else {
-                                        self.cart.insert(class_id);
+                                // toggle cart for current class (only if not from schedule mode)
+                                if self.detail_return_focus != FocusMode::ScheduleCreation {
+                                    if self.selected_result < self.query_results.len() {
+                                        let class = &self.query_results[self.selected_result];
+                                        let class_id = class.unique_id();
+                                        if self.cart.contains(&class_id) {
+                                            self.cart.remove(&class_id);
+                                        } else {
+                                            self.cart.insert(class_id);
+                                        }
                                     }
                                 }
                             }
@@ -809,6 +892,7 @@ impl Tui {
                             KeyCode::Enter => {
                                 // open detail view for selected result
                                 if self.selected_result < self.query_results.len() {
+                                    self.detail_return_focus = FocusMode::ResultsBrowse;
                                     self.focus_mode = FocusMode::DetailView;
                                 }
                             }
@@ -1142,6 +1226,18 @@ impl Tui {
 /// focus_mode -> Current UI focus (QueryInput, ResultsBrowse, DetailView)
 /// selected_result -> Index of currently selected result in browse mode
 /// cursor_visible -> Whether the input cursor is visible (for blinking)
+/// menu_index -> Index of currently selected menu option
+/// current_theme -> Current theme
+/// settings_index -> Index of currently selected settings option
+/// guide_scroll -> The scroll offset for guide display
+/// guide_max_scroll -> The maximum scroll offset for guide display
+/// user_query -> The last executed query string
+/// cart -> Set of class IDs in the cart
+/// selected_for_schedule -> Set of class IDs selected for schedule generation
+/// all_query_results -> All query results to look up classes by ID
+/// selected_time_block_day -> Index of currently selected day in schedule viewing mode
+/// selected_time_block_slot -> Index of currently selected time slot in schedule viewing mode
+/// detail_return_focus -> Where to return when closing detail view
 /// --- ---
 ///
 /// Returns:
@@ -1178,6 +1274,9 @@ fn render_frame(
     schedule_cart_focus: bool,
     selected_cart_index: usize,
     schedule_selection_mode: bool,
+    selected_time_block_day: usize,
+    selected_time_block_slot: usize,
+    detail_return_focus: FocusMode,
 ) -> (usize, usize) {
     let theme = current_theme.to_theme();
 
@@ -1311,8 +1410,11 @@ fn render_frame(
         return (0, 0);
     }
 
-    // render schedule creation if in schedule creation mode
-    if *focus_mode == FocusMode::ScheduleCreation {
+    // render schedule creation if in schedule creation mode OR detail view from schedule
+    let should_render_schedule = *focus_mode == FocusMode::ScheduleCreation 
+        || (*focus_mode == FocusMode::DetailView && detail_return_focus == FocusMode::ScheduleCreation);
+    
+    if should_render_schedule {
         crate::tui::widgets::schedule::render_schedule_creation(
             frame,
             cart,
@@ -1323,6 +1425,8 @@ fn render_frame(
             schedule_cart_focus,
             selected_cart_index,
             schedule_selection_mode,
+            selected_time_block_day,
+            selected_time_block_slot,
             &theme,
         );
         render_search_helpers_with_data(
@@ -1334,73 +1438,111 @@ fn render_frame(
             &theme,
         );
         render_toast_with_data(frame, toast_message, error_type, &theme);
-        return (0, 0);
+        
+        // if in detail view, render it as overlay (don't return early)
+        if *focus_mode == FocusMode::DetailView {
+            // detail view will be rendered below
+        } else {
+            return (0, 0);
+        }
     }
 
-    // render query interface
-    render_search_bar_with_data(
-        frame,
-        input,
-        problematic_positions,
-        focus_mode,
-        cursor_visible,
-        &theme,
-    );
-    let (_items_rendered, max_items_that_fit) = render_query_results(
-        frame,
-        query_results,
-        results_scroll,
-        focus_mode,
-        selected_result,
-        &theme,
-    );
+    // render query interface (skip if detail view from schedule)
+    let skip_query_interface = *focus_mode == FocusMode::DetailView 
+        && detail_return_focus == FocusMode::ScheduleCreation;
     
-    // Show "No results" message if a query was executed but returned no results
-    if query_results.is_empty() && !user_query.is_empty() 
-        && (*focus_mode == FocusMode::QueryInput || *focus_mode == FocusMode::ResultsBrowse) {
-        let logo_height = 7;
-        let search_y = logo_height + 6;
-        let search_height = 3;
-        let results_y = search_y + search_height + 1;
+    let max_items_that_fit = if !skip_query_interface {
+        render_search_bar_with_data(
+            frame,
+            input,
+            problematic_positions,
+            focus_mode,
+            cursor_visible,
+            &theme,
+        );
+        let (_items_rendered, max_items) = render_query_results(
+            frame,
+            query_results,
+            results_scroll,
+            focus_mode,
+            selected_result,
+            &theme,
+        );
         
-        let no_results_msg = "No results";
-        let msg_width = no_results_msg.len() as u16;
-        let msg_x = (frame.area().width.saturating_sub(msg_width)) / 2;
-        let msg_area = Rect {
-            x: msg_x,
-            y: results_y + 2,
-            width: msg_width,
-            height: 1,
-        };
+        // Show "No results" message if a query was executed but returned no results
+        if query_results.is_empty() && !user_query.is_empty() 
+            && (*focus_mode == FocusMode::QueryInput || *focus_mode == FocusMode::ResultsBrowse) {
+            let logo_height = 7;
+            let search_y = logo_height + 6;
+            let search_height = 3;
+            let results_y = search_y + search_height + 1;
+            
+            let no_results_msg = "No results";
+            let msg_width = no_results_msg.len() as u16;
+            let msg_x = (frame.area().width.saturating_sub(msg_width)) / 2;
+            let msg_area = Rect {
+                x: msg_x,
+                y: results_y + 2,
+                width: msg_width,
+                height: 1,
+            };
+            
+            let no_results_paragraph = ratatui::widgets::Paragraph::new(no_results_msg)
+                .style(ratatui::style::Style::default().fg(theme.error_color));
+            frame.render_widget(no_results_paragraph, msg_area);
+        }
         
-        let no_results_paragraph = ratatui::widgets::Paragraph::new(no_results_msg)
-            .style(ratatui::style::Style::default().fg(theme.error_color));
-        frame.render_widget(no_results_paragraph, msg_area);
-    }
-    
-    render_search_helpers_with_data(
-        frame,
-        input,
-        toast_message,
-        query_results,
-        focus_mode,
-        &theme,
-    );
-    render_toast_with_data(frame, toast_message, error_type, &theme);
-    render_completion_dropdown(
-        frame,
-        completions,
-        completion_index,
-        show_completions,
-        &theme,
-    );
+        render_search_helpers_with_data(
+            frame,
+            input,
+            toast_message,
+            query_results,
+            focus_mode,
+            &theme,
+        );
+        render_toast_with_data(frame, toast_message, error_type, &theme);
+        render_completion_dropdown(
+            frame,
+            completions,
+            completion_index,
+            show_completions,
+            &theme,
+        );
+        max_items
+    } else {
+        // still render toast and helpers even when skipping query interface
+        render_search_helpers_with_data(
+            frame,
+            input,
+            toast_message,
+            query_results,
+            focus_mode,
+            &theme,
+        );
+        render_toast_with_data(frame, toast_message, error_type, &theme);
+        0 // no items rendered
+    };
 
     // render detail view overlay if in detail mode
-    if *focus_mode == FocusMode::DetailView && selected_result < query_results.len() {
-        let class = &query_results[selected_result];
-        let class_id = class.unique_id();
-        let is_in_cart = cart.contains(&class_id);
-        render_detail_view(frame, class, &theme, is_in_cart);
+    if *focus_mode == FocusMode::DetailView {
+        // check if coming from schedule viewing mode
+        if detail_return_focus == FocusMode::ScheduleCreation
+            && !generated_schedules.is_empty()
+            && current_schedule_index < generated_schedules.len() {
+            let schedule = &generated_schedules[current_schedule_index];
+            use crate::tui::widgets::schedule::find_class_at_time_block;
+            if let Some(class) = find_class_at_time_block(schedule, selected_time_block_day, selected_time_block_slot) {
+                let class_id = class.unique_id();
+                let is_in_cart = cart.contains(&class_id);
+                render_detail_view(frame, class, &theme, is_in_cart, false); // don't show cart option in schedule mode
+            }
+        } else if selected_result < query_results.len() {
+            // coming from results browse mode
+            let class = &query_results[selected_result];
+            let class_id = class.unique_id();
+            let is_in_cart = cart.contains(&class_id);
+            render_detail_view(frame, class, &theme, is_in_cart, true); // show cart option in search mode
+        }
     }
 
     (0, max_items_that_fit)

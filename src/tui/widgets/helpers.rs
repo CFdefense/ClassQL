@@ -53,7 +53,7 @@ pub fn render_search_helpers_with_data(
         FocusMode::QueryGuide => "↑↓ Scroll | Page Up/Down | Home/End | Alt+G or Esc: Close",
         FocusMode::Help => "↑↓ Scroll | Page Up/Down | Home/End | Esc: Close",
         FocusMode::ScheduleCreation => {
-            "↑↓ Navigate | Space: Toggle | Enter: Continue | D: Remove from Cart | Esc: Back"
+            "←→ Days | ↑↓ Time | Enter: Details | Page Up/Down: Schedules | Esc: Back"
         }
     };
 

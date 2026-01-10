@@ -44,6 +44,8 @@ pub fn render_schedule_creation(
     cart_focused: bool,
     selected_cart_index: usize,
     selection_mode: bool,
+    selected_time_block_day: usize,
+    selected_time_block_slot: usize,
     theme: &Theme,
 ) {
     let frame_width = frame.area().width;
@@ -54,9 +56,16 @@ pub fn render_schedule_creation(
     let spacing = 6_u16;
     let start_y = logo_height + spacing;
 
-    // calculate compact size - limit width and height
+    // calculate size - use full available height for schedule viewing
     let max_width = 90_u16.min(frame_width.saturating_sub(4)); // leave margins, max 90 chars wide
-    let max_height = (frame_height.saturating_sub(start_y + 3)).min(20); // leave room for help text, max 20 lines
+    let max_height = if selection_mode {
+        // in selection mode, limit height for cart
+        (frame_height.saturating_sub(start_y + 3)).min(20)
+    } else {
+        // in viewing mode, use full available height for calendar
+        // only reserve minimal space for help text (1 line) and gap/counter (2 lines)
+        frame_height.saturating_sub(start_y + 1 + 2) // start_y + help text + gap/counter
+    };
     
     let schedule_x = (frame_width.saturating_sub(max_width)) / 2;
     
@@ -92,15 +101,16 @@ pub fn render_schedule_creation(
         };
         render_cart_section(frame, cart_area, message_area, cart, selected_for_schedule, query_results, cart_focused, selected_cart_index, theme);
     } else {
-        // in viewing mode, show only schedules (full width)
+        // in viewing mode, show time-block calendar
         if !generated_schedules.is_empty() && current_schedule_index < generated_schedules.len() {
-            render_schedule_section(
+            render_time_block_calendar(
                 frame,
                 area,
                 &generated_schedules[current_schedule_index],
                 current_schedule_index,
                 generated_schedules.len(),
-                true, // always focused in viewing mode
+                selected_time_block_day,
+                selected_time_block_slot,
                 theme,
             );
         } else {
@@ -405,6 +415,242 @@ fn render_schedule_section(
         )
         .style(Style::default().bg(theme.background_color));
     frame.render_widget(schedule_widget, chunks[1]);
+}
+
+/// find class at a specific time block
+///
+/// Parameters:
+/// --- ---
+/// schedule -> The schedule classes
+/// day -> Day index (0-6 for Mon-Sun)
+/// slot -> Time slot index (0-23 for 8am-8pm in 30-min intervals)
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// Option<&Class> -> The class at that time block, if any
+/// --- ---
+///
+pub fn find_class_at_time_block(schedule: &[Class], day: usize, slot: usize) -> Option<&Class> {
+    let day_codes = vec!["M", "T", "W", "TH", "F", "S", "SU"];
+    let day_code = day_codes.get(day)?;
+    
+    // time slot: 0-28 represents 8am-10:30pm in 30-minute intervals
+    // slot 0 = 8:00am = 16 half-hours = 480 minutes
+    let slot_start_minutes = ((16 + slot) * 30) as i32;
+    let slot_end_minutes = slot_start_minutes + 30;
+    
+    for class in schedule {
+        if let Some(meeting_times_str) = &class.meeting_times {
+            if !meeting_times_str.is_empty() {
+                let meetings = parse_meeting_times(meeting_times_str);
+                for (days, start_minutes, end_minutes) in meetings {
+                    if days.contains(&day_code.to_string()) {
+                        // check if meeting overlaps with this time slot
+                        if slot_start_minutes < end_minutes && slot_end_minutes > start_minutes {
+                            return Some(class);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
+/// render time-block calendar view
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// area -> The area to render the calendar in
+/// schedule -> The schedule classes to display
+/// current_index -> Index of currently displayed schedule
+/// total_schedules -> Total number of schedules available
+/// selected_day -> Selected day index (0-6 for Mon-Sun)
+/// selected_slot -> Selected time slot index
+/// theme -> The current theme
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
+fn render_time_block_calendar(
+    frame: &mut Frame,
+    area: Rect,
+    schedule: &[Class],
+    current_index: usize,
+    total_schedules: usize,
+    selected_day: usize,
+    selected_slot: usize,
+    theme: &Theme,
+) {
+    // split area: calendar on top, gap, schedule counter at bottom
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(0), Constraint::Length(1), Constraint::Length(1)])
+        .split(area);
+
+    let calendar_area = chunks[0];
+    let _gap_area = chunks[1]; // gap between calendar and counter
+    let counter_area = chunks[2];
+
+    // time slots: 8am to 10:30pm, 30-minute intervals = 29 slots
+    let time_slots: Vec<(i32, String)> = (16..57) // 8am = 16 half-hours, 10:30pm = 57 half-hours
+        .map(|half_hour| {
+            let hours = half_hour / 2;
+            let minutes = (half_hour % 2) * 30;
+            let (display_hour, period) = if hours == 0 {
+                (12, "am")
+            } else if hours < 12 {
+                (hours, "am")
+            } else if hours == 12 {
+                (12, "pm")
+            } else {
+                (hours - 12, "pm")
+            };
+            let time_str = format!("{}:{:02}{}", display_hour, minutes, period);
+            (half_hour * 30, time_str) // minutes since midnight
+        })
+        .collect();
+
+    // day names
+    let day_names = vec!["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    let day_codes = vec!["M", "T", "W", "TH", "F", "S", "SU"];
+
+    // build time block grid: map (day, slot) -> class
+    let mut time_blocks: std::collections::HashMap<(usize, usize), &Class> = std::collections::HashMap::new();
+    
+    for class in schedule {
+        if let Some(meeting_times_str) = &class.meeting_times {
+            if !meeting_times_str.is_empty() {
+                let meetings = parse_meeting_times(meeting_times_str);
+                for (days, start_minutes, end_minutes) in meetings {
+                    for day_code in &days {
+                        // find day index
+                        if let Some(day_idx) = day_codes.iter().position(|&d| d == day_code) {
+                            // find time slots that overlap with this meeting
+                            for (slot_idx, (slot_start, _)) in time_slots.iter().enumerate() {
+                                let slot_end = *slot_start + 30; // 30-minute slots
+                                // check if meeting overlaps with this time slot
+                                if *slot_start < end_minutes && slot_end > start_minutes {
+                                    time_blocks.insert((day_idx, slot_idx), class);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // calculate column widths
+    let time_col_width = 6_u16; // for time labels
+    let day_col_width = (calendar_area.width.saturating_sub(time_col_width + 2)) / 7; // 7 days
+
+    // create header row with day names
+    let header_y = calendar_area.y;
+    for (idx, day_name) in day_names.iter().enumerate() {
+        let is_selected = idx == selected_day && selected_slot == 0; // header selected if first slot selected
+        let style = if is_selected {
+            Style::default()
+                .fg(theme.selected_color)
+                .add_modifier(Modifier::BOLD | Modifier::REVERSED)
+        } else {
+            Style::default()
+                .fg(theme.title_color)
+                .add_modifier(Modifier::BOLD)
+        };
+        // render day header
+        let day_x = calendar_area.x + time_col_width + (idx as u16 * day_col_width);
+        let day_area = Rect {
+            x: day_x,
+            y: header_y,
+            width: day_col_width,
+            height: 1,
+        };
+        let day_para = Paragraph::new(day_name.to_string())
+            .style(style)
+            .alignment(Alignment::Center);
+        frame.render_widget(day_para, day_area);
+    }
+
+    // render time slots
+    for (slot_idx, (_, time_str)) in time_slots.iter().enumerate() {
+        let slot_y = header_y + 1 + slot_idx as u16;
+        if slot_y >= calendar_area.y + calendar_area.height {
+            break;
+        }
+
+        // render time label
+        let time_area = Rect {
+            x: calendar_area.x,
+            y: slot_y,
+            width: time_col_width,
+            height: 1,
+        };
+        let time_para = Paragraph::new(time_str.clone())
+            .style(Style::default().fg(theme.muted_color));
+        frame.render_widget(time_para, time_area);
+
+        // render day columns
+        for (day_idx, _) in day_names.iter().enumerate() {
+            let day_x = calendar_area.x + time_col_width + (day_idx as u16 * day_col_width);
+            let block_area = Rect {
+                x: day_x,
+                y: slot_y,
+                width: day_col_width,
+                height: 1,
+            };
+
+            let is_selected = day_idx == selected_day && slot_idx == selected_slot;
+            let has_class = time_blocks.contains_key(&(day_idx, slot_idx));
+
+            if has_class {
+                let class = time_blocks[&(day_idx, slot_idx)];
+                let class_code = format!("{}{}", class.subject_code, class.course_number);
+                let display_text = if class_code.len() <= day_col_width as usize {
+                    class_code
+                } else {
+                    class_code[..day_col_width as usize].to_string()
+                };
+
+                let style = if is_selected {
+                    Style::default()
+                        .fg(theme.selected_color)
+                        .bg(theme.background_color)
+                        .add_modifier(Modifier::BOLD | Modifier::REVERSED)
+                } else {
+                    Style::default()
+                        .fg(theme.info_color)
+                        .bg(theme.background_color)
+                        .add_modifier(Modifier::BOLD)
+                };
+
+                let block_para = Paragraph::new(display_text.as_str())
+                    .style(style)
+                    .alignment(Alignment::Center);
+                frame.render_widget(block_para, block_area);
+            } else if is_selected {
+                // show selection indicator for empty blocks
+                let style = Style::default()
+                    .fg(theme.selected_color)
+                    .add_modifier(Modifier::REVERSED);
+                let block_para = Paragraph::new(" ")
+                    .style(style);
+                frame.render_widget(block_para, block_area);
+            }
+        }
+    }
+
+    // render schedule counter at bottom
+    let counter_text = format!("Schedule {} of {}", current_index + 1, total_schedules);
+    let counter_para = Paragraph::new(counter_text)
+        .style(Style::default().fg(theme.info_color))
+        .alignment(Alignment::Center);
+    frame.render_widget(counter_para, counter_area);
 }
 
 /// render empty schedule section

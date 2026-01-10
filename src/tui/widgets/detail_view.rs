@@ -19,6 +19,7 @@ use ratatui::Frame;
 /// frame -> The frame to render
 /// class -> The class to display in detail
 /// is_in_cart -> Whether this class is in the cart
+/// show_cart_option -> Whether to show the cart add/remove option
 /// --- ---
 ///
 /// Returns:
@@ -26,7 +27,7 @@ use ratatui::Frame;
 /// None
 /// --- ---
 ///
-pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme, is_in_cart: bool) {
+pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme, is_in_cart: bool, show_cart_option: bool) {
     let detail_width = 60_u16;
 
     // calculate description lines needed (before building content)
@@ -124,15 +125,36 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme, is_in
     // build detailed content
     let mut lines: Vec<Line> = Vec::new();
 
-    // course code and title with cart icon
-    let cart_icon = if is_in_cart { "🛒" } else { "🛍️" };
-    let cart_action = if is_in_cart {
-        "remove from cart"
+    // course code and title with cart icon (only if show_cart_option is true)
+    if show_cart_option {
+        let cart_icon = if is_in_cart { "🛒" } else { "🛍️" };
+        let cart_action = if is_in_cart {
+            "remove from cart"
+        } else {
+            "add to cart"
+        };
+        lines.push(Line::from(vec![
+            Span::styled(
+                format!(
+                    "{} {} - {}",
+                    class.subject_code, class.course_number, class.section_sequence
+                ),
+                Style::default()
+                    .fg(theme.info_color)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(
+                format!("  {} (Press 'C' to {})", cart_icon, cart_action),
+                Style::default()
+                    .fg(if is_in_cart {
+                        theme.success_color
+                    } else {
+                        theme.muted_color
+                    }),
+            ),
+        ]));
     } else {
-        "add to cart"
-    };
-    lines.push(Line::from(vec![
-        Span::styled(
+        lines.push(Line::from(Span::styled(
             format!(
                 "{} {} - {}",
                 class.subject_code, class.course_number, class.section_sequence
@@ -140,17 +162,8 @@ pub fn render_detail_view(frame: &mut Frame, class: &Class, theme: &Theme, is_in
             Style::default()
                 .fg(theme.info_color)
                 .add_modifier(Modifier::BOLD),
-        ),
-        Span::styled(
-            format!("  {} (Press 'C' to {})", cart_icon, cart_action),
-            Style::default()
-                .fg(if is_in_cart {
-                    theme.success_color
-                } else {
-                    theme.muted_color
-                }),
-        ),
-    ]));
+        )));
+    }
     lines.push(Line::from(Span::styled(
         class.title.clone(),
         Style::default()
