@@ -6,7 +6,6 @@
 /// also contains schedule generation logic for finding non-conflicting schedules
 use crate::data::sql::Class;
 use crate::tui::themes::Theme;
-use crate::tui::widgets::helpers::{format_day_for_display, get_day_order};
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -245,172 +244,6 @@ fn render_cart_section(
         .style(Style::default().fg(theme.info_color))
         .alignment(Alignment::Center);
     frame.render_widget(message2, message_chunks[2]);
-}
-
-/// render schedule section
-///
-/// Parameters:
-/// --- ---
-/// frame -> The frame to render
-/// area -> The area to render the schedule section in
-/// schedule -> The schedule classes to display
-/// current_index -> Index of currently displayed schedule
-/// total_schedules -> Total number of schedules available
-/// focused -> Whether the schedule section is focused
-/// theme -> The current theme
-/// --- ---
-///
-/// Returns:
-/// --- ---
-/// None
-/// --- ---
-///
-fn render_schedule_section(
-    frame: &mut Frame,
-    area: Rect,
-    schedule: &[Class],
-    current_index: usize,
-    total_schedules: usize,
-    focused: bool,
-    theme: &Theme,
-) {
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([Constraint::Length(4), Constraint::Min(0)])
-        .split(area);
-
-    // title with schedule navigation
-    let border_color = if focused {
-        theme.selected_color
-    } else {
-        theme.border_color
-    };
-    let title_text = format!(
-        "Schedule {} of {}",
-        current_index + 1,
-        total_schedules
-    );
-    let title_block = Block::default()
-        .borders(Borders::ALL)
-        .title(" Generated Schedule ")
-        .title_style(
-            Style::default()
-                .fg(theme.title_color)
-                .add_modifier(Modifier::BOLD),
-        )
-        .border_style(Style::default().fg(border_color));
-    
-    let title = Paragraph::new(title_text)
-        .block(title_block)
-        .style(
-            Style::default()
-                .fg(theme.info_color)
-                .add_modifier(Modifier::BOLD),
-        )
-        .alignment(Alignment::Center);
-    frame.render_widget(title, chunks[0]);
-
-    // schedule classes
-    let mut schedule_lines = Vec::new();
-
-    // helper function to format time
-    let format_time = |time: &str| -> String {
-        let parts: Vec<&str> = time.split(':').collect();
-        if parts.len() >= 2 {
-            let hours: i32 = parts[0].parse().unwrap_or(0);
-            let minutes: i32 = parts[1].parse().unwrap_or(0);
-
-            let (display_hour, period) = if hours == 0 {
-                (12, "am")
-            } else if hours < 12 {
-                (hours, "am")
-            } else if hours == 12 {
-                (12, "pm")
-            } else {
-                (hours - 12, "pm")
-            };
-
-            format!("{}:{:02}{}", display_hour, minutes, period)
-        } else {
-            time.to_string()
-        }
-    };
-
-    for class in schedule {
-        // Course code and title (compact format)
-        let title = if class.title.len() > 30 {
-            format!("{}...", &class.title[..27])
-        } else {
-            class.title.clone()
-        };
-        schedule_lines.push(Line::from(vec![
-            Span::styled(
-                format!(
-                    "{} {}-{}: {}",
-                    class.subject_code, class.course_number, class.section_sequence, title
-                ),
-                Style::default()
-                    .fg(theme.info_color)
-                    .add_modifier(Modifier::BOLD),
-            ),
-        ]));
-
-        // Meeting times
-        if let Some(meeting_times_str) = &class.meeting_times {
-            if !meeting_times_str.is_empty() {
-                let mut meeting_times: Vec<(u8, String, String, String)> = Vec::new();
-
-                for mt in meeting_times_str.split('|') {
-                    if mt.is_empty() {
-                        continue;
-                    }
-                    if let Some(colon_pos) = mt.find(':') {
-                        let days_part = &mt[..colon_pos];
-                        let time_part = &mt[colon_pos + 1..];
-                        if let Some(dash_pos) = time_part.find('-') {
-                            let start = format_time(&time_part[..dash_pos]);
-                            let end = format_time(&time_part[dash_pos + 1..]);
-                            if !days_part.is_empty() {
-                                let first_day = if days_part.starts_with("TH") {
-                                    "TH"
-                                } else if days_part.starts_with("SU") {
-                                    "SU"
-                                } else if days_part.len() > 0 {
-                                    &days_part[..1]
-                                } else {
-                                    days_part
-                                };
-                                let day_order = get_day_order(first_day);
-                                let formatted_days = format_day_for_display(days_part);
-                                meeting_times.push((day_order, formatted_days, start, end));
-                            }
-                        }
-                    }
-                }
-
-                meeting_times.sort_by_key(|(day_order, _, _, _)| *day_order);
-
-                for (_, days_part, start, end) in meeting_times {
-                    schedule_lines.push(Line::from(vec![
-                        Span::styled("  ", Style::default().fg(theme.text_color)),
-                        Span::styled(
-                            format!("{} {}-{}", days_part, start, end),
-                            Style::default().fg(theme.success_color),
-                        ),
-                    ]));
-                }
-            }
-        }
-    }
-
-    let schedule_widget = Paragraph::new(schedule_lines)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(border_color)),
-        )
-        .style(Style::default().bg(theme.background_color));
-    frame.render_widget(schedule_widget, chunks[1]);
 }
 
 /// find class at a specific time block
@@ -722,6 +555,7 @@ fn render_empty_schedule_section(frame: &mut Frame, area: Rect, focused: bool, t
 pub fn generate_schedules(
     cart_classes: &std::collections::HashMap<String, Class>,
     selected_for_schedule: &std::collections::HashSet<String>,
+    allow_conflicts: bool,
 ) -> Vec<Vec<Class>> {
     // get all classes from selected_for_schedule
     let selected_classes: Vec<Class> = selected_for_schedule
@@ -734,8 +568,58 @@ pub fn generate_schedules(
         return Vec::new();
     }
 
-    // generate all possible combinations and filter out conflicts
-    find_valid_schedules(&selected_classes)
+    if allow_conflicts {
+        // generate all possible combinations including conflicts
+        generate_all_schedules(&selected_classes)
+    } else {
+        // generate all possible combinations and filter out conflicts
+        find_valid_schedules(&selected_classes)
+    }
+}
+
+/// generate all possible schedules from classes (including conflicting ones)
+///
+/// Parameters:
+/// --- ---
+/// classes -> List of classes to generate schedules from
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// Vec<Vec<Class>> -> All schedule combinations (including conflicts)
+/// --- ---
+///
+fn generate_all_schedules(classes: &[Class]) -> Vec<Vec<Class>> {
+    let mut all_schedules = Vec::new();
+
+    // use backtracking to generate all combinations (without conflict checking)
+    fn backtrack(
+        classes: &[Class],
+        current_schedule: &mut Vec<Class>,
+        index: usize,
+        all_schedules: &mut Vec<Vec<Class>>,
+    ) {
+        if index >= classes.len() {
+            // We've considered all classes
+            if !current_schedule.is_empty() {
+                all_schedules.push(current_schedule.clone());
+            }
+            return;
+        }
+
+        // Try adding current class (no conflict check)
+        current_schedule.push(classes[index].clone());
+        backtrack(classes, current_schedule, index + 1, all_schedules);
+        current_schedule.pop();
+
+        // Try without adding current class
+        backtrack(classes, current_schedule, index + 1, all_schedules);
+    }
+
+    let mut current = Vec::new();
+    backtrack(classes, &mut current, 0, &mut all_schedules);
+
+    all_schedules
 }
 
 /// find all valid (non-conflicting) schedules from a list of classes
@@ -794,6 +678,55 @@ pub fn find_valid_schedules(classes: &[Class]) -> Vec<Vec<Class>> {
     backtrack(classes, &mut current, 0, &mut valid_schedules);
 
     valid_schedules
+}
+
+/// check if any classes in a list have conflicts
+///
+/// Parameters:
+/// --- ---
+/// classes -> List of classes to check
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// bool -> True if any classes conflict, false otherwise
+/// --- ---
+///
+pub fn has_conflicts(classes: &[Class]) -> bool {
+    for i in 0..classes.len() {
+        for j in (i + 1)..classes.len() {
+            if classes_conflict(&classes[i], &classes[j]) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+/// find all conflicting class pairs
+///
+/// Parameters:
+/// --- ---
+/// classes -> List of classes to check
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// Vec<(String, String)> -> List of (class1_id, class2_id) pairs that conflict
+/// --- ---
+///
+pub fn find_conflicting_classes(classes: &[Class]) -> Vec<(String, String)> {
+    let mut conflicts = Vec::new();
+    for i in 0..classes.len() {
+        for j in (i + 1)..classes.len() {
+            if classes_conflict(&classes[i], &classes[j]) {
+                let class1_id = format!("{} {}-{}", classes[i].subject_code, classes[i].course_number, classes[i].section_sequence);
+                let class2_id = format!("{} {}-{}", classes[j].subject_code, classes[j].course_number, classes[j].section_sequence);
+                conflicts.push((class1_id, class2_id));
+            }
+        }
+    }
+    conflicts
 }
 
 /// check if two classes conflict (overlap in time)

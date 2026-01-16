@@ -42,6 +42,7 @@ use crate::tui::widgets::{
     render_query_guide, render_query_results, render_search_bar_with_data,
     render_search_helpers_with_data, render_settings, render_toast_with_data, MenuOption,
 };
+use crate::tui::widgets::schedule::{find_conflicting_classes, generate_schedules, has_conflicts};
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use ratatui::layout::Rect;
 use ratatui::{DefaultTerminal, Frame};
@@ -475,7 +476,13 @@ impl Tui {
                             KeyCode::Down => {
                                 if self.schedule_selection_mode {
                                     // navigate cart items down
-                                    let cart_class_ids: Vec<String> = self.cart_classes.keys().cloned().collect();
+                                    // get classes in the same sorted order as rendering
+                                    let mut cart_classes_vec: Vec<&Class> = self.cart_classes.values().collect();
+                                    cart_classes_vec.sort_by_key(|class| class.unique_id());
+                                    let cart_class_ids: Vec<String> = cart_classes_vec
+                                        .iter()
+                                        .map(|class| class.unique_id())
+                                        .collect();
                                     if !cart_class_ids.is_empty() 
                                         && self.selected_cart_index < cart_class_ids.len() - 1 {
                                         self.selected_cart_index += 1;
@@ -545,18 +552,43 @@ impl Tui {
                                             ErrorType::Semantic,
                                         );
                                     } else {
-                                        use crate::tui::widgets::schedule::generate_schedules;
-                                        self.generated_schedules = generate_schedules(&self.cart_classes, &self.selected_for_schedule);
-                                        if self.generated_schedules.is_empty() {
-                                            self.show_toast(
-                                                "No valid schedules found. All classes conflict.".to_string(),
-                                                ErrorType::Semantic,
-                                            );
+                                        // get selected classes to check for conflicts
+                                        let selected_classes: Vec<Class> = self.selected_for_schedule
+                                            .iter()
+                                            .filter_map(|class_id| self.cart_classes.get(class_id))
+                                            .cloned()
+                                            .collect();
+                                        
+                                        // check for conflicts - if conflicts exist, show error with details
+                                        if has_conflicts(&selected_classes) {
+                                            let conflicts = find_conflicting_classes(&selected_classes);
+                                            let conflict_msg = if conflicts.len() == 1 {
+                                                format!("Classes have conflicting times: {} and {}", conflicts[0].0, conflicts[0].1)
+                                            } else {
+                                                let mut msg = "Classes have conflicting times: ".to_string();
+                                                for (i, (class1, class2)) in conflicts.iter().enumerate() {
+                                                    if i > 0 {
+                                                        msg.push_str(", ");
+                                                    }
+                                                    msg.push_str(&format!("{} & {}", class1, class2));
+                                                }
+                                                msg
+                                            };
+                                            self.show_toast(conflict_msg, ErrorType::Semantic);
                                         } else {
-                                            self.schedule_selection_mode = false;
-                                            self.current_schedule_index = 0;
-                                            self.selected_time_block_day = 0;
-                                            self.selected_time_block_slot = 0;
+                                            // generate schedules without conflicts
+                                            self.generated_schedules = generate_schedules(&self.cart_classes, &self.selected_for_schedule, false);
+                                            if self.generated_schedules.is_empty() {
+                                                self.show_toast(
+                                                    "No schedules found.".to_string(),
+                                                    ErrorType::Semantic,
+                                                );
+                                            } else {
+                                                self.schedule_selection_mode = false;
+                                                self.current_schedule_index = 0;
+                                                self.selected_time_block_day = 0;
+                                                self.selected_time_block_slot = 0;
+                                            }
                                         }
                                     }
                                 } else {
@@ -584,10 +616,17 @@ impl Tui {
                             KeyCode::Char(' ') => {
                                 if self.schedule_selection_mode {
                                     // toggle selected cart item for schedule generation
-                                    let cart_class_ids: Vec<String> = self.cart_classes.keys().cloned().collect();
+                                    // get classes in the same sorted order as rendering
+                                    let mut cart_classes_vec: Vec<&Class> = self.cart_classes.values().collect();
+                                    cart_classes_vec.sort_by_key(|class| class.unique_id());
+                                    let cart_class_ids: Vec<String> = cart_classes_vec
+                                        .iter()
+                                        .map(|class| class.unique_id())
+                                        .collect();
                                     if self.selected_cart_index < cart_class_ids.len() {
                                         let class_id = &cart_class_ids[self.selected_cart_index];
-                                        // Toggle: add/remove from selected_for_schedule (not cart)
+
+                                        // toggle: add/remove from selected_for_schedule (not cart)
                                         if self.selected_for_schedule.contains(class_id) {
                                             self.selected_for_schedule.remove(class_id);
                                         } else {
@@ -599,13 +638,21 @@ impl Tui {
                             KeyCode::Char('d') | KeyCode::Char('D') | KeyCode::Char('c') | KeyCode::Char('C') => {
                                 if self.schedule_selection_mode {
                                     // remove selected cart item from cart
-                                    let cart_class_ids: Vec<String> = self.cart_classes.keys().cloned().collect();
+                                    // get classes in the same sorted order as rendering
+                                    let mut cart_classes_vec: Vec<&Class> = self.cart_classes.values().collect();
+                                    cart_classes_vec.sort_by_key(|class| class.unique_id());
+                                    let cart_class_ids: Vec<String> = cart_classes_vec
+                                        .iter()
+                                        .map(|class| class.unique_id())
+                                        .collect();
                                     if self.selected_cart_index < cart_class_ids.len() {
                                         let class_id = &cart_class_ids[self.selected_cart_index];
-                                        // Remove from cart and selected_for_schedule
+
+                                        // remove from cart and selected_for_schedule
                                         self.cart_classes.remove(class_id);
                                         self.selected_for_schedule.remove(class_id);
-                                        // Adjust selected index if needed
+                                        
+                                        // adjust selected index if needed
                                         if self.selected_cart_index >= self.cart_classes.len() && !self.cart_classes.is_empty() {
                                             self.selected_cart_index = self.cart_classes.len() - 1;
                                         } else if self.cart_classes.is_empty() {
@@ -617,7 +664,13 @@ impl Tui {
                             KeyCode::Tab => {
                                 if self.schedule_selection_mode {
                                     // open detail view for selected class
-                                    let cart_class_ids: Vec<String> = self.cart_classes.keys().cloned().collect();
+                                    // get classes in the same sorted order as rendering
+                                    let mut cart_classes_vec: Vec<&Class> = self.cart_classes.values().collect();
+                                    cart_classes_vec.sort_by_key(|class| class.unique_id());
+                                    let cart_class_ids: Vec<String> = cart_classes_vec
+                                        .iter()
+                                        .map(|class| class.unique_id())
+                                        .collect();
                                     if self.selected_cart_index < cart_class_ids.len() {
                                         let class_id = &cart_class_ids[self.selected_cart_index];
                                         if let Some(class_idx) = self.query_results.iter().position(|c| c.unique_id() == *class_id) {
