@@ -43,7 +43,7 @@ use crate::tui::widgets::{
     render_query_guide, render_query_results, render_search_bar_with_data,
     render_search_helpers_with_data, render_settings, render_toast_with_data, MenuOption,
 };
-use crate::tui::widgets::schedule::{find_conflicting_classes, generate_schedules};
+use crate::tui::widgets::schedule::{find_class_at_time_block, find_conflicting_classes, generate_schedules};
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use ratatui::layout::Rect;
 use ratatui::{DefaultTerminal, Frame};
@@ -126,9 +126,11 @@ pub struct Tui {
     selected_time_block_slot: usize,
     saved_schedules: Vec<SavedSchedule>,
     selected_saved_schedule_index: usize,
+    current_saved_schedule_name: Option<String>,
     save_name_input: String,
     save_name_cursor_visible: bool,
     save_name_last_blink: Instant,
+    selected_class_for_details: Option<Class>,
 }
 
 /// Tui Implementation
@@ -196,9 +198,11 @@ impl Tui {
             selected_time_block_slot: 0, // first time slot
             saved_schedules: Vec::new(),
             selected_saved_schedule_index: 0,
+            current_saved_schedule_name: None,
             save_name_input: String::new(),
             save_name_cursor_visible: true,
             save_name_last_blink: Instant::now(),
+            selected_class_for_details: None,
         })
     }
 
@@ -259,8 +263,10 @@ impl Tui {
             let detail_return_focus = self.detail_return_focus.clone();
             let saved_schedules = self.saved_schedules.clone();
             let selected_saved_schedule_index = self.selected_saved_schedule_index;
+            let current_saved_schedule_name = self.current_saved_schedule_name.clone();
             let save_name_input = self.save_name_input.clone();
             let save_name_cursor_visible = self.save_name_cursor_visible;
+            let selected_class_for_details = self.selected_class_for_details.clone();
 
             // draw the current state
             let terminal = &mut self.terminal;
@@ -298,6 +304,8 @@ impl Tui {
                     detail_return_focus,
                     &saved_schedules,
                     selected_saved_schedule_index,
+                    current_saved_schedule_name.as_deref(),
+                    selected_class_for_details.as_ref(),
                     &save_name_input,
                     save_name_cursor_visible,
                 );
@@ -369,7 +377,7 @@ impl Tui {
                                         }
                                         MenuOption::MySchedules => {
                                             // load saved schedules and enter MySchedules view
-                                            match save::load_all_schedules(&self.cart_classes) {
+                                            match save::load_all_schedules() {
                                                 Ok(schedules) => {
                                                     self.saved_schedules = schedules;
                                                     self.selected_saved_schedule_index = 0;
@@ -494,10 +502,23 @@ impl Tui {
                                     // exit schedule creation, go back to main menu
                                     self.focus_mode = FocusMode::MainMenu;
                                 } else {
-                                    // go back to class selection mode
-                                    self.schedule_selection_mode = true;
-                                    self.schedule_cart_focus = true;
-                                    self.generated_schedules.clear();
+                                    // if class details are showing, close detail view first
+                                    if self.focus_mode == FocusMode::DetailView {
+                                        self.selected_class_for_details = None;
+                                        self.focus_mode = FocusMode::ScheduleCreation;
+                                    } else {
+                                        // check if we came from MySchedules
+                                        if self.detail_return_focus == FocusMode::MySchedules {
+                                            // go back to MySchedules view
+                                            self.focus_mode = FocusMode::MySchedules;
+                                            self.current_saved_schedule_name = None;
+                                        } else {
+                                            // go back to class selection mode
+                                            self.schedule_selection_mode = true;
+                                            self.schedule_cart_focus = true;
+                                            self.generated_schedules.clear();
+                                        }
+                                    }
                                 }
                             }
                             KeyCode::Up => {
@@ -564,24 +585,60 @@ impl Tui {
                             }
                             KeyCode::PageUp => {
                                 if !self.schedule_selection_mode {
-                                    // navigate to previous schedule
-                                    if !self.generated_schedules.is_empty() {
-                                        if self.current_schedule_index > 0 {
-                                            self.current_schedule_index -= 1;
+                                    // if viewing from MySchedules, navigate to previous saved schedule
+                                    if self.detail_return_focus == FocusMode::MySchedules {
+                                        if self.selected_saved_schedule_index > 0 {
+                                            self.selected_saved_schedule_index -= 1;
+                                            let saved = &self.saved_schedules[self.selected_saved_schedule_index];
+                                            self.generated_schedules = vec![saved.classes.clone()];
+                                            self.current_saved_schedule_name = Some(saved.name.clone());
+                                            self.current_schedule_index = 0;
                                         } else {
-                                            self.current_schedule_index = self.generated_schedules.len() - 1;
+                                            // wrap to last saved schedule
+                                            self.selected_saved_schedule_index = self.saved_schedules.len().saturating_sub(1);
+                                            let saved = &self.saved_schedules[self.selected_saved_schedule_index];
+                                            self.generated_schedules = vec![saved.classes.clone()];
+                                            self.current_saved_schedule_name = Some(saved.name.clone());
+                                            self.current_schedule_index = 0;
+                                        }
+                                    } else {
+                                        // navigate to previous generated schedule
+                                        if !self.generated_schedules.is_empty() {
+                                            if self.current_schedule_index > 0 {
+                                                self.current_schedule_index -= 1;
+                                            } else {
+                                                self.current_schedule_index = self.generated_schedules.len() - 1;
+                                            }
                                         }
                                     }
                                 }
                             }
                             KeyCode::PageDown => {
                                 if !self.schedule_selection_mode {
-                                    // navigate to next schedule
-                                    if !self.generated_schedules.is_empty() {
-                                        if self.current_schedule_index < self.generated_schedules.len() - 1 {
-                                            self.current_schedule_index += 1;
-                                        } else {
+                                    // if viewing from MySchedules, navigate to next saved schedule
+                                    if self.detail_return_focus == FocusMode::MySchedules {
+                                        if self.selected_saved_schedule_index < self.saved_schedules.len().saturating_sub(1) {
+                                            self.selected_saved_schedule_index += 1;
+                                            let saved = &self.saved_schedules[self.selected_saved_schedule_index];
+                                            self.generated_schedules = vec![saved.classes.clone()];
+                                            self.current_saved_schedule_name = Some(saved.name.clone());
                                             self.current_schedule_index = 0;
+                                        } else {
+                                            // wrap to first saved schedule
+                                            self.selected_saved_schedule_index = 0;
+                                            let saved = &self.saved_schedules[self.selected_saved_schedule_index];
+                                            self.generated_schedules = vec![saved.classes.clone()];
+                                            self.current_saved_schedule_name = Some(saved.name.clone());
+                                            self.current_schedule_index = 0;
+                                        }
+                                    } else {
+                                        // navigate to next generated schedule
+                                        if !self.generated_schedules.is_empty() {
+                                            if self.current_schedule_index < self.generated_schedules.len() - 1 {
+                                                self.current_schedule_index += 1;
+                                            } else {
+                                                self.current_schedule_index = 0;
+                                            }
                                         }
                                     }
                                 }
@@ -627,23 +684,26 @@ impl Tui {
                                         }
                                     }
                                 } else {
-                                    // open detail view for class at selected time block
+                                    // show class details in detail view
                                     if !self.generated_schedules.is_empty() 
                                         && self.current_schedule_index < self.generated_schedules.len() {
                                         let schedule = &self.generated_schedules[self.current_schedule_index];
                                         // find class at selected time block
-                                        use crate::tui::widgets::schedule::find_class_at_time_block;
                                         if let Some(class) = find_class_at_time_block(
                                             schedule,
                                             self.selected_time_block_day,
                                             self.selected_time_block_slot,
                                         ) {
-                                            // find class index in query_results for detail view
-                                            if let Some(class_idx) = self.query_results.iter().position(|c| c.unique_id() == class.unique_id()) {
-                                                self.selected_result = class_idx;
+                                            // set selected class and open detail view
+                                            self.selected_class_for_details = Some(class.clone());
+                                            // ensure detail_return_focus is set correctly
+                                            if self.detail_return_focus != FocusMode::MySchedules {
                                                 self.detail_return_focus = FocusMode::ScheduleCreation;
-                                                self.focus_mode = FocusMode::DetailView;
                                             }
+                                            self.focus_mode = FocusMode::DetailView;
+                                        } else {
+                                            // no class at this time block, clear selection
+                                            self.selected_class_for_details = None;
                                         }
                                     }
                                 }
@@ -922,6 +982,7 @@ impl Tui {
                                     self.schedule_selection_mode = false;
                                     self.selected_time_block_day = 0;
                                     self.selected_time_block_slot = 0;
+                                    self.current_saved_schedule_name = Some(saved.name.clone());
                                     self.detail_return_focus = FocusMode::MySchedules;
                                     self.focus_mode = FocusMode::ScheduleCreation;
                                 }
@@ -1480,6 +1541,8 @@ fn render_frame(
     detail_return_focus: FocusMode,
     saved_schedules: &[SavedSchedule],
     selected_saved_schedule_index: usize,
+    _current_saved_schedule_name: Option<&str>,
+    selected_class_for_details: Option<&Class>,
     save_name_input: &str,
     save_name_cursor_visible: bool,
 ) -> (usize, usize) {
@@ -1669,9 +1732,9 @@ fn render_frame(
         }
     }
 
-    // render query interface (skip if detail view from schedule)
+    // render query interface (skip if detail view from schedule or saved schedule)
     let skip_query_interface = *focus_mode == FocusMode::DetailView 
-        && detail_return_focus == FocusMode::ScheduleCreation;
+        && (detail_return_focus == FocusMode::ScheduleCreation || detail_return_focus == FocusMode::MySchedules);
     
     let max_items_that_fit = if !skip_query_interface {
         render_search_bar_with_data(
@@ -1749,23 +1812,33 @@ fn render_frame(
 
     // render detail view overlay if in detail mode
     if *focus_mode == FocusMode::DetailView {
-        // check if coming from schedule viewing mode
-        if detail_return_focus == FocusMode::ScheduleCreation
-            && !generated_schedules.is_empty()
-            && current_schedule_index < generated_schedules.len() {
-            let schedule = &generated_schedules[current_schedule_index];
-            use crate::tui::widgets::schedule::find_class_at_time_block;
-            if let Some(class) = find_class_at_time_block(schedule, selected_time_block_day, selected_time_block_slot) {
-                let class_id = class.unique_id();
-                let is_in_cart = cart_classes.contains_key(&class_id);
-                render_detail_view(frame, class, &theme, is_in_cart, false); // don't show cart option in schedule mode
+        let class_option = if detail_return_focus == FocusMode::ScheduleCreation 
+            || detail_return_focus == FocusMode::MySchedules 
+        {
+            // coming from schedule viewing mode (saved or generated)
+            // use selected_class_for_details if available, otherwise find from time block
+            if let Some(class) = selected_class_for_details {
+                Some((class, false))
+            } else if !generated_schedules.is_empty() 
+                && current_schedule_index < generated_schedules.len() 
+            {
+                let schedule = &generated_schedules[current_schedule_index];
+                find_class_at_time_block(schedule, selected_time_block_day, selected_time_block_slot)
+                    .map(|class| (class, false))
+            } else {
+                None
             }
         } else if selected_result < query_results.len() {
             // coming from results browse mode
-            let class = &query_results[selected_result];
+            Some((&query_results[selected_result], true))
+        } else {
+            None
+        };
+
+        if let Some((class, show_cart_option)) = class_option {
             let class_id = class.unique_id();
             let is_in_cart = cart_classes.contains_key(&class_id);
-            render_detail_view(frame, class, &theme, is_in_cart, true); // show cart option in search mode
+            render_detail_view(frame, class, &theme, is_in_cart, show_cart_option);
         }
     }
 
@@ -1811,20 +1884,21 @@ fn render_save_name_popup(
         height: popup_height.min(frame_height),
     }.intersection(frame.area());
 
-    // show placeholder text when input is empty
-    let display_text = if input.is_empty() {
-        "enter schedule name".to_string()
-    } else if cursor_visible {
-        format!("{input}_")
+    // show placeholder text when input is empty, or add cursor
+    let (display_text, text_style) = if input.is_empty() {
+        let placeholder_style = ratatui::style::Style::default().fg(theme.muted_color);
+        if cursor_visible {
+            ("enter schedule name|".to_string(), placeholder_style)
+        } else {
+            ("enter schedule name ".to_string(), placeholder_style)
+        }
     } else {
-        input.to_string()
-    };
-    
-    // use muted color for placeholder, normal color for input
-    let text_style = if input.is_empty() {
-        ratatui::style::Style::default().fg(theme.muted_color)
-    } else {
-        ratatui::style::Style::default().fg(theme.text_color)
+        let base_style = ratatui::style::Style::default().fg(theme.text_color);
+        if cursor_visible {
+            (format!("{input}|"), base_style)
+        } else {
+            (format!("{input} "), base_style)
+        }
     };
 
     let block = ratatui::widgets::Block::default()
@@ -1867,26 +1941,30 @@ fn render_my_schedules(
     selected_index: usize,
     theme: &crate::tui::themes::Theme,
 ) {
-    let area = frame.area();
+    // position properly
+    let logo_height = 7_u16;
+    let spacing = 6_u16;
+    let menu_y = logo_height + spacing;
+    
+    let menu_width = 50_u16;
+    let menu_height = (saved_schedules.len() as u16 + 4).min(20); // schedules + borders + title
+    
+    let frame_width = frame.area().width;
+    let frame_height = frame.area().height;
+    
+    // clamp menu dimensions to fit within frame
+    let area = ratatui::layout::Rect {
+        x: (frame_width.saturating_sub(menu_width.min(frame_width))) / 2,
+        y: menu_y.min(frame_height.saturating_sub(menu_height.min(frame_height))),
+        width: menu_width.min(frame_width),
+        height: menu_height.min(frame_height),
+    }.intersection(frame.area());
     
     // create list of schedule entries
     let mut lines = Vec::new();
     for (i, schedule) in saved_schedules.iter().enumerate() {
         let is_selected = i == selected_index;
         let prefix = if is_selected { "> " } else { "  " };
-        
-        // format timestamp as date
-        let datetime = std::time::UNIX_EPOCH + std::time::Duration::from_secs(schedule.timestamp);
-        let datetime_system = std::time::SystemTime::from(datetime);
-        let date_str = if let Ok(datetime) = datetime_system.duration_since(std::time::UNIX_EPOCH) {
-            let secs = datetime.as_secs();
-            let days = secs / 86400;
-            let hours = (secs % 86400) / 3600;
-            let mins = (secs % 3600) / 60;
-            format!("{}d {}h {}m ago", days, hours, mins)
-        } else {
-            "Unknown".to_string()
-        };
         
         let style = if is_selected {
             ratatui::style::Style::default()
@@ -1896,7 +1974,7 @@ fn render_my_schedules(
             ratatui::style::Style::default().fg(theme.text_color)
         };
         
-        let line = format!("{}{} - {} ({} classes)", prefix, schedule.name, date_str, schedule.classes.len());
+        let line = format!("{}{} ({} classes)", prefix, schedule.name, schedule.classes.len());
         lines.push(ratatui::text::Line::from(vec![
             ratatui::text::Span::styled(line, style),
         ]));
@@ -1926,16 +2004,4 @@ fn render_my_schedules(
         .wrap(ratatui::widgets::Wrap { trim: true });
     
     frame.render_widget(list, area);
-    
-    // render help text
-    let help_text = "↑↓ Navigate | Enter: View | d: Delete | Esc: Back";
-    let help_area = ratatui::layout::Rect {
-        x: 0,
-        y: area.height.saturating_sub(1),
-        width: area.width,
-        height: 1,
-    };
-    let help_paragraph = ratatui::widgets::Paragraph::new(help_text)
-        .style(ratatui::style::Style::default().fg(theme.text_color));
-    frame.render_widget(help_paragraph, help_area);
 }
