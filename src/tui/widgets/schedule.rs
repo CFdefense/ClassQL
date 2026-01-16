@@ -498,7 +498,7 @@ fn render_time_block_calendar(
     let counter_area = chunks[2];
 
     // time slots: 8am to 10:30pm, 30-minute intervals = 29 slots
-    let time_slots: Vec<(i32, String)> = (16..57) // 8am = 16 half-hours, 10:30pm = 57 half-hours
+    let time_slots: Vec<(i32, String)> = (16..46) // 8:00 am - 10:30pm
         .map(|half_hour| {
             let hours = half_hour / 2;
             let minutes = (half_hour % 2) * 30;
@@ -511,7 +511,8 @@ fn render_time_block_calendar(
             } else {
                 (hours - 12, "pm")
             };
-            let time_str = format!("{}:{:02}{}", display_hour, minutes, period);
+            // Format with leading zero for single-digit hours (1-9) to make all times 5 digits
+            let time_str = format!("{:02}:{:02}{}", display_hour, minutes, period);
             (half_hour * 30, time_str) // minutes since midnight
         })
         .collect();
@@ -547,22 +548,22 @@ fn render_time_block_calendar(
     }
 
     // calculate column widths
-    let time_col_width = 6_u16; // for time labels
+    // find maximum time string width to ensure "am"/"pm" is never cut off
+    let time_col_width = time_slots
+        .iter()
+        .map(|(_, time_str)| time_str.len() as u16)
+        .max()
+        .unwrap_or(7) // default to 7 if empty (covers "08:00am", "10:00am", "12:00pm")
+        .max(7); // ensure at least 7 to cover all formatted times (all are 7 chars: "08:00am")
     let day_col_width = (calendar_area.width.saturating_sub(time_col_width + 2)) / 7; // 7 days
 
     // create header row with day names
     let header_y = calendar_area.y;
     for (idx, day_name) in day_names.iter().enumerate() {
-        let is_selected = idx == selected_day && selected_slot == 0; // header selected if first slot selected
-        let style = if is_selected {
-            Style::default()
-                .fg(theme.selected_color)
-                .add_modifier(Modifier::BOLD | Modifier::REVERSED)
-        } else {
-            Style::default()
-                .fg(theme.title_color)
-                .add_modifier(Modifier::BOLD)
-        };
+        // Day headers are never highlighted, only time slots are highlighted
+        let style = Style::default()
+            .fg(theme.title_color)
+            .add_modifier(Modifier::BOLD);
         // render day header
         let day_x = calendar_area.x + time_col_width + (idx as u16 * day_col_width);
         let day_area = Rect {
