@@ -613,7 +613,7 @@ impl Tui {
                                     }
                                 }
                             }
-                            KeyCode::Char('d') | KeyCode::Char('D') => {
+                            KeyCode::Char('d') | KeyCode::Char('D') | KeyCode::Char('c') | KeyCode::Char('C') => {
                                 if self.schedule_selection_mode {
                                     // remove selected cart item from cart
                                     let cart_classes: Vec<String> = self
@@ -632,6 +632,25 @@ impl Tui {
                                             self.selected_cart_index = self.cart.len() - 1;
                                         } else if self.cart.is_empty() {
                                             self.selected_cart_index = 0;
+                                        }
+                                    }
+                                }
+                            }
+                            KeyCode::Tab => {
+                                if self.schedule_selection_mode {
+                                    // open detail view for selected class
+                                    let cart_classes: Vec<String> = self
+                                        .query_results
+                                        .iter()
+                                        .filter(|class| self.cart.contains(&class.unique_id()))
+                                        .map(|class| class.unique_id())
+                                        .collect();
+                                    if self.selected_cart_index < cart_classes.len() {
+                                        let class_id = &cart_classes[self.selected_cart_index];
+                                        if let Some(class_idx) = self.query_results.iter().position(|c| c.unique_id() == *class_id) {
+                                            self.selected_result = class_idx;
+                                            self.detail_return_focus = FocusMode::ScheduleCreation;
+                                            self.focus_mode = FocusMode::DetailView;
                                         }
                                     }
                                 }
@@ -1373,6 +1392,7 @@ fn render_frame(
             query_results,
             focus_mode,
             &theme,
+            None,
         );
         render_toast_with_data(frame, toast_message, error_type, &theme);
         return (0, 0);
@@ -1388,6 +1408,7 @@ fn render_frame(
             query_results,
             focus_mode,
             &theme,
+            None,
         );
         render_toast_with_data(frame, toast_message, error_type, &theme);
         return (0, 0);
@@ -1405,6 +1426,7 @@ fn render_frame(
             query_results,
             focus_mode,
             &theme,
+            None,
         );
         render_toast_with_data(frame, toast_message, error_type, &theme);
         return (0, 0);
@@ -1436,6 +1458,7 @@ fn render_frame(
             query_results,
             focus_mode,
             &theme,
+            Some(schedule_selection_mode),
         );
         render_toast_with_data(frame, toast_message, error_type, &theme);
         
@@ -1499,6 +1522,7 @@ fn render_frame(
             query_results,
             focus_mode,
             &theme,
+            None,
         );
         render_toast_with_data(frame, toast_message, error_type, &theme);
         render_completion_dropdown(
@@ -1518,6 +1542,7 @@ fn render_frame(
             query_results,
             focus_mode,
             &theme,
+            None,
         );
         render_toast_with_data(frame, toast_message, error_type, &theme);
         0 // no items rendered

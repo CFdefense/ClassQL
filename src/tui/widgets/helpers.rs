@@ -34,6 +34,7 @@ pub fn render_search_helpers_with_data(
     _query_results: &[Class],
     focus_mode: &FocusMode,
     theme: &Theme,
+    schedule_selection_mode: Option<bool>,
 ) {
     // don't show help text if there's an active toast
     if toast_message.is_some() {
@@ -53,7 +54,12 @@ pub fn render_search_helpers_with_data(
         FocusMode::QueryGuide => "↑↓ Scroll | Page Up/Down | Home/End | Alt+G or Esc: Close",
         FocusMode::Help => "↑↓ Scroll | Page Up/Down | Home/End | Esc: Close",
         FocusMode::ScheduleCreation => {
-            "←→ Days | ↑↓ Time | Enter: Details | Page Up/Down: Schedules | Esc: Back"
+            // Show different help text based on whether we're in selection mode or viewing mode
+            if schedule_selection_mode == Some(true) {
+                "↑↓ Navigate | Space: Toggle | Tab: Details | Enter: Continue | d: Delete | Esc: Back"
+            } else {
+                "←→ Days | ↑↓ Time | Enter: Details | Page Up/Down: Schedules | Esc: Back"
+            }
         }
     };
 

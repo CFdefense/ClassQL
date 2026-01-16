@@ -244,8 +244,8 @@ fn render_cart_section(
         .style(Style::default().fg(theme.background_color));
     frame.render_widget(empty_line, message_chunks[1]);
     
-    // use different color for enter message
-    let message2 = Paragraph::new("Enter to continue")
+    // message to press enter to continue
+    let message2 = Paragraph::new("Press Enter to continue")
         .style(Style::default().fg(theme.info_color))
         .alignment(Alignment::Center);
     frame.render_widget(message2, message_chunks[2]);
