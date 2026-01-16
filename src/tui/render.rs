@@ -35,6 +35,7 @@
 use crate::data::sql::Class;
 use crate::dsl::compiler::{Compiler, CompilerResult};
 use crate::tui::errors::TUIError;
+use crate::tui::save::{self, SavedSchedule};
 use crate::tui::state::{ErrorType, FocusMode};
 use crate::tui::themes::ThemePalette;
 use crate::tui::widgets::{
@@ -42,7 +43,7 @@ use crate::tui::widgets::{
     render_query_guide, render_query_results, render_search_bar_with_data,
     render_search_helpers_with_data, render_settings, render_toast_with_data, MenuOption,
 };
-use crate::tui::widgets::schedule::{find_conflicting_classes, generate_schedules, has_conflicts};
+use crate::tui::widgets::schedule::{find_conflicting_classes, generate_schedules};
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use ratatui::layout::Rect;
 use ratatui::{DefaultTerminal, Frame};
@@ -123,6 +124,11 @@ pub struct Tui {
     schedule_selection_mode: bool,
     selected_time_block_day: usize,
     selected_time_block_slot: usize,
+    saved_schedules: Vec<SavedSchedule>,
+    selected_saved_schedule_index: usize,
+    save_name_input: String,
+    save_name_cursor_visible: bool,
+    save_name_last_blink: Instant,
 }
 
 /// Tui Implementation
@@ -188,6 +194,11 @@ impl Tui {
             schedule_selection_mode: true, // start in class selection mode
             selected_time_block_day: 0, // Monday
             selected_time_block_slot: 0, // first time slot
+            saved_schedules: Vec::new(),
+            selected_saved_schedule_index: 0,
+            save_name_input: String::new(),
+            save_name_cursor_visible: true,
+            save_name_last_blink: Instant::now(),
         })
     }
 
@@ -212,6 +223,14 @@ impl Tui {
             if self.last_cursor_blink.elapsed() > Duration::from_millis(500) {
                 self.cursor_visible = !self.cursor_visible;
                 self.last_cursor_blink = Instant::now();
+            }
+            
+            // update save name cursor blink
+            if self.focus_mode == FocusMode::SaveNameInput {
+                if self.save_name_last_blink.elapsed() > Duration::from_millis(500) {
+                    self.save_name_cursor_visible = !self.save_name_cursor_visible;
+                    self.save_name_last_blink = Instant::now();
+                }
             }
 
             // extract render data to avoid borrow conflicts
@@ -238,6 +257,10 @@ impl Tui {
             let selected_time_block_day = self.selected_time_block_day;
             let selected_time_block_slot = self.selected_time_block_slot;
             let detail_return_focus = self.detail_return_focus.clone();
+            let saved_schedules = self.saved_schedules.clone();
+            let selected_saved_schedule_index = self.selected_saved_schedule_index;
+            let save_name_input = self.save_name_input.clone();
+            let save_name_cursor_visible = self.save_name_cursor_visible;
 
             // draw the current state
             let terminal = &mut self.terminal;
@@ -273,6 +296,10 @@ impl Tui {
                     selected_time_block_day,
                     selected_time_block_slot,
                     detail_return_focus,
+                    &saved_schedules,
+                    selected_saved_schedule_index,
+                    &save_name_input,
+                    save_name_cursor_visible,
                 );
                 // update max_items_that_fit based on actual rendering
                 self.max_items_that_fit = max_items;
@@ -338,6 +365,22 @@ impl Tui {
                                                 self.schedule_cart_focus = true;
                                                 self.selected_cart_index = 0;
                                                 self.generated_schedules.clear(); // clear any previous schedules
+                                            }
+                                        }
+                                        MenuOption::MySchedules => {
+                                            // load saved schedules and enter MySchedules view
+                                            match save::load_all_schedules(&self.cart_classes) {
+                                                Ok(schedules) => {
+                                                    self.saved_schedules = schedules;
+                                                    self.selected_saved_schedule_index = 0;
+                                                    self.focus_mode = FocusMode::MySchedules;
+                                                }
+                                                Err(e) => {
+                                                    self.show_toast(
+                                                        format!("Failed to load schedules: {}", e),
+                                                        ErrorType::Semantic,
+                                                    );
+                                                }
                                             }
                                         }
                                         MenuOption::Help => {
@@ -552,20 +595,20 @@ impl Tui {
                                             ErrorType::Semantic,
                                         );
                                     } else {
-                                        // get selected classes to check for conflicts
-                                        let selected_classes: Vec<Class> = self.selected_for_schedule
-                                            .iter()
-                                            .filter_map(|class_id| self.cart_classes.get(class_id))
-                                            .cloned()
-                                            .collect();
-                                        
-                                        // check for conflicts - if conflicts exist, show error with details
-                                        if has_conflicts(&selected_classes) {
+                                        // generate valid (non-conflicting) schedules
+                                        self.generated_schedules = generate_schedules(&self.cart_classes, &self.selected_for_schedule, false);
+                                        if self.generated_schedules.is_empty() {
+                                            // no valid schedules found - show which classes conflict
+                                            let selected_classes: Vec<Class> = self.selected_for_schedule
+                                                .iter()
+                                                .filter_map(|class_id| self.cart_classes.get(class_id))
+                                                .cloned()
+                                                .collect();
                                             let conflicts = find_conflicting_classes(&selected_classes);
                                             let conflict_msg = if conflicts.len() == 1 {
-                                                format!("Classes have conflicting times: {} and {}", conflicts[0].0, conflicts[0].1)
+                                                format!("No valid schedules. Classes conflict: {} and {}", conflicts[0].0, conflicts[0].1)
                                             } else {
-                                                let mut msg = "Classes have conflicting times: ".to_string();
+                                                let mut msg = "No valid schedules. Classes conflict: ".to_string();
                                                 for (i, (class1, class2)) in conflicts.iter().enumerate() {
                                                     if i > 0 {
                                                         msg.push_str(", ");
@@ -576,19 +619,11 @@ impl Tui {
                                             };
                                             self.show_toast(conflict_msg, ErrorType::Semantic);
                                         } else {
-                                            // generate schedules without conflicts
-                                            self.generated_schedules = generate_schedules(&self.cart_classes, &self.selected_for_schedule, false);
-                                            if self.generated_schedules.is_empty() {
-                                                self.show_toast(
-                                                    "No schedules found.".to_string(),
-                                                    ErrorType::Semantic,
-                                                );
-                                            } else {
-                                                self.schedule_selection_mode = false;
-                                                self.current_schedule_index = 0;
-                                                self.selected_time_block_day = 0;
-                                                self.selected_time_block_slot = 0;
-                                            }
+                                            // valid schedules found - proceed to viewing mode
+                                            self.schedule_selection_mode = false;
+                                            self.current_schedule_index = 0;
+                                            self.selected_time_block_day = 0;
+                                            self.selected_time_block_slot = 0;
                                         }
                                     }
                                 } else {
@@ -611,6 +646,13 @@ impl Tui {
                                             }
                                         }
                                     }
+                                }
+                            }
+                            KeyCode::Char('s') | KeyCode::Char('S') => {
+                                if !self.schedule_selection_mode && !self.generated_schedules.is_empty() {
+                                    // save current schedule - enter name input mode
+                                    self.save_name_input.clear();
+                                    self.focus_mode = FocusMode::SaveNameInput;
                                 }
                             }
                             KeyCode::Char(' ') => {
@@ -794,6 +836,122 @@ impl Tui {
                                 } else {
                                     // max_scroll not calculated yet, set large value
                                     self.guide_scroll = 10000;
+                                }
+                            }
+                            _ => {}
+                        }
+                        continue;
+                    }
+
+                    // handle save name input mode
+                    if self.focus_mode == FocusMode::SaveNameInput {
+                        match key.code {
+                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                                break Ok(())
+                            }
+                            KeyCode::Esc => {
+                                // cancel saving, go back to schedule view
+                                self.focus_mode = FocusMode::ScheduleCreation;
+                                self.save_name_input.clear();
+                            }
+                            KeyCode::Enter => {
+                                // save the schedule
+                                if self.save_name_input.trim().is_empty() {
+                                    self.show_toast(
+                                        "Schedule name cannot be empty!".to_string(),
+                                        ErrorType::Semantic,
+                                    );
+                                } else if !self.generated_schedules.is_empty() 
+                                    && self.current_schedule_index < self.generated_schedules.len() {
+                                    let schedule = &self.generated_schedules[self.current_schedule_index];
+                                    match save::save_schedule(&self.save_name_input.trim(), schedule) {
+                                        Ok(_) => {
+                                            self.show_toast(
+                                                format!("Schedule '{}' saved!", self.save_name_input.trim()),
+                                                ErrorType::Semantic,
+                                            );
+                                            self.focus_mode = FocusMode::ScheduleCreation;
+                                            self.save_name_input.clear();
+                                        }
+                                        Err(e) => {
+                                            self.show_toast(
+                                                format!("Failed to save schedule: {}", e),
+                                                ErrorType::Semantic,
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                            KeyCode::Backspace => {
+                                self.save_name_input.pop();
+                            }
+                            KeyCode::Char(c) => {
+                                self.save_name_input.push(c);
+                            }
+                            _ => {}
+                        }
+                        continue;
+                    }
+
+                    // handle my schedules mode
+                    if self.focus_mode == FocusMode::MySchedules {
+                        match key.code {
+                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                                break Ok(())
+                            }
+                            KeyCode::Esc => {
+                                self.focus_mode = FocusMode::MainMenu;
+                            }
+                            KeyCode::Up => {
+                                if self.selected_saved_schedule_index > 0 {
+                                    self.selected_saved_schedule_index -= 1;
+                                }
+                            }
+                            KeyCode::Down => {
+                                if self.selected_saved_schedule_index < self.saved_schedules.len().saturating_sub(1) {
+                                    self.selected_saved_schedule_index += 1;
+                                }
+                            }
+                            KeyCode::Enter => {
+                                // view schedule in detail
+                                if self.selected_saved_schedule_index < self.saved_schedules.len() {
+                                    let saved = &self.saved_schedules[self.selected_saved_schedule_index];
+                                    // set generated_schedules to show this saved schedule
+                                    self.generated_schedules = vec![saved.classes.clone()];
+                                    self.current_schedule_index = 0;
+                                    self.schedule_selection_mode = false;
+                                    self.selected_time_block_day = 0;
+                                    self.selected_time_block_slot = 0;
+                                    self.detail_return_focus = FocusMode::MySchedules;
+                                    self.focus_mode = FocusMode::ScheduleCreation;
+                                }
+                            }
+                            KeyCode::Char('d') | KeyCode::Char('D') => {
+                                // delete selected schedule
+                                if self.selected_saved_schedule_index < self.saved_schedules.len() {
+                                    let saved_name = self.saved_schedules[self.selected_saved_schedule_index].name.clone();
+                                    let saved_timestamp = self.saved_schedules[self.selected_saved_schedule_index].timestamp;
+                                    match save::delete_schedule(saved_timestamp) {
+                                        Ok(_) => {
+                                            self.saved_schedules.remove(self.selected_saved_schedule_index);
+                                            if self.selected_saved_schedule_index >= self.saved_schedules.len() 
+                                                && !self.saved_schedules.is_empty() {
+                                                self.selected_saved_schedule_index = self.saved_schedules.len() - 1;
+                                            } else if self.saved_schedules.is_empty() {
+                                                self.selected_saved_schedule_index = 0;
+                                            }
+                                            self.show_toast(
+                                                format!("Schedule '{}' deleted", saved_name),
+                                                ErrorType::Semantic,
+                                            );
+                                        }
+                                        Err(e) => {
+                                            self.show_toast(
+                                                format!("Failed to delete schedule: {}", e),
+                                                ErrorType::Semantic,
+                                            );
+                                        }
+                                    }
                                 }
                             }
                             _ => {}
@@ -1320,6 +1478,10 @@ fn render_frame(
     selected_time_block_day: usize,
     selected_time_block_slot: usize,
     detail_return_focus: FocusMode,
+    saved_schedules: &[SavedSchedule],
+    selected_saved_schedule_index: usize,
+    save_name_input: &str,
+    save_name_cursor_visible: bool,
 ) -> (usize, usize) {
     let theme = current_theme.to_theme();
 
@@ -1452,6 +1614,20 @@ fn render_frame(
             &theme,
             None,
         );
+        render_toast_with_data(frame, toast_message, error_type, &theme);
+        return (0, 0);
+    }
+
+    // render save name input popup
+    if *focus_mode == FocusMode::SaveNameInput {
+        render_save_name_popup(frame, save_name_input, save_name_cursor_visible, &theme);
+        render_toast_with_data(frame, toast_message, error_type, &theme);
+        return (0, 0);
+    }
+
+    // render my schedules view
+    if *focus_mode == FocusMode::MySchedules {
+        render_my_schedules(frame, saved_schedules, selected_saved_schedule_index, &theme);
         render_toast_with_data(frame, toast_message, error_type, &theme);
         return (0, 0);
     }
@@ -1596,4 +1772,170 @@ fn render_frame(
     (0, max_items_that_fit)
 }
 
-// Widget functions have been moved to src/tui/widgets/ modules
+/// Render the save name input popup
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// input -> The current input text
+/// cursor_visible -> Whether the cursor should be visible
+/// theme -> The current theme
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
+fn render_save_name_popup(
+    frame: &mut Frame,
+    input: &str,
+    cursor_visible: bool,
+    theme: &crate::tui::themes::Theme,
+) {
+    let popup_width = 50;
+    let popup_height = 5;
+    
+    // position at same height as main menu (below logo)
+    let logo_height = 7_u16;
+    let spacing = 6_u16;
+    let popup_y = logo_height + spacing;
+    
+    let frame_width = frame.area().width;
+    let frame_height = frame.area().height;
+    
+    let area = ratatui::layout::Rect {
+        x: (frame_width.saturating_sub(popup_width.min(frame_width))) / 2,
+        y: popup_y.min(frame_height.saturating_sub(popup_height.min(frame_height))),
+        width: popup_width.min(frame_width),
+        height: popup_height.min(frame_height),
+    }.intersection(frame.area());
+
+    // show placeholder text when input is empty
+    let display_text = if input.is_empty() {
+        "enter schedule name".to_string()
+    } else if cursor_visible {
+        format!("{input}_")
+    } else {
+        input.to_string()
+    };
+    
+    // use muted color for placeholder, normal color for input
+    let text_style = if input.is_empty() {
+        ratatui::style::Style::default().fg(theme.muted_color)
+    } else {
+        ratatui::style::Style::default().fg(theme.text_color)
+    };
+
+    let block = ratatui::widgets::Block::default()
+        .borders(ratatui::widgets::Borders::ALL)
+        .title(" Save Schedule ")
+        .title_style(
+            ratatui::style::Style::default()
+                .fg(theme.title_color)
+                .add_modifier(ratatui::style::Modifier::BOLD),
+        )
+        .border_style(ratatui::style::Style::default().fg(theme.border_color));
+
+    // center the text within the paragraph
+    let paragraph = ratatui::widgets::Paragraph::new(display_text)
+        .block(block)
+        .style(text_style)
+        .alignment(ratatui::layout::Alignment::Center);
+
+    frame.render_widget(paragraph, area);
+}
+
+/// Render the My Schedules view
+///
+/// Parameters:
+/// --- ---
+/// frame -> The frame to render
+/// saved_schedules -> List of saved schedules
+/// selected_index -> The index of the currently selected schedule
+/// theme -> The current theme
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// None
+/// --- ---
+///
+fn render_my_schedules(
+    frame: &mut Frame,
+    saved_schedules: &[SavedSchedule],
+    selected_index: usize,
+    theme: &crate::tui::themes::Theme,
+) {
+    let area = frame.area();
+    
+    // create list of schedule entries
+    let mut lines = Vec::new();
+    for (i, schedule) in saved_schedules.iter().enumerate() {
+        let is_selected = i == selected_index;
+        let prefix = if is_selected { "> " } else { "  " };
+        
+        // format timestamp as date
+        let datetime = std::time::UNIX_EPOCH + std::time::Duration::from_secs(schedule.timestamp);
+        let datetime_system = std::time::SystemTime::from(datetime);
+        let date_str = if let Ok(datetime) = datetime_system.duration_since(std::time::UNIX_EPOCH) {
+            let secs = datetime.as_secs();
+            let days = secs / 86400;
+            let hours = (secs % 86400) / 3600;
+            let mins = (secs % 3600) / 60;
+            format!("{}d {}h {}m ago", days, hours, mins)
+        } else {
+            "Unknown".to_string()
+        };
+        
+        let style = if is_selected {
+            ratatui::style::Style::default()
+                .fg(theme.selected_color)
+                .add_modifier(ratatui::style::Modifier::BOLD)
+        } else {
+            ratatui::style::Style::default().fg(theme.text_color)
+        };
+        
+        let line = format!("{}{} - {} ({} classes)", prefix, schedule.name, date_str, schedule.classes.len());
+        lines.push(ratatui::text::Line::from(vec![
+            ratatui::text::Span::styled(line, style),
+        ]));
+    }
+    
+    if lines.is_empty() {
+        lines.push(ratatui::text::Line::from(vec![
+            ratatui::text::Span::styled(
+                "No saved schedules. Press 's' in schedule view to save one.",
+                ratatui::style::Style::default().fg(theme.text_color),
+            ),
+        ]));
+    }
+    
+    let block = ratatui::widgets::Block::default()
+        .borders(ratatui::widgets::Borders::ALL)
+        .title(" My Schedules ")
+        .title_style(
+            ratatui::style::Style::default()
+                .fg(theme.title_color)
+                .add_modifier(ratatui::style::Modifier::BOLD),
+        )
+        .border_style(ratatui::style::Style::default().fg(theme.border_color));
+    
+    let list = ratatui::widgets::Paragraph::new(lines)
+        .block(block)
+        .wrap(ratatui::widgets::Wrap { trim: true });
+    
+    frame.render_widget(list, area);
+    
+    // render help text
+    let help_text = "↑↓ Navigate | Enter: View | d: Delete | Esc: Back";
+    let help_area = ratatui::layout::Rect {
+        x: 0,
+        y: area.height.saturating_sub(1),
+        width: area.width,
+        height: 1,
+    };
+    let help_paragraph = ratatui::widgets::Paragraph::new(help_text)
+        .style(ratatui::style::Style::default().fg(theme.text_color));
+    frame.render_widget(help_paragraph, help_area);
+}

@@ -58,9 +58,11 @@ pub fn render_search_helpers_with_data(
             if schedule_selection_mode == Some(true) {
                 "↑↓ Navigate | Space: Toggle | Tab: Details | Enter: Continue | d: Delete | Esc: Back"
             } else {
-                "←→ Days | ↑↓ Time | Enter: Details | Page Up/Down: Schedules | Esc: Back"
+                "←→ Days | ↑↓ Time | Enter: Details | Page Up/Down: Schedules | s: Save | Esc: Back"
             }
         }
+        FocusMode::MySchedules => "↑↓ Navigate | Enter: View | d: Delete | Esc: Back",
+        FocusMode::SaveNameInput => "Enter: Save | Esc: Cancel",
     };
 
     let help_width = help_text.len() as u16;

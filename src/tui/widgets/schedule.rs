@@ -635,9 +635,9 @@ fn generate_all_schedules(classes: &[Class]) -> Vec<Vec<Class>> {
 /// --- ---
 ///
 pub fn find_valid_schedules(classes: &[Class]) -> Vec<Vec<Class>> {
-    let mut valid_schedules = Vec::new();
+    let mut all_valid_schedules = Vec::new();
 
-    // use backtracking to generate all combinations
+    // use backtracking to generate all valid combinations
     fn backtrack(
         classes: &[Class],
         current_schedule: &mut Vec<Class>,
@@ -675,9 +675,53 @@ pub fn find_valid_schedules(classes: &[Class]) -> Vec<Vec<Class>> {
     }
 
     let mut current = Vec::new();
-    backtrack(classes, &mut current, 0, &mut valid_schedules);
+    backtrack(classes, &mut current, 0, &mut all_valid_schedules);
 
-    valid_schedules
+    // filter to keep only maximal schedules (schedules that are not subsets of other schedules)
+    filter_maximal_schedules(&all_valid_schedules)
+}
+
+/// filter schedules to keep only maximal ones (remove schedules that are subsets of others)
+///
+/// Parameters:
+/// --- ---
+/// schedules -> All valid schedules
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// Vec<Vec<Class>> -> Only maximal schedules
+/// --- ---
+///
+fn filter_maximal_schedules(schedules: &[Vec<Class>]) -> Vec<Vec<Class>> {
+    let mut maximal_schedules = Vec::new();
+    
+    for schedule in schedules {
+        let schedule_ids: std::collections::HashSet<String> = schedule
+            .iter()
+            .map(|c| c.unique_id())
+            .collect();
+        
+        // check if this schedule is a subset of any other schedule
+        let is_subset = schedules.iter().any(|other_schedule| {
+            if other_schedule.len() <= schedule.len() {
+                return false; // can't be a subset if other is same size or smaller
+            }
+            let other_ids: std::collections::HashSet<String> = other_schedule
+                .iter()
+                .map(|c| c.unique_id())
+                .collect();
+            // this schedule is a subset if all its classes are in the other schedule
+            schedule_ids.is_subset(&other_ids)
+        });
+        
+        // only keep if it's not a subset (i.e., it's maximal)
+        if !is_subset {
+            maximal_schedules.push(schedule.clone());
+        }
+    }
+    
+    maximal_schedules
 }
 
 /// check if any classes in a list have conflicts

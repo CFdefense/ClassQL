@@ -15,6 +15,7 @@ use ratatui::Frame;
 pub enum MenuOption {
     Search,
     ScheduleCreation,
+    MySchedules,
     Help,
     Settings,
     Quit,
@@ -25,6 +26,7 @@ impl MenuOption {
         match self {
             MenuOption::Search => "Search Classes",
             MenuOption::ScheduleCreation => "Create Schedule",
+            MenuOption::MySchedules => "My Schedules",
             MenuOption::Help => "Help",
             MenuOption::Settings => "Settings",
             MenuOption::Quit => "Quit",
@@ -35,6 +37,7 @@ impl MenuOption {
         vec![
             MenuOption::Search,
             MenuOption::ScheduleCreation,
+            MenuOption::MySchedules,
             MenuOption::Help,
             MenuOption::Settings,
             MenuOption::Quit,
