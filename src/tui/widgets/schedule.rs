@@ -36,9 +36,8 @@ use ratatui::Frame;
 ///
 pub fn render_schedule_creation(
     frame: &mut Frame,
-    cart: &std::collections::HashSet<String>,
+    cart_classes: &std::collections::HashMap<String, crate::data::sql::Class>,
     selected_for_schedule: &std::collections::HashSet<String>,
-    query_results: &[Class],
     generated_schedules: &[Vec<Class>],
     current_schedule_index: usize,
     cart_focused: bool,
@@ -99,7 +98,7 @@ pub fn render_schedule_creation(
             width: message_width,
             height: 3, // 3 lines for messages
         };
-        render_cart_section(frame, cart_area, message_area, cart, selected_for_schedule, query_results, cart_focused, selected_cart_index, theme);
+        render_cart_section(frame, cart_area, message_area, cart_classes, selected_for_schedule, cart_focused, selected_cart_index, theme);
     } else {
         // in viewing mode, show time-block calendar
         if !generated_schedules.is_empty() && current_schedule_index < generated_schedules.len() {
@@ -143,9 +142,8 @@ fn render_cart_section(
     frame: &mut Frame,
     cart_area: Rect,
     message_area: Rect,
-    cart: &std::collections::HashSet<String>,
+    cart_classes: &std::collections::HashMap<String, Class>,
     selected_for_schedule: &std::collections::HashSet<String>,
-    query_results: &[Class],
     focused: bool,
     selected_index: usize,
     theme: &Theme,
@@ -166,23 +164,21 @@ fn render_cart_section(
         theme.border_color
     };
 
-    // cart items - show class names with checkboxes
-    let cart_classes: Vec<(usize, &Class)> = query_results
-        .iter()
-        .enumerate()
-        .filter(|(_, class)| cart.contains(&class.unique_id()))
-        .collect();
+    // cart items - get classes from cart_classes map, sorted by ID for consistent ordering
+    let mut cart_classes_vec: Vec<&Class> = cart_classes.values().collect();
+    // Sort by unique_id for consistent ordering
+    cart_classes_vec.sort_by_key(|class| class.unique_id());
 
-    let cart_text = if cart_classes.is_empty() {
+    let cart_text = if cart_classes_vec.is_empty() {
         vec![Line::from(Span::styled(
             "Cart is empty",
             Style::default().fg(theme.muted_color),
         ))]
     } else {
-        cart_classes
+        cart_classes_vec
             .iter()
             .enumerate()
-            .map(|(idx, (_, class))| {
+            .map(|(idx, class)| {
                 let is_selected = focused && idx == selected_index;
                 let class_id = class.unique_id();
                 let checkbox = if selected_for_schedule.contains(&class_id) { "☑ " } else { "☐ " };
@@ -714,8 +710,8 @@ fn render_empty_schedule_section(frame: &mut Frame, area: Rect, focused: bool, t
 ///
 /// Parameters:
 /// --- ---
-/// query_results -> All available classes from query results
-/// cart -> Set of class IDs in the cart
+/// cart_classes -> Map of all classes in the cart (ID -> Class)
+/// selected_for_schedule -> Set of class IDs selected for schedule generation
 /// --- ---
 ///
 /// Returns:
@@ -724,22 +720,22 @@ fn render_empty_schedule_section(frame: &mut Frame, area: Rect, focused: bool, t
 /// --- ---
 ///
 pub fn generate_schedules(
-    query_results: &[Class],
-    cart: &std::collections::HashSet<String>,
+    cart_classes: &std::collections::HashMap<String, Class>,
+    selected_for_schedule: &std::collections::HashSet<String>,
 ) -> Vec<Vec<Class>> {
-    // get all classes from cart
-    let cart_classes: Vec<Class> = query_results
+    // get all classes from selected_for_schedule
+    let selected_classes: Vec<Class> = selected_for_schedule
         .iter()
-        .filter(|class| cart.contains(&class.unique_id()))
+        .filter_map(|class_id| cart_classes.get(class_id))
         .cloned()
         .collect();
 
-    if cart_classes.is_empty() {
+    if selected_classes.is_empty() {
         return Vec::new();
     }
 
     // generate all possible combinations and filter out conflicts
-    find_valid_schedules(&cart_classes)
+    find_valid_schedules(&selected_classes)
 }
 
 /// find all valid (non-conflicting) schedules from a list of classes

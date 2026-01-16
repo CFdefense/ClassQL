@@ -76,7 +76,7 @@ use std::time::{Duration, Instant};
 /// current_theme -> Current theme
 /// settings_index -> Index of currently selected settings option
 /// detail_return_focus -> Where to return when closing detail view
-/// cart -> Set of class IDs in the cart
+/// cart_classes -> Map of all classes in the cart (ID -> Class)
 /// generated_schedules -> All generated non-conflicting schedules
 /// current_schedule_index -> Index of currently displayed schedule
 /// schedule_cart_focus -> Whether the cart is focused
@@ -113,7 +113,7 @@ pub struct Tui {
     guide_max_scroll: usize,
     guide_return_focus: FocusMode,
     detail_return_focus: FocusMode,
-    cart: std::collections::HashSet<String>,
+    cart_classes: std::collections::HashMap<String, Class>,
     selected_for_schedule: std::collections::HashSet<String>,
     generated_schedules: Vec<Vec<Class>>,
     current_schedule_index: usize,
@@ -178,7 +178,7 @@ impl Tui {
             guide_max_scroll: 0,
             guide_return_focus: FocusMode::QueryInput,
             detail_return_focus: FocusMode::ResultsBrowse,
-            cart: std::collections::HashSet::new(),
+            cart_classes: std::collections::HashMap::new(),
             selected_for_schedule: std::collections::HashSet::new(),
             generated_schedules: Vec::new(),
             current_schedule_index: 0,
@@ -227,7 +227,7 @@ impl Tui {
             let selected_result = self.selected_result;
             let cursor_visible = self.cursor_visible;
             let menu_index = self.menu_index;
-            let cart = self.cart.clone();
+            let cart_classes = self.cart_classes.clone();
             let selected_for_schedule = self.selected_for_schedule.clone();
             let generated_schedules = self.generated_schedules.clone();
             let current_schedule_index = self.current_schedule_index;
@@ -262,9 +262,8 @@ impl Tui {
                     self.guide_scroll,
                     &mut new_guide_max_scroll,
                     &self.user_query,
-                    &cart,
+                    &cart_classes,
                     &selected_for_schedule,
-                    &self.query_results,
                     &generated_schedules,
                     current_schedule_index,
                     schedule_cart_focus,
@@ -321,7 +320,7 @@ impl Tui {
                                         }
                                         MenuOption::ScheduleCreation => {
                                             // check if cart is empty
-                                            if self.cart.is_empty() {
+                                            if self.cart_classes.is_empty() {
                                                 self.show_toast(
                                                     "Cart is empty! Add classes to cart first.".to_string(),
                                                     ErrorType::Semantic,
@@ -329,7 +328,7 @@ impl Tui {
                                             } else {
                                                 // Initialize selected_for_schedule with all cart items if empty
                                                 if self.selected_for_schedule.is_empty() {
-                                                    self.selected_for_schedule = self.cart.clone();
+                                                    self.selected_for_schedule = self.cart_classes.keys().cloned().collect();
                                                 }
                                                 // enter class selection mode (don't generate schedules yet)
                                                 self.focus_mode = FocusMode::ScheduleCreation;
@@ -460,13 +459,7 @@ impl Tui {
                             KeyCode::Up => {
                                 if self.schedule_selection_mode {
                                     // navigate cart items up
-                                    let cart_classes: Vec<String> = self
-                                        .query_results
-                                        .iter()
-                                        .filter(|class| self.cart.contains(&class.unique_id()))
-                                        .map(|class| class.unique_id())
-                                        .collect();
-                                    if !cart_classes.is_empty() && self.selected_cart_index > 0 {
+                                    if !self.cart_classes.is_empty() && self.selected_cart_index > 0 {
                                         self.selected_cart_index -= 1;
                                     }
                                 } else {
@@ -482,14 +475,9 @@ impl Tui {
                             KeyCode::Down => {
                                 if self.schedule_selection_mode {
                                     // navigate cart items down
-                                    let cart_classes: Vec<String> = self
-                                        .query_results
-                                        .iter()
-                                        .filter(|class| self.cart.contains(&class.unique_id()))
-                                        .map(|class| class.unique_id())
-                                        .collect();
-                                    if !cart_classes.is_empty() 
-                                        && self.selected_cart_index < cart_classes.len() - 1 {
+                                    let cart_class_ids: Vec<String> = self.cart_classes.keys().cloned().collect();
+                                    if !cart_class_ids.is_empty() 
+                                        && self.selected_cart_index < cart_class_ids.len() - 1 {
                                         self.selected_cart_index += 1;
                                     }
                                 } else {
@@ -558,7 +546,7 @@ impl Tui {
                                         );
                                     } else {
                                         use crate::tui::widgets::schedule::generate_schedules;
-                                        self.generated_schedules = generate_schedules(&self.query_results, &self.selected_for_schedule);
+                                        self.generated_schedules = generate_schedules(&self.cart_classes, &self.selected_for_schedule);
                                         if self.generated_schedules.is_empty() {
                                             self.show_toast(
                                                 "No valid schedules found. All classes conflict.".to_string(),
@@ -596,14 +584,9 @@ impl Tui {
                             KeyCode::Char(' ') => {
                                 if self.schedule_selection_mode {
                                     // toggle selected cart item for schedule generation
-                                    let cart_classes: Vec<String> = self
-                                        .query_results
-                                        .iter()
-                                        .filter(|class| self.cart.contains(&class.unique_id()))
-                                        .map(|class| class.unique_id())
-                                        .collect();
-                                    if self.selected_cart_index < cart_classes.len() {
-                                        let class_id = &cart_classes[self.selected_cart_index];
+                                    let cart_class_ids: Vec<String> = self.cart_classes.keys().cloned().collect();
+                                    if self.selected_cart_index < cart_class_ids.len() {
+                                        let class_id = &cart_class_ids[self.selected_cart_index];
                                         // Toggle: add/remove from selected_for_schedule (not cart)
                                         if self.selected_for_schedule.contains(class_id) {
                                             self.selected_for_schedule.remove(class_id);
@@ -616,21 +599,16 @@ impl Tui {
                             KeyCode::Char('d') | KeyCode::Char('D') | KeyCode::Char('c') | KeyCode::Char('C') => {
                                 if self.schedule_selection_mode {
                                     // remove selected cart item from cart
-                                    let cart_classes: Vec<String> = self
-                                        .query_results
-                                        .iter()
-                                        .filter(|class| self.cart.contains(&class.unique_id()))
-                                        .map(|class| class.unique_id())
-                                        .collect();
-                                    if self.selected_cart_index < cart_classes.len() {
-                                        let class_id = &cart_classes[self.selected_cart_index];
+                                    let cart_class_ids: Vec<String> = self.cart_classes.keys().cloned().collect();
+                                    if self.selected_cart_index < cart_class_ids.len() {
+                                        let class_id = &cart_class_ids[self.selected_cart_index];
                                         // Remove from cart and selected_for_schedule
-                                        self.cart.remove(class_id);
+                                        self.cart_classes.remove(class_id);
                                         self.selected_for_schedule.remove(class_id);
                                         // Adjust selected index if needed
-                                        if self.selected_cart_index >= self.cart.len() && !self.cart.is_empty() {
-                                            self.selected_cart_index = self.cart.len() - 1;
-                                        } else if self.cart.is_empty() {
+                                        if self.selected_cart_index >= self.cart_classes.len() && !self.cart_classes.is_empty() {
+                                            self.selected_cart_index = self.cart_classes.len() - 1;
+                                        } else if self.cart_classes.is_empty() {
                                             self.selected_cart_index = 0;
                                         }
                                     }
@@ -639,14 +617,9 @@ impl Tui {
                             KeyCode::Tab => {
                                 if self.schedule_selection_mode {
                                     // open detail view for selected class
-                                    let cart_classes: Vec<String> = self
-                                        .query_results
-                                        .iter()
-                                        .filter(|class| self.cart.contains(&class.unique_id()))
-                                        .map(|class| class.unique_id())
-                                        .collect();
-                                    if self.selected_cart_index < cart_classes.len() {
-                                        let class_id = &cart_classes[self.selected_cart_index];
+                                    let cart_class_ids: Vec<String> = self.cart_classes.keys().cloned().collect();
+                                    if self.selected_cart_index < cart_class_ids.len() {
+                                        let class_id = &cart_class_ids[self.selected_cart_index];
                                         if let Some(class_idx) = self.query_results.iter().position(|c| c.unique_id() == *class_id) {
                                             self.selected_result = class_idx;
                                             self.detail_return_focus = FocusMode::ScheduleCreation;
@@ -800,10 +773,10 @@ impl Tui {
                                     if self.selected_result < self.query_results.len() {
                                         let class = &self.query_results[self.selected_result];
                                         let class_id = class.unique_id();
-                                        if self.cart.contains(&class_id) {
-                                            self.cart.remove(&class_id);
+                                        if self.cart_classes.contains_key(&class_id) {
+                                            self.cart_classes.remove(&class_id);
                                         } else {
-                                            self.cart.insert(class_id);
+                                            self.cart_classes.insert(class_id, class.clone());
                                         }
                                     }
                                 }
@@ -1253,7 +1226,6 @@ impl Tui {
 /// user_query -> The last executed query string
 /// cart -> Set of class IDs in the cart
 /// selected_for_schedule -> Set of class IDs selected for schedule generation
-/// all_query_results -> All query results to look up classes by ID
 /// selected_time_block_day -> Index of currently selected day in schedule viewing mode
 /// selected_time_block_slot -> Index of currently selected time slot in schedule viewing mode
 /// detail_return_focus -> Where to return when closing detail view
@@ -1285,9 +1257,8 @@ fn render_frame(
     guide_scroll: usize,
     guide_max_scroll: &mut usize,
     user_query: &str,
-    cart: &std::collections::HashSet<String>,
+    cart_classes: &std::collections::HashMap<String, Class>,
     selected_for_schedule: &std::collections::HashSet<String>,
-    all_query_results: &[Class],
     generated_schedules: &[Vec<Class>],
     current_schedule_index: usize,
     schedule_cart_focus: bool,
@@ -1439,9 +1410,8 @@ fn render_frame(
     if should_render_schedule {
         crate::tui::widgets::schedule::render_schedule_creation(
             frame,
-            cart,
+            cart_classes,
             selected_for_schedule,
-            all_query_results,
             generated_schedules,
             current_schedule_index,
             schedule_cart_focus,
@@ -1558,14 +1528,14 @@ fn render_frame(
             use crate::tui::widgets::schedule::find_class_at_time_block;
             if let Some(class) = find_class_at_time_block(schedule, selected_time_block_day, selected_time_block_slot) {
                 let class_id = class.unique_id();
-                let is_in_cart = cart.contains(&class_id);
+                let is_in_cart = cart_classes.contains_key(&class_id);
                 render_detail_view(frame, class, &theme, is_in_cart, false); // don't show cart option in schedule mode
             }
         } else if selected_result < query_results.len() {
             // coming from results browse mode
             let class = &query_results[selected_result];
             let class_id = class.unique_id();
-            let is_in_cart = cart.contains(&class_id);
+            let is_in_cart = cart_classes.contains_key(&class_id);
             render_detail_view(frame, class, &theme, is_in_cart, true); // show cart option in search mode
         }
     }
