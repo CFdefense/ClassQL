@@ -34,6 +34,7 @@ pub fn render_search_helpers_with_data(
     _query_results: &[Class],
     focus_mode: &FocusMode,
     theme: &Theme,
+    schedule_selection_mode: Option<bool>,
 ) {
     // don't show help text if there's an active toast
     if toast_message.is_some() {
@@ -43,7 +44,7 @@ pub fn render_search_helpers_with_data(
     let help_text = match focus_mode {
         FocusMode::MainMenu => "↑↓ Navigate | Enter: Select | Esc: Quit",
         FocusMode::Settings => "Esc: Back to Main Menu | Ctrl+C: Quit",
-        FocusMode::DetailView => "Press Esc or Enter to close detail view",
+        FocusMode::DetailView => "Press Esc or Enter to close detail view | C: Toggle Cart",
         FocusMode::ResultsBrowse => {
             "←↑↓→ Navigate | Enter: Details | Esc: Main Menu | Type to Search | Alt+G: Guide"
         }
@@ -52,6 +53,16 @@ pub fn render_search_helpers_with_data(
         }
         FocusMode::QueryGuide => "↑↓ Scroll | Page Up/Down | Home/End | Alt+G or Esc: Close",
         FocusMode::Help => "↑↓ Scroll | Page Up/Down | Home/End | Esc: Close",
+        FocusMode::ScheduleCreation => {
+            // Show different help text based on whether we're in selection mode or viewing mode
+            if schedule_selection_mode == Some(true) {
+                "↑↓ Navigate | Space: Toggle | Tab: Details | Enter: Continue | d: Delete | Esc: Back"
+            } else {
+                "←→ Days | ↑↓ Time | Enter: Details | Page Up/Down: Schedules | s: Save | Esc: Back"
+            }
+        }
+        FocusMode::MySchedules => "↑↓ Navigate | Enter: View | d: Delete | Esc: Back",
+        FocusMode::SaveNameInput => "Enter: Save | Esc: Cancel",
     };
 
     let help_width = help_text.len() as u16;

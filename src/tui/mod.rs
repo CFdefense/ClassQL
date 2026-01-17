@@ -7,6 +7,7 @@
 
 pub mod errors;
 pub mod render;
+pub mod save;
 pub mod state;
 pub mod themes;
 pub mod widgets;

@@ -43,6 +43,9 @@ pub enum ErrorType {
 /// Settings -> User is in the settings menu
 /// QueryGuide -> User is viewing the query guide
 /// Help -> User is viewing the help page
+/// ScheduleCreation -> User is creating a schedule
+/// MySchedules -> User is viewing saved schedules
+/// SaveNameInput -> User is entering a name for saving a schedule
 /// --- ---
 ///
 #[derive(Debug, Clone, PartialEq)]
@@ -54,4 +57,7 @@ pub enum FocusMode {
     Settings,
     QueryGuide,
     Help,
+    ScheduleCreation,
+    MySchedules,
+    SaveNameInput,
 }

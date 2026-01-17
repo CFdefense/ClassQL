@@ -651,7 +651,7 @@ fn build_guide_lines(theme: &Theme) -> Vec<Line<'_>> {
 ///
 pub fn render_query_guide(frame: &mut Frame, theme: &Theme, scroll: usize) -> (usize, usize) {
     let frame_area = frame.area();
-    let guide_width = 75_u16.min(frame_area.width.saturating_sub(4)); // ensure some margin
+    let guide_width = 74_u16.min(frame_area.width.saturating_sub(4)); // ensure some margin
     let guide_height = 40_u16.min(frame_area.height.saturating_sub(4)); // ensure some margin
 
     // clamp guide area to frame bounds

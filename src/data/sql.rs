@@ -62,6 +62,25 @@ pub struct Class {
 }
 
 impl Class {
+    /// Get a unique identifier for this class
+    ///
+    /// Parameters:
+    /// --- ---
+    /// self -> The class instance
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// String -> Unique identifier combining subject_code, course_number, and section_sequence
+    /// --- ---
+    ///
+    pub fn unique_id(&self) -> String {
+        format!(
+            "{}:{}-{}",
+            self.subject_code, self.course_number, self.section_sequence
+        )
+    }
+
     /// Format the class for display in a table cell
     ///
     /// Parameters:
