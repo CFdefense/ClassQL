@@ -20,7 +20,7 @@
     "description": "Generate SQL using 'mon' day abbreviation",
     "input": "mon is true",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_monday = 1"],
+    "expected_fragments": ["mt_filter.is_monday = 1"],
     "forbidden_fragments": []
   },
   {
@@ -28,7 +28,7 @@
     "description": "Generate SQL using 'tue' day abbreviation",
     "input": "tue is true",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_tuesday = 1"],
+    "expected_fragments": ["mt_filter.is_tuesday = 1"],
     "forbidden_fragments": []
   },
   {
@@ -36,7 +36,7 @@
     "description": "Generate SQL using 'wed' day abbreviation",
     "input": "wed is false",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_wednesday = 0"],
+    "expected_fragments": ["mt_filter.is_wednesday = 0"],
     "forbidden_fragments": []
   },
   {
@@ -44,7 +44,7 @@
     "description": "Generate SQL using 'thu' day abbreviation",
     "input": "thu is true",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_thursday = 1"],
+    "expected_fragments": ["mt_filter.is_thursday = 1"],
     "forbidden_fragments": []
   },
   {
@@ -52,7 +52,7 @@
     "description": "Generate SQL using 'fri' day abbreviation",
     "input": "fri is true",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_friday = 1"],
+    "expected_fragments": ["mt_filter.is_friday = 1"],
     "forbidden_fragments": []
   },
   {
@@ -60,7 +60,7 @@
     "description": "Generate SQL using 'sat' day abbreviation",
     "input": "sat is false",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_saturday = 0"],
+    "expected_fragments": ["mt_filter.is_saturday = 0"],
     "forbidden_fragments": []
   },
   {
@@ -68,7 +68,7 @@
     "description": "Generate SQL using 'sun' day abbreviation",
     "input": "sun is false",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_sunday = 0"],
+    "expected_fragments": ["mt_filter.is_sunday = 0"],
     "forbidden_fragments": []
   },
   {

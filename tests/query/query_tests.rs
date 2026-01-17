@@ -144,10 +144,9 @@ impl QueryTestHelper {
 
         // Create compiler with test database
         let mut compiler = Compiler::new();
-
-        // Override database path for testing
-        // Note: This requires modifying the compiler to accept a db_path parameter
-        // For now, we'll use the default path and assume test_db.db is in the right place
+        
+        // Use "_test" school ID to force using classy/test.db
+        compiler.set_school_id(Some("_test".to_string()));
 
         // Run the compiler
         let result = compiler.run(&test_case.input);
@@ -256,7 +255,7 @@ impl QueryTestHelper {
 ///
 fn run_test_file(filename: &str) {
     let mut helper = QueryTestHelper::new();
-    let content = utils::load_test_file("query_tests", filename);
+    let content = utils::load_test_file("query", filename);
     let test_cases: Vec<QueryTestCase> =
         serde_json::from_str(&content).expect("Failed to parse JSON test file");
 
