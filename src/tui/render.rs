@@ -1004,6 +1004,11 @@ impl Tui {
                                                 // clear term selection when school changes
                                                 self.selected_term_id = None;
                                                 self.compiler.set_term_id(None);
+                                                // clear cart and related data when switching schools
+                                                self.cart_classes.clear();
+                                                self.selected_for_schedule.clear();
+                                                self.generated_schedules.clear();
+                                                self.query_results.clear();
                                                 self.show_toast(format!("Selected: {}", school_name), ErrorType::Success);
                                             }
                                             self.school_picker_open = false;
@@ -1025,6 +1030,11 @@ impl Tui {
                                             if let Some(term) = self.available_terms.get(self.selected_term_index) {
                                                 self.selected_term_id = Some(term.id.clone());
                                                 self.compiler.set_term_id(Some(term.id.clone()));
+                                                // clear cart and related data when switching terms
+                                                self.cart_classes.clear();
+                                                self.selected_for_schedule.clear();
+                                                self.generated_schedules.clear();
+                                                self.query_results.clear();
                                                 self.show_toast(format!("Selected: {}", term.name), ErrorType::Success);
                                             }
                                             self.term_picker_open = false;
@@ -1160,7 +1170,12 @@ impl Tui {
                                 } else if !self.generated_schedules.is_empty() 
                                     && self.current_schedule_index < self.generated_schedules.len() {
                                     let schedule = &self.generated_schedules[self.current_schedule_index];
-                                    match save::save_schedule(&self.save_name_input.trim(), schedule) {
+                                    match save::save_schedule(
+                                        &self.save_name_input.trim(),
+                                        self.selected_school_id.as_deref(),
+                                        self.selected_term_id.as_deref(),
+                                        schedule,
+                                    ) {
                                         Ok(_) => {
                                             self.show_toast(
                                                 format!("Schedule '{}' saved!", self.save_name_input.trim()),
@@ -1463,6 +1478,22 @@ impl Tui {
 
                         // use compiler to process the query
                         KeyCode::Enter => {
+                            // require school and term selection before searching
+                            if self.selected_school_id.is_none() {
+                                self.show_toast(
+                                    "Please select a school first (Settings → School)".to_string(),
+                                    ErrorType::Warning,
+                                );
+                                continue;
+                            }
+                            if self.selected_term_id.is_none() && self.selected_school_id != Some("_test".to_string()) {
+                                self.show_toast(
+                                    "Please select a term first (Settings → Term)".to_string(),
+                                    ErrorType::Warning,
+                                );
+                                continue;
+                            }
+                            
                             // process the query here
                             self.user_query = self.input.clone();
 

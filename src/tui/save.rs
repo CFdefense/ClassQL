@@ -13,6 +13,8 @@ use std::path::{Path, PathBuf};
 /// --- ---
 /// name -> Name of the schedule
 /// timestamp -> Timestamp of the schedule
+/// school_id -> School ID the schedule belongs to
+/// term_id -> Term ID the schedule belongs to
 /// classes -> Classes in the schedule
 /// --- ---
 ///
@@ -26,6 +28,8 @@ use std::path::{Path, PathBuf};
 pub struct SavedSchedule {
     pub name: String,
     pub timestamp: u64,
+    pub school_id: Option<String>,
+    pub term_id: Option<String>,
     pub classes: Vec<Class>,
 }
 
@@ -77,6 +81,8 @@ fn ensure_save_dir() -> Result<PathBuf, String> {
 /// Parameters:
 /// --- ---
 /// name -> Name of the schedule
+/// school_id -> School ID for the schedule
+/// term_id -> Term ID for the schedule
 /// classes -> Classes in the schedule
 /// --- ---
 ///
@@ -85,7 +91,12 @@ fn ensure_save_dir() -> Result<PathBuf, String> {
 /// Result<(), String> -> Success or error message
 /// --- ---
 ///
-pub fn save_schedule(name: &str, classes: &[Class]) -> Result<(), String> {
+pub fn save_schedule(
+    name: &str,
+    school_id: Option<&str>,
+    term_id: Option<&str>,
+    classes: &[Class],
+) -> Result<(), String> {
     let save_dir = ensure_save_dir()?;
     let timestamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -95,8 +106,14 @@ pub fn save_schedule(name: &str, classes: &[Class]) -> Result<(), String> {
     let filename = format!("{}.sav", timestamp);
     let file_path = save_dir.join(&filename);
     
-    // format: name on first line, then class IDs (one per line)
+    // format:
+    // line 1: name
+    // line 2: school_id (or empty)
+    // line 3: term_id (or empty)
+    // remaining lines: class IDs (one per line)
     let mut content = format!("{}\n", name);
+    content.push_str(&format!("{}\n", school_id.unwrap_or("")));
+    content.push_str(&format!("{}\n", term_id.unwrap_or("")));
     for class in classes {
         content.push_str(&format!("{}\n", class.unique_id()));
     }
@@ -178,13 +195,26 @@ fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
     let timestamp = filename.parse::<u64>()
         .map_err(|_| "Invalid timestamp in filename".to_string())?;
     
-    // collect class IDs from the file
-    let class_ids: Vec<&str> = lines.iter().skip(1).filter(|line| !line.is_empty()).copied().collect();
+    // format: line 1 = name, line 2 = school_id, line 3 = term_id, rest = class IDs
+    if lines.len() < 3 {
+        return Err("Invalid save file format".to_string());
+    }
+    
+    let school_id_str = lines[1];
+    let term_id_str = lines[2];
+    let school_id = if school_id_str.is_empty() { None } else { Some(school_id_str.to_string()) };
+    let term_id = if term_id_str.is_empty() { None } else { Some(term_id_str.to_string()) };
+    let class_ids: Vec<&str> = lines.iter().skip(3).filter(|line| !line.is_empty()).copied().collect();
     
     // load classes from database by their unique IDs
     let mut classes = Vec::new();
     if !class_ids.is_empty() {
-        let db_path = sql::get_default_db_path();
+        // use test db if school_id is "_test", otherwise use synced db or default
+        let db_path = if school_id.as_deref() == Some("_test") {
+            sql::get_test_db_path()
+        } else {
+            sql::get_default_db_path()
+        };
         
         // build SQL query to get classes by their unique IDs
         // unique_id format is "SUBJECT:COURSE-SECTION"
@@ -216,6 +246,25 @@ fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
         }
         
         if !conditions.is_empty() {
+            // build additional filters for school and term
+            let mut filters = Vec::new();
+            if let Some(ref sid) = school_id {
+                if sid != "_test" {
+                    filters.push(format!("s.school_id = '{}'", sid.replace("'", "''")));
+                }
+            }
+            if let Some(ref tid) = term_id {
+                filters.push(format!("s.term_collection_id = '{}'", tid.replace("'", "''")));
+            }
+            
+            // combine class conditions with school/term filters
+            let class_conditions = conditions.join(" OR ");
+            let where_clause = if filters.is_empty() {
+                class_conditions
+            } else {
+                format!("({}) AND {}", class_conditions, filters.join(" AND "))
+            };
+            
             // query sections table with joins
             let sql = format!(
                 "SELECT \
@@ -281,7 +330,7 @@ fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
                     s.campus, \
                     p.name, \
                     p.email_address",
-                conditions.join(" OR ")
+                where_clause
             );
             
             match sql::execute_query(&sql, &db_path) {
@@ -310,6 +359,8 @@ fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
     Ok(SavedSchedule {
         name,
         timestamp,
+        school_id,
+        term_id,
         classes,
     })
 }

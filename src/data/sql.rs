@@ -496,5 +496,23 @@ pub fn get_default_db_path() -> std::path::PathBuf {
     }
     
     // fallback to test database location
-    std::path::PathBuf::from("classy/test.db")
+    get_test_db_path()
+}
+
+/// Get the path to the test database
+///
+/// Returns:
+/// --- ---
+/// PathBuf -> Path to the test database file (classy/test.db)
+/// --- ---
+///
+pub fn get_test_db_path() -> std::path::PathBuf {
+    let base_dir = if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
+        std::path::PathBuf::from(manifest_dir)
+    } else if let Ok(cwd) = std::env::current_dir() {
+        cwd
+    } else {
+        std::path::PathBuf::from(".")
+    };
+    base_dir.join("classy").join("test.db")
 }
