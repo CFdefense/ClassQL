@@ -18,12 +18,14 @@ use clap::Parser;
 use classql::debug_utils::visualizetree::ast_to_dot;
 use classql::dsl::compiler::{Compiler, CompilerResult};
 use classql::tui::render::Tui;
+use dotenv::dotenv;
 
 /// Args struct
 ///
 /// Fields:
 /// --- ---
 /// query -> The query string to compile and visualize the AST
+/// sync -> Whether to sync class data from classy server
 /// --- ---
 ///
 /// Implemented Traits:
@@ -45,6 +47,9 @@ use classql::tui::render::Tui;
 struct Args {
     #[arg(short, long, value_name = "QUERY_STRING")]
     query: Option<String>,
+
+    #[arg(short, long)]
+    sync: bool,
 }
 
 /// Main function
@@ -60,8 +65,29 @@ struct Args {
 /// --- ---
 ///
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // load environment variables from .env file
+    dotenv().ok();
+    
     // parse the cli arguments
     let args = Args::parse();
+
+    // handle sync command
+    if args.sync {
+        let config = classql::data::sync::SyncConfig::from_env()
+            .map_err(|e| format!("Failed to load sync config: {}", e))?;
+        
+        println!("Syncing class data from {}:{}...", config.server_url, config.server_port);
+        match classql::data::sync::sync_all(&config) {
+            Ok(db_path) => {
+                println!("Successfully synced data to: {}", db_path.display());
+            }
+            Err(e) => {
+                eprintln!("Sync failed: {}", e);
+                std::process::exit(1);
+            }
+        }
+        return Ok(());
+    }
 
     if let Some(query) = args.query {
         // if a query is provided, compile it and visualize the AST
@@ -70,7 +96,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // run the compiler and handle the result
         match compiler.run(&query) {
             CompilerResult::Success { ast, .. } => {
-                println!("{}", ast_to_dot(query, &ast))
+                println!("{}", ast_to_dot(query.to_string(), &ast))
             }
             CompilerResult::LexerError { message, .. } => {
                 println!("{}", message);

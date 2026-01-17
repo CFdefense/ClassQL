@@ -3,10 +3,10 @@
 
     For sql code execution - contains the Class struct and query execution logic
 */
-
-use crate::tui::widgets::helpers::{format_day_for_display, get_day_order};
 use rusqlite::Connection;
 use std::path::Path;
+use crate::data::sync::get_synced_db_path;
+use crate::tui::widgets::helpers::{format_day_for_display, get_day_order};
 
 /// Class struct
 ///
@@ -341,6 +341,80 @@ pub fn execute_query(sql: &str, db_path: &Path) -> Result<Vec<Class>, String> {
     Ok(classes)
 }
 
+/// School struct for representing available schools
+///
+/// Fields:
+/// --- ---
+/// id -> School identifier
+/// name -> School display name
+/// --- ---
+#[derive(Debug, Clone)]
+pub struct School {
+    pub id: String,
+    pub name: String,
+}
+
+/// Fetch all available schools from the synced database
+///
+/// Parameters:
+/// --- ---
+/// db_path -> Path to the SQLite database file
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// Result<Vec<School>, String> -> Vector of schools or error message
+/// --- ---
+pub fn fetch_schools(db_path: &Path) -> Result<Vec<School>, String> {
+    let conn = Connection::open(db_path)
+        .map_err(|e| format!("Database connection error: {}", e))?;
+    
+    let mut stmt = conn
+        .prepare("SELECT id, name FROM schools ORDER BY name")
+        .map_err(|e| format!("SQL preparation error: {}", e))?;
+    
+    let school_iter = stmt
+        .query_map([], |row| {
+            Ok(School {
+                id: row.get(0).unwrap_or_default(),
+                name: row.get(1).unwrap_or_default(),
+            })
+        })
+        .map_err(|e| format!("Query execution error: {}", e))?;
+    
+    let mut schools = Vec::new();
+    for school_result in school_iter {
+        if let Ok(school) = school_result {
+            schools.push(school);
+        }
+    }
+    
+    Ok(schools)
+}
+
+/// Get the last sync timestamp from the synced database
+///
+/// Parameters:
+/// --- ---
+/// db_path -> Path to the SQLite database file
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// Option<String> -> Last sync timestamp or None if never synced
+/// --- ---
+pub fn get_last_sync_time(db_path: &Path) -> Option<String> {
+    let conn = Connection::open(db_path).ok()?;
+    
+    let result: Result<String, _> = conn.query_row(
+        "SELECT created_at FROM _previous_all_collections ORDER BY synced_at DESC LIMIT 1",
+        [],
+        |row| row.get(0),
+    );
+    
+    result.ok()
+}
+
 /// Get the default database path
 ///
 /// Parameters:
@@ -362,5 +436,13 @@ pub fn get_default_db_path() -> std::path::PathBuf {
             return test_db;
         }
     }
+    
+    // try to use synced database from classy directory
+    let synced_db = get_synced_db_path();
+    if synced_db.exists() {
+        return synced_db;
+    }
+    
+    // fallback to test database location
     std::path::PathBuf::from("src/data/classes.db")
 }

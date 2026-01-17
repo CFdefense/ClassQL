@@ -105,10 +105,33 @@ impl std::fmt::Display for CodeGenError {
 /// --- ---
 ///
 pub fn generate_sql(ast: &Ast) -> CodeGenResult {
+    generate_sql_with_school_filter(ast, None)
+}
+
+/// Generate SQL from an AST with optional school filter
+///
+/// Parameters:
+/// --- ---
+/// ast -> The AST to generate SQL from
+/// school_id -> Optional school ID to filter results
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// CodeGenResult -> The generated SQL query or an error
+/// --- ---
+///
+pub fn generate_sql_with_school_filter(ast: &Ast, school_id: Option<&str>) -> CodeGenResult {
     let root = ast.head.as_ref().ok_or(CodeGenError::EmptyAst)?;
 
     // generate WHERE clause - day queries use the joined mt table directly
     let where_clause = generate_node(root)?;
+    
+    // wrap with school filter if provided
+    let where_clause = match school_id {
+        Some(id) => format!("s.school_id = '{}' AND ({})", id, where_clause),
+        None => where_clause,
+    };
 
     // build the full SQL query with joins and aggregation
     let sql = format!(

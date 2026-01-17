@@ -18,7 +18,7 @@ use crate::data::sql::{execute_query, get_default_db_path, Class};
 /// --- ---
 ///
 use crate::dsl::{
-    codegen::generate_sql,
+    codegen::generate_sql_with_school_filter,
     lexer::Lexer,
     parser::{Ast, Parser},
     semantic::semantic_analysis,
@@ -73,7 +73,7 @@ pub enum CompilerResult {
 ///
 /// Fields:
 /// --- ---
-/// None -> No fields
+/// school_id -> Optional school ID to filter results
 /// --- ---
 ///
 /// Implemented Traits:
@@ -81,7 +81,9 @@ pub enum CompilerResult {
 /// None -> No implemented traits
 /// --- ---
 ///
-pub struct Compiler {}
+pub struct Compiler {
+    school_id: Option<String>,
+}
 
 /// Compiler Implementation
 ///
@@ -109,8 +111,19 @@ impl Compiler {
     ///
     pub fn new() -> Self {
         Compiler {
-            // ..Default::default() // TODO: implement future functionality
+            school_id: None,
         }
+    }
+    
+    /// Set the school ID for filtering results
+    ///
+    /// Parameters:
+    /// --- ---
+    /// school_id -> The school ID to filter by, or None to clear
+    /// --- ---
+    ///
+    pub fn set_school_id(&mut self, school_id: Option<String>) {
+        self.school_id = school_id;
     }
 
     /// Compile the DSL into a SQL query
@@ -179,8 +192,8 @@ impl Compiler {
             }
         }
 
-        // perform code generation
-        let sql = match generate_sql(&ast) {
+        // perform code generation with optional school filter
+        let sql = match generate_sql_with_school_filter(&ast, self.school_id.as_deref()) {
             Ok(sql) => sql,
             Err(e) => {
                 return CompilerResult::CodeGenError {
