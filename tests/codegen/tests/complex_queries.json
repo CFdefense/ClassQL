@@ -6,9 +6,9 @@
     "should_succeed": true,
     "expected_fragments": [
       "c.subject_code",
-      "mt.is_monday = 1",
-      "mt.is_wednesday = 1",
-      "mt.is_friday = 1",
+      "mt_filter.is_monday = 1",
+      "mt_filter.is_wednesday = 1",
+      "mt_filter.is_friday = 1",
       "mt.start_minutes >= '08:00:00'",
       "mt.end_minutes <= '12:00:00'"
     ],
@@ -44,8 +44,8 @@
     "input": "tuesday is true and thursday is true and start >= 12:00pm and end <= 6:00pm",
     "should_succeed": true,
     "expected_fragments": [
-      "mt.is_tuesday = 1",
-      "mt.is_thursday = 1",
+      "mt_filter.is_tuesday = 1",
+      "mt_filter.is_thursday = 1",
       "mt.start_minutes >= '12:00:00'",
       "mt.end_minutes <= '18:00:00'"
     ],
@@ -118,8 +118,8 @@
     "input": "saturday is false and sunday is false and start >= 5:00pm",
     "should_succeed": true,
     "expected_fragments": [
-      "mt.is_saturday = 0",
-      "mt.is_sunday = 0",
+      "mt_filter.is_saturday = 0",
+      "mt_filter.is_sunday = 0",
       "mt.start_minutes >= '17:00:00'"
     ],
     "forbidden_fragments": []
@@ -222,11 +222,11 @@
       "OR",
       "mt.start_minutes >= '09:00:00'",
       "mt.end_minutes <= '17:00:00'",
-      "mt.is_monday = 1",
-      "mt.is_wednesday = 1",
-      "mt.is_friday = 1",
-      "mt.is_tuesday = 1",
-      "mt.is_thursday = 1",
+      "mt_filter.is_monday = 1",
+      "mt_filter.is_wednesday = 1",
+      "mt_filter.is_friday = 1",
+      "mt_filter.is_tuesday = 1",
+      "mt_filter.is_thursday = 1",
       "c.subject_code"
     ],
     "forbidden_fragments": []

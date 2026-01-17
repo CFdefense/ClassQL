@@ -2,7 +2,7 @@
 ///
 /// Toast widget rendering
 ///
-/// Renders error toast notifications
+/// Renders toast notifications for errors, info, success, and warnings
 use crate::tui::state::ErrorType;
 use crate::tui::themes::Theme;
 use ratatui::layout::Rect;
@@ -32,7 +32,7 @@ pub fn render_toast_with_data(
     theme: &Theme,
 ) {
     if let Some(message) = toast_message {
-        // use the passed error type to determine toast dimensions
+        // use the passed error type to determine toast dimensions and styling
         let is_parser_error = matches!(error_type, Some(ErrorType::Parser));
 
         // calculate toast dimensions based on error type
@@ -40,8 +40,19 @@ pub fn render_toast_with_data(
             // parser errors need more space for context and suggestions
             (80_u16, 15)
         } else {
-            // lexer errors are typically shorter
+            // other messages are typically shorter
             (60, 8)
+        };
+        
+        // determine title and colors based on error type
+        let (title, title_color, border_color) = match error_type {
+            Some(ErrorType::Lexer) => ("Lexer Error", theme.error_color, theme.error_color),
+            Some(ErrorType::Parser) => ("Parser Error", theme.error_color, theme.error_color),
+            Some(ErrorType::Semantic) => ("Semantic Error", theme.error_color, theme.error_color),
+            Some(ErrorType::Info) => ("Info", theme.info_color, theme.info_color),
+            Some(ErrorType::Success) => ("Success", theme.success_color, theme.success_color),
+            Some(ErrorType::Warning) => ("Warning", theme.warning_color, theme.warning_color),
+            None => ("Notice", theme.muted_color, theme.muted_color),
         };
 
         // wrap text to fit within the toast width (account for borders and padding)
@@ -92,9 +103,9 @@ pub fn render_toast_with_data(
         let toast_paragraph = Paragraph::new(styled_lines).block(
             Block::default()
                 .borders(Borders::ALL)
-                .title("Error")
-                .title_style(Style::default().fg(theme.warning_color))
-                .border_style(Style::default().fg(theme.error_color))
+                .title(title)
+                .title_style(Style::default().fg(title_color))
+                .border_style(Style::default().fg(border_color))
                 .style(Style::default().bg(theme.muted_color)),
         );
 

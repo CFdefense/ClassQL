@@ -14,9 +14,12 @@
 ///
 /// ErrorType types:
 /// --- ---
-/// Lexer -> Lexer error
-/// Parser -> Parser error
-/// Semantic -> Semantic error
+/// Lexer -> Lexer error (DSL compilation)
+/// Parser -> Parser error (DSL compilation)
+/// Semantic -> Semantic error (DSL compilation)
+/// Info -> Informational message (app-level)
+/// Success -> Success message (app-level)
+/// Warning -> Warning message (app-level)
 /// --- ---
 ///
 /// Implemented Traits:
@@ -30,6 +33,9 @@ pub enum ErrorType {
     Lexer,
     Parser,
     Semantic,
+    Info,
+    Success,
+    Warning,
 }
 
 /// FocusMode enum - tracks which element has keyboard focus

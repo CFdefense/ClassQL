@@ -4,7 +4,7 @@
     "description": "Generate SQL for monday is true",
     "input": "monday is true",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_monday = 1"],
+    "expected_fragments": ["mt_filter.is_monday = 1"],
     "forbidden_fragments": ["= 0"]
   },
   {
@@ -12,7 +12,7 @@
     "description": "Generate SQL for monday is false",
     "input": "monday is false",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_monday = 0"],
+    "expected_fragments": ["mt_filter.is_monday = 0"],
     "forbidden_fragments": []
   },
   {
@@ -20,7 +20,7 @@
     "description": "Generate SQL for tuesday equals true",
     "input": "tuesday equals true",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_tuesday = 1"],
+    "expected_fragments": ["mt_filter.is_tuesday = 1"],
     "forbidden_fragments": []
   },
   {
@@ -28,7 +28,7 @@
     "description": "Generate SQL for wednesday is true",
     "input": "wednesday is true",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_wednesday = 1"],
+    "expected_fragments": ["mt_filter.is_wednesday = 1"],
     "forbidden_fragments": []
   },
   {
@@ -36,7 +36,7 @@
     "description": "Generate SQL for thursday is true",
     "input": "thursday is true",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_thursday = 1"],
+    "expected_fragments": ["mt_filter.is_thursday = 1"],
     "forbidden_fragments": []
   },
   {
@@ -44,7 +44,7 @@
     "description": "Generate SQL for friday equals true",
     "input": "friday equals true",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_friday = 1"],
+    "expected_fragments": ["mt_filter.is_friday = 1"],
     "forbidden_fragments": []
   },
   {
@@ -52,7 +52,7 @@
     "description": "Generate SQL for saturday is false",
     "input": "saturday is false",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_saturday = 0"],
+    "expected_fragments": ["mt_filter.is_saturday = 0"],
     "forbidden_fragments": []
   },
   {
@@ -60,7 +60,7 @@
     "description": "Generate SQL for sunday is false",
     "input": "sunday is false",
     "should_succeed": true,
-    "expected_fragments": ["mt.is_sunday = 0"],
+    "expected_fragments": ["mt_filter.is_sunday = 0"],
     "forbidden_fragments": []
   }
 ]

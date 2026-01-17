@@ -24,5 +24,5 @@ pub use query_guide::render_query_guide;
 pub use results::render_query_results;
 pub use schedule::{generate_schedules, find_valid_schedules, render_schedule_creation};
 pub use search_bar::render_search_bar_with_data;
-pub use settings::render_settings;
+pub use settings::{render_settings, SettingsState};
 pub use toast::render_toast_with_data;

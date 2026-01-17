@@ -18,7 +18,7 @@ use crate::data::sql::{execute_query, get_default_db_path, Class};
 /// --- ---
 ///
 use crate::dsl::{
-    codegen::generate_sql,
+    codegen::generate_sql_with_filters,
     lexer::Lexer,
     parser::{Ast, Parser},
     semantic::semantic_analysis,
@@ -73,7 +73,8 @@ pub enum CompilerResult {
 ///
 /// Fields:
 /// --- ---
-/// None -> No fields
+/// school_id -> Optional school ID to filter results
+/// term_id -> Optional term ID to filter results
 /// --- ---
 ///
 /// Implemented Traits:
@@ -81,7 +82,10 @@ pub enum CompilerResult {
 /// None -> No implemented traits
 /// --- ---
 ///
-pub struct Compiler {}
+pub struct Compiler {
+    school_id: Option<String>,
+    term_id: Option<String>,
+}
 
 /// Compiler Implementation
 ///
@@ -109,8 +113,31 @@ impl Compiler {
     ///
     pub fn new() -> Self {
         Compiler {
-            // ..Default::default() // TODO: implement future functionality
+            school_id: None,
+            term_id: None,
         }
+    }
+    
+    /// Set the school ID for filtering results
+    ///
+    /// Parameters:
+    /// --- ---
+    /// school_id -> The school ID to filter by, or None to clear
+    /// --- ---
+    ///
+    pub fn set_school_id(&mut self, school_id: Option<String>) {
+        self.school_id = school_id;
+    }
+    
+    /// Set the term ID for filtering results
+    ///
+    /// Parameters:
+    /// --- ---
+    /// term_id -> The term ID to filter by, or None to clear
+    /// --- ---
+    ///
+    pub fn set_term_id(&mut self, term_id: Option<String>) {
+        self.term_id = term_id;
     }
 
     /// Compile the DSL into a SQL query
@@ -179,8 +206,18 @@ impl Compiler {
             }
         }
 
-        // perform code generation
-        let sql = match generate_sql(&ast) {
+        // check if using test database (special "_test" school ID)
+        let use_test_db = self.school_id.as_deref() == Some("_test");
+        
+        // perform code generation with optional school and term filters
+        // skip filters if using test database
+        let (school_filter, term_filter) = if use_test_db {
+            (None, None)
+        } else {
+            (self.school_id.as_deref(), self.term_id.as_deref())
+        };
+        
+        let sql = match generate_sql_with_filters(&ast, school_filter, term_filter) {
             Ok(sql) => sql,
             Err(e) => {
                 return CompilerResult::CodeGenError {
@@ -190,7 +227,11 @@ impl Compiler {
         };
 
         // execute the SQL query against the database
-        let db_path = get_default_db_path();
+        let db_path = if use_test_db {
+            std::path::PathBuf::from("classy/test.db")
+        } else {
+            get_default_db_path()
+        };
         let classes = match execute_query(&sql, &db_path) {
             Ok(classes) => classes,
             Err(e) => {

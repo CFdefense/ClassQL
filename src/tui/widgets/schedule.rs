@@ -67,8 +67,9 @@ pub fn render_schedule_creation(
         // only reserve minimal space for help text (1 line) and gap/counter (2 lines)
         frame_height.saturating_sub(start_y + 1 + 2) // start_y + help text + gap/counter
     };
-    
-    let schedule_x = (frame_width.saturating_sub(max_width)) / 2;
+    let time_col_width = 7_u16;
+    let logo_shift = 1_u16; // logo is shifted 1 space to the right
+    let schedule_x = (frame_width.saturating_sub(max_width)) / 2 + time_col_width / 2 + logo_shift;
     
     let area = Rect {
         x: schedule_x,

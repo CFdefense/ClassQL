@@ -3,10 +3,10 @@
 
     For sql code execution - contains the Class struct and query execution logic
 */
-
-use crate::tui::widgets::helpers::{format_day_for_display, get_day_order};
 use rusqlite::Connection;
 use std::path::Path;
+use crate::data::sync::get_synced_db_path;
+use crate::tui::widgets::helpers::{format_day_for_display, get_day_order};
 
 /// Class struct
 ///
@@ -341,6 +341,141 @@ pub fn execute_query(sql: &str, db_path: &Path) -> Result<Vec<Class>, String> {
     Ok(classes)
 }
 
+/// School struct for representing available schools
+///
+/// Fields:
+/// --- ---
+/// id -> School identifier
+/// name -> School display name
+/// --- ---
+#[derive(Debug, Clone)]
+pub struct School {
+    pub id: String,
+    pub name: String,
+}
+
+/// Term struct for representing available terms
+///
+/// Fields:
+/// --- ---
+/// id -> Term collection identifier
+/// school_id -> School identifier
+/// name -> Term display name (e.g., "2025 Fall")
+/// year -> Term year
+/// season -> Term season (Spring, Fall, Summer, Winter)
+/// --- ---
+#[derive(Debug, Clone)]
+pub struct Term {
+    pub id: String,
+    pub school_id: String,
+    pub name: String,
+    pub year: i32,
+    pub season: String,
+}
+
+/// Fetch all available schools from the synced database
+///
+/// Parameters:
+/// --- ---
+/// db_path -> Path to the SQLite database file
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// Result<Vec<School>, String> -> Vector of schools or error message
+/// --- ---
+pub fn fetch_schools(db_path: &Path) -> Result<Vec<School>, String> {
+    let conn = Connection::open(db_path)
+        .map_err(|e| format!("Database connection error: {}", e))?;
+    
+    let mut stmt = conn
+        .prepare("SELECT id, name FROM schools ORDER BY name")
+        .map_err(|e| format!("SQL preparation error: {}", e))?;
+    
+    let school_iter = stmt
+        .query_map([], |row| {
+            Ok(School {
+                id: row.get(0).unwrap_or_default(),
+                name: row.get(1).unwrap_or_default(),
+            })
+        })
+        .map_err(|e| format!("Query execution error: {}", e))?;
+    
+    let mut schools = Vec::new();
+    for school_result in school_iter {
+        if let Ok(school) = school_result {
+            schools.push(school);
+        }
+    }
+    
+    Ok(schools)
+}
+
+/// Fetch all available terms for a school from the synced database
+///
+/// Parameters:
+/// --- ---
+/// db_path -> Path to the SQLite database file
+/// school_id -> The school ID to filter terms by
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// Result<Vec<Term>, String> -> Vector of terms or error message
+/// --- ---
+pub fn fetch_terms(db_path: &Path, school_id: &str) -> Result<Vec<Term>, String> {
+    let conn = Connection::open(db_path)
+        .map_err(|e| format!("Database connection error: {}", e))?;
+    
+    let mut stmt = conn
+        .prepare("SELECT id, school_id, name, year, season FROM term_collections WHERE school_id = ? ORDER BY year DESC, season")
+        .map_err(|e| format!("SQL preparation error: {}", e))?;
+    
+    let term_iter = stmt
+        .query_map([school_id], |row| {
+            Ok(Term {
+                id: row.get(0).unwrap_or_default(),
+                school_id: row.get(1).unwrap_or_default(),
+                name: row.get(2).unwrap_or_default(),
+                year: row.get(3).unwrap_or(0),
+                season: row.get(4).unwrap_or_default(),
+            })
+        })
+        .map_err(|e| format!("Query execution error: {}", e))?;
+    
+    let mut terms = Vec::new();
+    for term_result in term_iter {
+        if let Ok(term) = term_result {
+            terms.push(term);
+        }
+    }
+    
+    Ok(terms)
+}
+
+/// Get the last sync timestamp from the synced database
+///
+/// Parameters:
+/// --- ---
+/// db_path -> Path to the SQLite database file
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// Option<String> -> Last sync timestamp or None if never synced
+/// --- ---
+pub fn get_last_sync_time(db_path: &Path) -> Option<String> {
+    let conn = Connection::open(db_path).ok()?;
+    
+    let result: Result<String, _> = conn.query_row(
+        "SELECT created_at FROM _previous_all_collections ORDER BY synced_at DESC LIMIT 1",
+        [],
+        |row| row.get(0),
+    );
+    
+    result.ok()
+}
+
 /// Get the default database path
 ///
 /// Parameters:
@@ -354,13 +489,30 @@ pub fn execute_query(sql: &str, db_path: &Path) -> Result<Vec<Class>, String> {
 /// --- ---
 ///
 pub fn get_default_db_path() -> std::path::PathBuf {
-    // Check if we're running tests - if so, use the test database
-    if std::env::var("CARGO_MANIFEST_DIR").is_ok() || cfg!(test) {
-        // Try test database first
-        let test_db = std::path::PathBuf::from("tests/utils/test_db.db");
-        if test_db.exists() {
-            return test_db;
-        }
+    // prioritize synced database from classy directory
+    let synced_db = get_synced_db_path();
+    if synced_db.exists() {
+        return synced_db;
     }
-    std::path::PathBuf::from("src/data/classes.db")
+    
+    // fallback to test database location
+    get_test_db_path()
+}
+
+/// Get the path to the test database
+///
+/// Returns:
+/// --- ---
+/// PathBuf -> Path to the test database file (classy/test.db)
+/// --- ---
+///
+pub fn get_test_db_path() -> std::path::PathBuf {
+    let base_dir = if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
+        std::path::PathBuf::from(manifest_dir)
+    } else if let Ok(cwd) = std::env::current_dir() {
+        cwd
+    } else {
+        std::path::PathBuf::from(".")
+    };
+    base_dir.join("classy").join("test.db")
 }
