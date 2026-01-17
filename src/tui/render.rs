@@ -39,7 +39,7 @@ use crate::tui::save::{self, SavedSchedule};
 use crate::tui::state::{ErrorType, FocusMode};
 use crate::tui::themes::ThemePalette;
 use crate::data::sync::get_synced_db_path;
-use crate::data::sql::{School, fetch_schools, get_last_sync_time};
+use crate::data::sql::{School, Term, fetch_schools, fetch_terms, get_last_sync_time};
 use crate::tui::widgets::{
     render_completion_dropdown, render_detail_view, render_logo, render_main_menu,
     render_query_guide, render_query_results, render_search_bar_with_data,
@@ -137,9 +137,15 @@ pub struct Tui {
     available_schools: Vec<School>,
     selected_school_index: usize,
     selected_school_id: Option<String>,
+    school_scroll_offset: usize,
+    available_terms: Vec<Term>,
+    selected_term_index: usize,
+    selected_term_id: Option<String>,
+    term_scroll_offset: usize,
     last_sync_time: Option<String>,
     is_syncing: bool,
     school_picker_open: bool,
+    term_picker_open: bool,
 }
 
 /// Tui Implementation
@@ -215,9 +221,15 @@ impl Tui {
             available_schools: Vec::new(),
             selected_school_index: 0,
             selected_school_id: None,
+            school_scroll_offset: 0,
+            available_terms: Vec::new(),
+            selected_term_index: 0,
+            selected_term_id: None,
+            term_scroll_offset: 0,
             last_sync_time: None,
             is_syncing: false,
             school_picker_open: false,
+            term_picker_open: false,
         })
     }
     
@@ -233,13 +245,61 @@ impl Tui {
     /// None
     /// --- ---
     fn load_school_data(&mut self) {
+        let db_path = get_synced_db_path();
+        let mut schools = Vec::new();
+        
+        // add test database option if it exists
+        let test_db = std::path::PathBuf::from("classy/test.db");
+        if test_db.exists() {
+            schools.push(School {
+                id: "_test".to_string(),
+                name: "Test Database (Local)".to_string(),
+            });
+        }
+        
+        // add synced schools
+        if db_path.exists() {
+            if let Ok(synced_schools) = fetch_schools(&db_path) {
+                schools.extend(synced_schools);
+            }
+            self.last_sync_time = get_last_sync_time(&db_path);
+        }
+        
+        self.available_schools = schools;
+        
+        // reload terms if school is selected
+        if let Some(ref school_id) = self.selected_school_id {
+            self.load_terms(school_id.clone());
+        }
+    }
+    
+    /// Load available terms for the selected school
+    /// 
+    /// Parameters:
+    /// --- ---
+    /// school_id -> The school ID to load terms for
+    /// --- ---
+    ///
+    /// Returns:
+    /// --- ---
+    /// None
+    /// --- ---
+    fn load_terms(&mut self, school_id: String) {
+        // test database doesn't use terms
+        if school_id == "_test" {
+            self.available_terms = Vec::new();
+            self.selected_term_index = 0;
+            self.term_scroll_offset = 0;
+            return;
+        }
         
         let db_path = get_synced_db_path();
         if db_path.exists() {
-            if let Ok(schools) = fetch_schools(&db_path) {
-                self.available_schools = schools;
+            if let Ok(terms) = fetch_terms(&db_path, &school_id) {
+                self.available_terms = terms;
+                self.selected_term_index = 0;
+                self.term_scroll_offset = 0;
             }
-            self.last_sync_time = get_last_sync_time(&db_path);
         }
     }
 
@@ -348,9 +408,15 @@ impl Tui {
                     &self.available_schools,
                     self.selected_school_index,
                     self.selected_school_id.as_deref(),
+                    self.school_scroll_offset,
+                    &self.available_terms,
+                    self.selected_term_index,
+                    self.selected_term_id.as_deref(),
+                    self.term_scroll_offset,
                     self.last_sync_time.as_deref(),
                     self.is_syncing,
                     self.school_picker_open,
+                    self.term_picker_open,
                 );
                 // update max_items_that_fit based on actual rendering
                 self.max_items_that_fit = max_items;
@@ -840,32 +906,56 @@ impl Tui {
                             }
                             KeyCode::Esc => {
                                 if self.school_picker_open {
-                                    // close school picker
                                     self.school_picker_open = false;
+                                } else if self.term_picker_open {
+                                    self.term_picker_open = false;
                                 } else {
-                                    // exit settings, go back to main menu
                                     self.focus_mode = FocusMode::MainMenu;
                                 }
                             }
                             KeyCode::Up => {
                                 if self.school_picker_open {
-                                    // navigate school picker
                                     if self.selected_school_index > 0 {
                                         self.selected_school_index -= 1;
+                                        // scroll up if needed
+                                        if self.selected_school_index < self.school_scroll_offset {
+                                            self.school_scroll_offset = self.selected_school_index;
+                                        }
+                                    }
+                                } else if self.term_picker_open {
+                                    if self.selected_term_index > 0 {
+                                        self.selected_term_index -= 1;
+                                        // scroll up if needed
+                                        if self.selected_term_index < self.term_scroll_offset {
+                                            self.term_scroll_offset = self.selected_term_index;
+                                        }
                                     }
                                 } else if self.settings_index > 0 {
                                     self.settings_index -= 1;
                                 }
                             }
                             KeyCode::Down => {
+                                const PICKER_MAX_VISIBLE: usize = 6;
                                 if self.school_picker_open {
-                                    // navigate school picker
                                     let max = self.available_schools.len().saturating_sub(1);
                                     if self.selected_school_index < max {
                                         self.selected_school_index += 1;
+                                        // scroll down if needed
+                                        if self.selected_school_index >= self.school_scroll_offset + PICKER_MAX_VISIBLE {
+                                            self.school_scroll_offset = self.selected_school_index - PICKER_MAX_VISIBLE + 1;
+                                        }
+                                    }
+                                } else if self.term_picker_open {
+                                    let max = self.available_terms.len().saturating_sub(1);
+                                    if self.selected_term_index < max {
+                                        self.selected_term_index += 1;
+                                        // scroll down if needed
+                                        if self.selected_term_index >= self.term_scroll_offset + PICKER_MAX_VISIBLE {
+                                            self.term_scroll_offset = self.selected_term_index - PICKER_MAX_VISIBLE + 1;
+                                        }
                                     }
                                 } else {
-                                    let max_index = 2; // theme, school, sync
+                                    let max_index = 3; // theme, school, term, sync
                                     if self.settings_index < max_index {
                                         self.settings_index += 1;
                                     }
@@ -901,18 +991,24 @@ impl Tui {
                                     1 => {
                                         // school selection
                                         if self.school_picker_open {
-                                            // confirm selection
-                                            if let Some(school) = self.available_schools.get(self.selected_school_index) {
-                                                self.selected_school_id = Some(school.id.clone());
-                                                // update compiler with selected school for filtering
-                                                self.compiler.set_school_id(Some(school.id.clone()));
-                                                self.show_toast(format!("Selected: {}", school.name), ErrorType::Success);
+                                            // clone data first to avoid borrow issues
+                                            let school_data = self.available_schools
+                                                .get(self.selected_school_index)
+                                                .map(|s| (s.id.clone(), s.name.clone()));
+                                            
+                                            if let Some((school_id, school_name)) = school_data {
+                                                self.selected_school_id = Some(school_id.clone());
+                                                self.compiler.set_school_id(Some(school_id.clone()));
+                                                // load terms for selected school
+                                                self.load_terms(school_id);
+                                                // clear term selection when school changes
+                                                self.selected_term_id = None;
+                                                self.compiler.set_term_id(None);
+                                                self.show_toast(format!("Selected: {}", school_name), ErrorType::Success);
                                             }
                                             self.school_picker_open = false;
                                         } else if !self.available_schools.is_empty() {
-                                            // open school picker
                                             self.school_picker_open = true;
-                                            // set selected index to current school if any
                                             if let Some(ref id) = self.selected_school_id {
                                                 self.selected_school_index = self.available_schools
                                                     .iter()
@@ -924,18 +1020,39 @@ impl Tui {
                                         }
                                     }
                                     2 => {
+                                        // term selection
+                                        if self.term_picker_open {
+                                            if let Some(term) = self.available_terms.get(self.selected_term_index) {
+                                                self.selected_term_id = Some(term.id.clone());
+                                                self.compiler.set_term_id(Some(term.id.clone()));
+                                                self.show_toast(format!("Selected: {}", term.name), ErrorType::Success);
+                                            }
+                                            self.term_picker_open = false;
+                                        } else if self.selected_school_id.is_none() {
+                                            self.show_toast("Select a school first!".to_string(), ErrorType::Warning);
+                                        } else if !self.available_terms.is_empty() {
+                                            self.term_picker_open = true;
+                                            if let Some(ref id) = self.selected_term_id {
+                                                self.selected_term_index = self.available_terms
+                                                    .iter()
+                                                    .position(|t| &t.id == id)
+                                                    .unwrap_or(0);
+                                            }
+                                        } else {
+                                            self.show_toast("No terms available for this school.".to_string(), ErrorType::Warning);
+                                        }
+                                    }
+                                    3 => {
                                         // trigger sync
                                         if !self.is_syncing {
                                             self.is_syncing = true;
                                             self.show_toast("Starting sync...".to_string(), ErrorType::Info);
                                             
-                                            // perform sync in a blocking way (for now)
                                             match crate::data::sync::SyncConfig::from_env() {
                                                 Ok(config) => {
                                                     match crate::data::sync::sync_all(&config) {
                                                         Ok(_db_path) => {
                                                             self.show_toast("Sync completed successfully!".to_string(), ErrorType::Success);
-                                                            // reload school data
                                                             self.load_school_data();
                                                         }
                                                         Err(e) => {
@@ -1677,9 +1794,15 @@ fn render_frame(
     available_schools: &[School],
     selected_school_index: usize,
     selected_school_id: Option<&str>,
+    school_scroll_offset: usize,
+    available_terms: &[Term],
+    selected_term_index: usize,
+    selected_term_id: Option<&str>,
+    term_scroll_offset: usize,
     last_sync_time: Option<&str>,
     is_syncing: bool,
     school_picker_open: bool,
+    term_picker_open: bool,
 ) -> (usize, usize) {
     let theme = current_theme.to_theme();
 
@@ -1790,9 +1913,15 @@ fn render_frame(
             available_schools,
             selected_school_index,
             selected_school_id,
+            school_scroll_offset,
+            available_terms,
+            selected_term_index,
+            selected_term_id,
+            term_scroll_offset,
             last_sync_time,
             is_syncing,
             school_picker_open,
+            term_picker_open,
         };
         render_settings(frame, &theme, &settings_state);
         render_search_helpers_with_data(

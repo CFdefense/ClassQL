@@ -354,6 +354,25 @@ pub struct School {
     pub name: String,
 }
 
+/// Term struct for representing available terms
+///
+/// Fields:
+/// --- ---
+/// id -> Term collection identifier
+/// school_id -> School identifier
+/// name -> Term display name (e.g., "2025 Fall")
+/// year -> Term year
+/// season -> Term season (Spring, Fall, Summer, Winter)
+/// --- ---
+#[derive(Debug, Clone)]
+pub struct Term {
+    pub id: String,
+    pub school_id: String,
+    pub name: String,
+    pub year: i32,
+    pub season: String,
+}
+
 /// Fetch all available schools from the synced database
 ///
 /// Parameters:
@@ -392,6 +411,48 @@ pub fn fetch_schools(db_path: &Path) -> Result<Vec<School>, String> {
     Ok(schools)
 }
 
+/// Fetch all available terms for a school from the synced database
+///
+/// Parameters:
+/// --- ---
+/// db_path -> Path to the SQLite database file
+/// school_id -> The school ID to filter terms by
+/// --- ---
+///
+/// Returns:
+/// --- ---
+/// Result<Vec<Term>, String> -> Vector of terms or error message
+/// --- ---
+pub fn fetch_terms(db_path: &Path, school_id: &str) -> Result<Vec<Term>, String> {
+    let conn = Connection::open(db_path)
+        .map_err(|e| format!("Database connection error: {}", e))?;
+    
+    let mut stmt = conn
+        .prepare("SELECT id, school_id, name, year, season FROM term_collections WHERE school_id = ? ORDER BY year DESC, season")
+        .map_err(|e| format!("SQL preparation error: {}", e))?;
+    
+    let term_iter = stmt
+        .query_map([school_id], |row| {
+            Ok(Term {
+                id: row.get(0).unwrap_or_default(),
+                school_id: row.get(1).unwrap_or_default(),
+                name: row.get(2).unwrap_or_default(),
+                year: row.get(3).unwrap_or(0),
+                season: row.get(4).unwrap_or_default(),
+            })
+        })
+        .map_err(|e| format!("Query execution error: {}", e))?;
+    
+    let mut terms = Vec::new();
+    for term_result in term_iter {
+        if let Ok(term) = term_result {
+            terms.push(term);
+        }
+    }
+    
+    Ok(terms)
+}
+
 /// Get the last sync timestamp from the synced database
 ///
 /// Parameters:
@@ -428,21 +489,12 @@ pub fn get_last_sync_time(db_path: &Path) -> Option<String> {
 /// --- ---
 ///
 pub fn get_default_db_path() -> std::path::PathBuf {
-    // Check if we're running tests - if so, use the test database
-    if std::env::var("CARGO_MANIFEST_DIR").is_ok() || cfg!(test) {
-        // Try test database first
-        let test_db = std::path::PathBuf::from("tests/utils/test_db.db");
-        if test_db.exists() {
-            return test_db;
-        }
-    }
-    
-    // try to use synced database from classy directory
+    // prioritize synced database from classy directory
     let synced_db = get_synced_db_path();
     if synced_db.exists() {
         return synced_db;
     }
     
     // fallback to test database location
-    std::path::PathBuf::from("src/data/classes.db")
+    std::path::PathBuf::from("classy/test.db")
 }

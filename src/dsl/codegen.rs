@@ -105,7 +105,7 @@ impl std::fmt::Display for CodeGenError {
 /// --- ---
 ///
 pub fn generate_sql(ast: &Ast) -> CodeGenResult {
-    generate_sql_with_school_filter(ast, None)
+    generate_sql_with_filters(ast, None, None)
 }
 
 /// Generate SQL from an AST with optional school filter
@@ -121,16 +121,26 @@ pub fn generate_sql(ast: &Ast) -> CodeGenResult {
 /// CodeGenResult -> The generated SQL query or an error
 /// --- ---
 ///
-pub fn generate_sql_with_school_filter(ast: &Ast, school_id: Option<&str>) -> CodeGenResult {
+pub fn generate_sql_with_filters(ast: &Ast, school_id: Option<&str>, term_id: Option<&str>) -> CodeGenResult {
     let root = ast.head.as_ref().ok_or(CodeGenError::EmptyAst)?;
 
     // generate WHERE clause - day queries use the joined mt table directly
     let where_clause = generate_node(root)?;
     
-    // wrap with school filter if provided
-    let where_clause = match school_id {
-        Some(id) => format!("s.school_id = '{}' AND ({})", id, where_clause),
-        None => where_clause,
+    // build filter conditions
+    let mut filters = Vec::new();
+    if let Some(id) = school_id {
+        filters.push(format!("s.school_id = '{}'", id));
+    }
+    if let Some(id) = term_id {
+        filters.push(format!("s.term_collection_id = '{}'", id));
+    }
+    
+    // wrap with filters if provided
+    let where_clause = if filters.is_empty() {
+        where_clause
+    } else {
+        format!("{} AND ({})", filters.join(" AND "), where_clause)
     };
 
     // build the full SQL query with joins and aggregation

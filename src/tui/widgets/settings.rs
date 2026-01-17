@@ -2,14 +2,17 @@
 ///
 /// Settings widget rendering
 ///
-/// Renders the settings menu with theme, school selection, and sync options
-use crate::data::sql::School;
+/// Renders the settings menu with theme, school, term selection, and sync options
+use crate::data::sql::{School, Term};
 use crate::tui::themes::{Theme, ThemePalette};
 use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
+
+/// Maximum visible items in picker dropdowns
+const PICKER_MAX_VISIBLE: usize = 6;
 
 /// Settings state for rendering
 /// 
@@ -20,9 +23,15 @@ use ratatui::Frame;
 /// available_schools -> The available schools
 /// selected_school_index -> The index of the currently selected school
 /// selected_school_id -> The ID of the currently selected school
+/// school_scroll_offset -> Scroll offset for school picker
+/// available_terms -> The available terms for the selected school
+/// selected_term_index -> The index of the currently selected term
+/// selected_term_id -> The ID of the currently selected term
+/// term_scroll_offset -> Scroll offset for term picker
 /// last_sync_time -> The last sync time
 /// is_syncing -> Whether the data is currently syncing
 /// school_picker_open -> Whether the school picker is open
+/// term_picker_open -> Whether the term picker is open
 /// --- ---
 ///
 pub struct SettingsState<'a> {
@@ -31,9 +40,15 @@ pub struct SettingsState<'a> {
     pub available_schools: &'a [School],
     pub selected_school_index: usize,
     pub selected_school_id: Option<&'a str>,
+    pub school_scroll_offset: usize,
+    pub available_terms: &'a [Term],
+    pub selected_term_index: usize,
+    pub selected_term_id: Option<&'a str>,
+    pub term_scroll_offset: usize,
     pub last_sync_time: Option<&'a str>,
     pub is_syncing: bool,
     pub school_picker_open: bool,
+    pub term_picker_open: bool,
 }
 
 /// Render the settings menu
@@ -52,12 +67,15 @@ pub struct SettingsState<'a> {
 ///
 pub fn render_settings(frame: &mut Frame, theme: &Theme, state: &SettingsState) {
     let settings_width = 60_u16;
-    let base_height = 14_u16;
+    let base_height = 16_u16;
     
-    // expand height if school picker is open
-    let picker_items = state.available_schools.len().min(8);
+    // expand height if school or term picker is open
+    let school_picker_items = state.available_schools.len().min(8);
+    let term_picker_items = state.available_terms.len().min(8);
     let settings_height = if state.school_picker_open {
-        base_height + picker_items as u16 + 2
+        base_height + school_picker_items as u16 + 2
+    } else if state.term_picker_open {
+        base_height + term_picker_items as u16 + 2
     } else {
         base_height
     };
@@ -140,7 +158,19 @@ pub fn render_settings(frame: &mut Frame, theme: &Theme, state: &SettingsState) 
     // show school picker dropdown if open
     if state.school_picker_open && !state.available_schools.is_empty() {
         lines.push(Line::from(""));
-        for (i, school) in state.available_schools.iter().take(8).enumerate() {
+        let total = state.available_schools.len();
+        let start = state.school_scroll_offset;
+        let end = (start + PICKER_MAX_VISIBLE).min(total);
+        
+        // show scroll indicator at top if not at beginning
+        if start > 0 {
+            lines.push(Line::from(Span::styled(
+                format!("     ↑ {} more above", start),
+                Style::default().fg(theme.muted_color),
+            )));
+        }
+        
+        for (i, school) in state.available_schools.iter().enumerate().skip(start).take(end - start) {
             let is_selected = i == state.selected_school_index;
             let prefix = if is_selected { "   ● " } else { "   ○ " };
             let style = if is_selected {
@@ -155,9 +185,90 @@ pub fn render_settings(frame: &mut Frame, theme: &Theme, state: &SettingsState) 
                 Span::styled(&school.name, style),
             ]));
         }
-        if state.available_schools.len() > 8 {
+        
+        // show scroll indicator at bottom if more items below
+        if end < total {
             lines.push(Line::from(Span::styled(
-                format!("     ... and {} more", state.available_schools.len() - 8),
+                format!("     ↓ {} more below", total - end),
+                Style::default().fg(theme.muted_color),
+            )));
+        }
+    }
+    lines.push(Line::from(""));
+
+    // --- term selection option ---
+    let term_prefix = if state.selected_index == 2 { "▸ " } else { "  " };
+    let term_style = if state.selected_index == 2 {
+        Style::default()
+            .fg(theme.selected_color)
+            .add_modifier(Modifier::BOLD)
+    } else {
+        Style::default().fg(theme.text_color)
+    };
+
+    let term_name = if let Some(term_id) = state.selected_term_id {
+        state
+            .available_terms
+            .iter()
+            .find(|t| t.id == term_id)
+            .map(|t| t.name.as_str())
+            .unwrap_or("Unknown")
+    } else if state.selected_school_id.is_none() {
+        "Select school first"
+    } else if state.available_terms.is_empty() {
+        "No terms available"
+    } else {
+        "None selected"
+    };
+
+    let term_hint = if state.term_picker_open {
+        " (↑↓ pick, Enter confirm)"
+    } else {
+        " (Enter to select)"
+    };
+
+    lines.push(Line::from(vec![
+        Span::styled(term_prefix, term_style),
+        Span::styled("Term: ", term_style),
+        Span::styled(term_name, Style::default().fg(theme.info_color)),
+        Span::styled(term_hint, Style::default().fg(theme.muted_color)),
+    ]));
+
+    // show term picker dropdown if open
+    if state.term_picker_open && !state.available_terms.is_empty() {
+        lines.push(Line::from(""));
+        let total = state.available_terms.len();
+        let start = state.term_scroll_offset;
+        let end = (start + PICKER_MAX_VISIBLE).min(total);
+        
+        // show scroll indicator at top if not at beginning
+        if start > 0 {
+            lines.push(Line::from(Span::styled(
+                format!("     ↑ {} more above", start),
+                Style::default().fg(theme.muted_color),
+            )));
+        }
+        
+        for (i, term) in state.available_terms.iter().enumerate().skip(start).take(end - start) {
+            let is_selected = i == state.selected_term_index;
+            let prefix = if is_selected { "   ● " } else { "   ○ " };
+            let style = if is_selected {
+                Style::default()
+                    .fg(theme.success_color)
+                    .add_modifier(Modifier::BOLD)
+            } else {
+                Style::default().fg(theme.text_color)
+            };
+            lines.push(Line::from(vec![
+                Span::styled(prefix, style),
+                Span::styled(&term.name, style),
+            ]));
+        }
+        
+        // show scroll indicator at bottom if more items below
+        if end < total {
+            lines.push(Line::from(Span::styled(
+                format!("     ↓ {} more below", total - end),
                 Style::default().fg(theme.muted_color),
             )));
         }
@@ -165,8 +276,8 @@ pub fn render_settings(frame: &mut Frame, theme: &Theme, state: &SettingsState) 
     lines.push(Line::from(""));
 
     // --- sync option ---
-    let sync_prefix = if state.selected_index == 2 { "▸ " } else { "  " };
-    let sync_style = if state.selected_index == 2 {
+    let sync_prefix = if state.selected_index == 3 { "▸ " } else { "  " };
+    let sync_style = if state.selected_index == 3 {
         Style::default()
             .fg(theme.selected_color)
             .add_modifier(Modifier::BOLD)
