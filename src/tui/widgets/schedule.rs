@@ -44,6 +44,9 @@ pub fn render_schedule_creation(
     selection_mode: bool,
     selected_time_block_day: usize,
     selected_time_block_slot: usize,
+    schedule_name: Option<&str>,
+    saved_schedule_index: Option<usize>,
+    total_saved_schedules: Option<usize>,
     theme: &Theme,
 ) {
     let frame_width = frame.area().width;
@@ -100,19 +103,58 @@ pub fn render_schedule_creation(
         render_cart_section(frame, cart_area, message_area, cart_classes, selected_for_schedule, cart_focused, selected_cart_index, theme);
     } else {
         // in viewing mode, show time-block calendar
+        // if schedule name is provided, render it above the schedule with a gap
+        let schedule_area = if let Some(name) = schedule_name {
+            // render schedule name above the schedule
+            let name_height = 1;
+            let gap_height = 2; // nice gap between name and schedule
+            let name_y = start_y;
+            let schedule_y = name_y + name_height + gap_height;
+            
+            // adjust schedule area to account for name and gap
+            let adjusted_height = max_height.saturating_sub(name_height + gap_height);
+            let name_area = Rect {
+                x: schedule_x,
+                y: name_y,
+                width: max_width,
+                height: name_height,
+            };
+            
+            // render the schedule name
+            let name_para = Paragraph::new(name)
+                .style(Style::default()
+                    .fg(theme.title_color)
+                    .add_modifier(Modifier::BOLD))
+                .alignment(Alignment::Center);
+            frame.render_widget(name_para, name_area);
+            
+            // return adjusted area for schedule
+            Rect {
+                x: schedule_x,
+                y: schedule_y,
+                width: max_width,
+                height: adjusted_height,
+            }
+        } else {
+            // no schedule name, use original area
+            area
+        };
+        
         if !generated_schedules.is_empty() && current_schedule_index < generated_schedules.len() {
             render_time_block_calendar(
                 frame,
-                area,
+                schedule_area,
                 &generated_schedules[current_schedule_index],
                 current_schedule_index,
                 generated_schedules.len(),
                 selected_time_block_day,
                 selected_time_block_slot,
+                saved_schedule_index,
+                total_saved_schedules,
                 theme,
             );
         } else {
-            render_empty_schedule_section(frame, area, true, theme);
+            render_empty_schedule_section(frame, schedule_area, true, theme);
         }
     }
 }
@@ -314,6 +356,8 @@ fn render_time_block_calendar(
     total_schedules: usize,
     selected_day: usize,
     selected_slot: usize,
+    saved_schedule_index: Option<usize>,
+    total_saved_schedules: Option<usize>,
     theme: &Theme,
 ) {
     // split area: calendar on top, gap, schedule counter at bottom
@@ -476,7 +520,12 @@ fn render_time_block_calendar(
     }
 
     // render schedule counter at bottom
-    let counter_text = format!("Schedule {} of {}", current_index + 1, total_schedules);
+    // if viewing from saved schedules, show saved schedule index instead
+    let counter_text = if let (Some(saved_idx), Some(total_saved)) = (saved_schedule_index, total_saved_schedules) {
+        format!("Schedule {} of {}", saved_idx + 1, total_saved)
+    } else {
+        format!("Schedule {} of {}", current_index + 1, total_schedules)
+    };
     let counter_para = Paragraph::new(counter_text)
         .style(Style::default().fg(theme.info_color))
         .alignment(Alignment::Center);

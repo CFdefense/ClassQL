@@ -1025,11 +1025,21 @@ impl Tui {
                         match key.code {
                             KeyCode::Esc | KeyCode::Backspace => {
                                 // exit detail view, go back to where we came from
-                                self.focus_mode = self.detail_return_focus.clone();
+                                // if we came from MySchedules, go back to ScheduleCreation first
+                                if self.detail_return_focus == FocusMode::MySchedules {
+                                    self.focus_mode = FocusMode::ScheduleCreation;
+                                } else {
+                                    self.focus_mode = self.detail_return_focus.clone();
+                                }
                             }
                             KeyCode::Enter => {
                                 // exit detail view, go back to where we came from
-                                self.focus_mode = self.detail_return_focus.clone();
+                                // if we came from MySchedules, go back to ScheduleCreation first
+                                if self.detail_return_focus == FocusMode::MySchedules {
+                                    self.focus_mode = FocusMode::ScheduleCreation;
+                                } else {
+                                    self.focus_mode = self.detail_return_focus.clone();
+                                }
                             }
                             KeyCode::Char('g') | KeyCode::Char('G')
                                 if key.modifiers.contains(KeyModifiers::ALT) =>
@@ -1541,7 +1551,7 @@ fn render_frame(
     detail_return_focus: FocusMode,
     saved_schedules: &[SavedSchedule],
     selected_saved_schedule_index: usize,
-    _current_saved_schedule_name: Option<&str>,
+    current_saved_schedule_name: Option<&str>,
     selected_class_for_details: Option<&Class>,
     save_name_input: &str,
     save_name_cursor_visible: bool,
@@ -1697,9 +1707,16 @@ fn render_frame(
 
     // render schedule creation if in schedule creation mode OR detail view from schedule
     let should_render_schedule = *focus_mode == FocusMode::ScheduleCreation 
-        || (*focus_mode == FocusMode::DetailView && detail_return_focus == FocusMode::ScheduleCreation);
+        || (*focus_mode == FocusMode::DetailView && (detail_return_focus == FocusMode::ScheduleCreation || detail_return_focus == FocusMode::MySchedules));
     
     if should_render_schedule {
+        // determine if viewing from saved schedules and get saved schedule info
+        let (saved_schedule_idx, total_saved) = if detail_return_focus == FocusMode::MySchedules {
+            (Some(selected_saved_schedule_index), Some(saved_schedules.len()))
+        } else {
+            (None, None)
+        };
+        
         crate::tui::widgets::schedule::render_schedule_creation(
             frame,
             cart_classes,
@@ -1711,6 +1728,9 @@ fn render_frame(
             schedule_selection_mode,
             selected_time_block_day,
             selected_time_block_slot,
+            current_saved_schedule_name,
+            saved_schedule_idx,
+            total_saved,
             &theme,
         );
         render_search_helpers_with_data(
@@ -1974,7 +1994,7 @@ fn render_my_schedules(
             ratatui::style::Style::default().fg(theme.text_color)
         };
         
-        let line = format!("{}{} ({} classes)", prefix, schedule.name, schedule.classes.len());
+        let line = format!("{}{}", prefix, schedule.name);
         lines.push(ratatui::text::Line::from(vec![
             ratatui::text::Span::styled(line, style),
         ]));
