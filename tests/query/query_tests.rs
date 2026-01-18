@@ -144,7 +144,7 @@ impl QueryTestHelper {
 
         // Create compiler with test database
         let mut compiler = Compiler::new();
-        
+
         // Use "_test" school ID to force using classy/test.db
         compiler.set_school_id(Some("_test".to_string()));
 

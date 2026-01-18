@@ -117,7 +117,7 @@ impl Compiler {
             term_id: None,
         }
     }
-    
+
     /// Set the school ID for filtering results
     ///
     /// Parameters:
@@ -128,7 +128,7 @@ impl Compiler {
     pub fn set_school_id(&mut self, school_id: Option<String>) {
         self.school_id = school_id;
     }
-    
+
     /// Set the term ID for filtering results
     ///
     /// Parameters:
@@ -208,7 +208,7 @@ impl Compiler {
 
         // check if using test database (special "_test" school ID)
         let use_test_db = self.school_id.as_deref() == Some("_test");
-        
+
         // perform code generation with optional school and term filters
         // skip filters if using test database
         let (school_filter, term_filter) = if use_test_db {
@@ -216,7 +216,7 @@ impl Compiler {
         } else {
             (self.school_id.as_deref(), self.term_id.as_deref())
         };
-        
+
         let sql = match generate_sql_with_filters(&ast, school_filter, term_filter) {
             Ok(sql) => sql,
             Err(e) => {

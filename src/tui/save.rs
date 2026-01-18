@@ -8,7 +8,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 /// Saved schedule information
-/// 
+///
 /// Fields:
 /// --- ---
 /// name -> Name of the schedule
@@ -50,8 +50,7 @@ fn get_save_dir() -> Result<PathBuf, String> {
     let base_dir = if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         PathBuf::from(manifest_dir)
     } else {
-        std::env::current_dir()
-            .map_err(|e| format!("Failed to get current directory: {}", e))?
+        std::env::current_dir().map_err(|e| format!("Failed to get current directory: {}", e))?
     };
     let save_dir = base_dir.join("save");
     Ok(save_dir)
@@ -71,8 +70,7 @@ fn get_save_dir() -> Result<PathBuf, String> {
 ///
 fn ensure_save_dir() -> Result<PathBuf, String> {
     let save_dir = get_save_dir()?;
-    fs::create_dir_all(&save_dir)
-        .map_err(|e| format!("Failed to create save directory: {}", e))?;
+    fs::create_dir_all(&save_dir).map_err(|e| format!("Failed to create save directory: {}", e))?;
     Ok(save_dir)
 }
 
@@ -102,10 +100,10 @@ pub fn save_schedule(
         .duration_since(std::time::UNIX_EPOCH)
         .map_err(|e| format!("Failed to get timestamp: {}", e))?
         .as_secs();
-    
+
     let filename = format!("{}.sav", timestamp);
     let file_path = save_dir.join(&filename);
-    
+
     // format:
     // line 1: name
     // line 2: school_id (or empty)
@@ -117,10 +115,9 @@ pub fn save_schedule(
     for class in classes {
         content.push_str(&format!("{}\n", class.unique_id()));
     }
-    
-    fs::write(&file_path, content)
-        .map_err(|e| format!("Failed to write save file: {}", e))?;
-    
+
+    fs::write(&file_path, content).map_err(|e| format!("Failed to write save file: {}", e))?;
+
     Ok(())
 }
 
@@ -138,30 +135,30 @@ pub fn save_schedule(
 ///
 pub fn load_all_schedules() -> Result<Vec<SavedSchedule>, String> {
     let save_dir = get_save_dir()?;
-    
+
     if !save_dir.exists() {
         return Ok(Vec::new());
     }
-    
+
     let mut saved_schedules = Vec::new();
-    
-    let entries = fs::read_dir(&save_dir)
-        .map_err(|e| format!("Failed to read save directory: {}", e))?;
-    
+
+    let entries =
+        fs::read_dir(&save_dir).map_err(|e| format!("Failed to read save directory: {}", e))?;
+
     for entry in entries {
         let entry = entry.map_err(|e| format!("Failed to read directory entry: {}", e))?;
         let path = entry.path();
-        
+
         if path.extension().and_then(|s| s.to_str()) == Some("sav") {
             if let Ok(schedule) = load_schedule(&path) {
                 saved_schedules.push(schedule);
             }
         }
     }
-    
+
     // sort by timestamp (newest first)
     saved_schedules.sort_by_key(|s| std::cmp::Reverse(s.timestamp));
-    
+
     Ok(saved_schedules)
 }
 
@@ -178,34 +175,49 @@ pub fn load_all_schedules() -> Result<Vec<SavedSchedule>, String> {
 /// --- ---
 ///
 fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
-    let content = fs::read_to_string(file_path)
-        .map_err(|e| format!("Failed to read save file: {}", e))?;
-    
+    let content =
+        fs::read_to_string(file_path).map_err(|e| format!("Failed to read save file: {}", e))?;
+
     let lines: Vec<&str> = content.lines().collect();
     if lines.is_empty() {
         return Err("Empty save file".to_string());
     }
-    
+
     let name = lines[0].to_string();
-    
+
     // extract timestamp from filename (e.g., "1234567890.sav" -> 1234567890)
-    let filename = file_path.file_stem()
+    let filename = file_path
+        .file_stem()
         .and_then(|s| s.to_str())
         .ok_or_else(|| "Invalid filename".to_string())?;
-    let timestamp = filename.parse::<u64>()
+    let timestamp = filename
+        .parse::<u64>()
         .map_err(|_| "Invalid timestamp in filename".to_string())?;
-    
+
     // format: line 1 = name, line 2 = school_id, line 3 = term_id, rest = class IDs
     if lines.len() < 3 {
         return Err("Invalid save file format".to_string());
     }
-    
+
     let school_id_str = lines[1];
     let term_id_str = lines[2];
-    let school_id = if school_id_str.is_empty() { None } else { Some(school_id_str.to_string()) };
-    let term_id = if term_id_str.is_empty() { None } else { Some(term_id_str.to_string()) };
-    let class_ids: Vec<&str> = lines.iter().skip(3).filter(|line| !line.is_empty()).copied().collect();
-    
+    let school_id = if school_id_str.is_empty() {
+        None
+    } else {
+        Some(school_id_str.to_string())
+    };
+    let term_id = if term_id_str.is_empty() {
+        None
+    } else {
+        Some(term_id_str.to_string())
+    };
+    let class_ids: Vec<&str> = lines
+        .iter()
+        .skip(3)
+        .filter(|line| !line.is_empty())
+        .copied()
+        .collect();
+
     // load classes from database by their unique IDs
     let mut classes = Vec::new();
     if !class_ids.is_empty() {
@@ -215,11 +227,11 @@ fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
         } else {
             sql::get_default_db_path()
         };
-        
+
         // build SQL query to get classes by their unique IDs
         // unique_id format is "SUBJECT:COURSE-SECTION"
         let mut conditions = Vec::new();
-        
+
         for class_id in &class_ids {
             // parse the unique_id format: "SUBJECT:COURSE-SECTION"
             let parts: Vec<&str> = class_id.split(':').collect();
@@ -229,12 +241,12 @@ fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
                 if rest.len() == 2 {
                     let course = rest[0];
                     let section = rest[1];
-                    
+
                     // escape single quotes in values (SQL injection protection)
                     let subject_escaped = subject.replace("'", "''");
                     let course_escaped = course.replace("'", "''");
                     let section_escaped = section.replace("'", "''");
-                    
+
                     // use table aliases to avoid ambiguous column names
                     // s = sections, c = courses
                     conditions.push(format!(
@@ -244,7 +256,7 @@ fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
                 }
             }
         }
-        
+
         if !conditions.is_empty() {
             // build additional filters for school and term
             let mut filters = Vec::new();
@@ -254,9 +266,12 @@ fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
                 }
             }
             if let Some(ref tid) = term_id {
-                filters.push(format!("s.term_collection_id = '{}'", tid.replace("'", "''")));
+                filters.push(format!(
+                    "s.term_collection_id = '{}'",
+                    tid.replace("'", "''")
+                ));
             }
-            
+
             // combine class conditions with school/term filters
             let class_conditions = conditions.join(" OR ");
             let where_clause = if filters.is_empty() {
@@ -264,7 +279,7 @@ fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
             } else {
                 format!("({}) AND {}", class_conditions, filters.join(" AND "))
             };
-            
+
             // query sections table with joins
             let sql = format!(
                 "SELECT \
@@ -332,7 +347,7 @@ fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
                     p.email_address",
                 where_clause
             );
-            
+
             match sql::execute_query(&sql, &db_path) {
                 Ok(loaded_classes) => {
                     // create a map for quick lookup
@@ -340,7 +355,7 @@ fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
                         .into_iter()
                         .map(|c| (c.unique_id(), c))
                         .collect();
-                    
+
                     // add classes in the order they appear in the save file
                     for class_id in class_ids {
                         if let Some(class) = class_map.remove(class_id) {
@@ -355,7 +370,7 @@ fn load_schedule(file_path: &Path) -> Result<SavedSchedule, String> {
             }
         }
     }
-    
+
     Ok(SavedSchedule {
         name,
         timestamp,
@@ -381,11 +396,10 @@ pub fn delete_schedule(timestamp: u64) -> Result<(), String> {
     let save_dir = get_save_dir()?;
     let filename = format!("{}.sav", timestamp);
     let file_path = save_dir.join(&filename);
-    
+
     if file_path.exists() {
-        fs::remove_file(&file_path)
-            .map_err(|e| format!("Failed to delete save file: {}", e))?;
+        fs::remove_file(&file_path).map_err(|e| format!("Failed to delete save file: {}", e))?;
     }
-    
+
     Ok(())
 }
