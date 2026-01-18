@@ -4,7 +4,8 @@
     For sql code execution - contains the Class struct and query execution logic
 */
 use rusqlite::Connection;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
 use crate::data::sync::get_synced_db_path;
 use crate::tui::widgets::helpers::{format_day_for_display, get_day_order};
 
@@ -385,13 +386,13 @@ pub struct Term {
 /// Result<Vec<School>, String> -> Vector of schools or error message
 /// --- ---
 pub fn fetch_schools(db_path: &Path) -> Result<Vec<School>, String> {
-    let conn = Connection::open(db_path)
-        .map_err(|e| format!("Database connection error: {}", e))?;
-    
+    let conn =
+        Connection::open(db_path).map_err(|e| format!("Database connection error: {}", e))?;
+
     let mut stmt = conn
         .prepare("SELECT id, name FROM schools ORDER BY name")
         .map_err(|e| format!("SQL preparation error: {}", e))?;
-    
+
     let school_iter = stmt
         .query_map([], |row| {
             Ok(School {
@@ -400,14 +401,14 @@ pub fn fetch_schools(db_path: &Path) -> Result<Vec<School>, String> {
             })
         })
         .map_err(|e| format!("Query execution error: {}", e))?;
-    
+
     let mut schools = Vec::new();
     for school_result in school_iter {
         if let Ok(school) = school_result {
             schools.push(school);
         }
     }
-    
+
     Ok(schools)
 }
 
@@ -424,13 +425,13 @@ pub fn fetch_schools(db_path: &Path) -> Result<Vec<School>, String> {
 /// Result<Vec<Term>, String> -> Vector of terms or error message
 /// --- ---
 pub fn fetch_terms(db_path: &Path, school_id: &str) -> Result<Vec<Term>, String> {
-    let conn = Connection::open(db_path)
-        .map_err(|e| format!("Database connection error: {}", e))?;
-    
+    let conn =
+        Connection::open(db_path).map_err(|e| format!("Database connection error: {}", e))?;
+
     let mut stmt = conn
         .prepare("SELECT id, school_id, name, year, season FROM term_collections WHERE school_id = ? ORDER BY year DESC, season")
         .map_err(|e| format!("SQL preparation error: {}", e))?;
-    
+
     let term_iter = stmt
         .query_map([school_id], |row| {
             Ok(Term {
@@ -442,14 +443,14 @@ pub fn fetch_terms(db_path: &Path, school_id: &str) -> Result<Vec<Term>, String>
             })
         })
         .map_err(|e| format!("Query execution error: {}", e))?;
-    
+
     let mut terms = Vec::new();
     for term_result in term_iter {
         if let Ok(term) = term_result {
             terms.push(term);
         }
     }
-    
+
     Ok(terms)
 }
 
@@ -466,13 +467,13 @@ pub fn fetch_terms(db_path: &Path, school_id: &str) -> Result<Vec<Term>, String>
 /// --- ---
 pub fn get_last_sync_time(db_path: &Path) -> Option<String> {
     let conn = Connection::open(db_path).ok()?;
-    
+
     let result: Result<String, _> = conn.query_row(
         "SELECT created_at FROM _previous_all_collections ORDER BY synced_at DESC LIMIT 1",
         [],
         |row| row.get(0),
     );
-    
+
     result.ok()
 }
 
@@ -488,13 +489,13 @@ pub fn get_last_sync_time(db_path: &Path) -> Option<String> {
 /// PathBuf -> Path to the default database file
 /// --- ---
 ///
-pub fn get_default_db_path() -> std::path::PathBuf {
+pub fn get_default_db_path() -> PathBuf {
     // prioritize synced database from classy directory
     let synced_db = get_synced_db_path();
     if synced_db.exists() {
         return synced_db;
     }
-    
+
     // fallback to test database location
     get_test_db_path()
 }
@@ -506,13 +507,13 @@ pub fn get_default_db_path() -> std::path::PathBuf {
 /// PathBuf -> Path to the test database file (classy/test.db)
 /// --- ---
 ///
-pub fn get_test_db_path() -> std::path::PathBuf {
+pub fn get_test_db_path() -> PathBuf {
     let base_dir = if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
-        std::path::PathBuf::from(manifest_dir)
+        PathBuf::from(manifest_dir)
     } else if let Ok(cwd) = std::env::current_dir() {
         cwd
     } else {
-        std::path::PathBuf::from(".")
+        PathBuf::from(".")
     };
     base_dir.join("classy").join("test.db")
 }
