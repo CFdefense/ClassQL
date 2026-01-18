@@ -1,4 +1,4 @@
-# Natural Language Query Engine for Course Scheduling
+# A Natural Language Query Engine for Course Scheduling
 
 A terminal-based interactive natural language query engine for academic course scheduling data, featuring a rich TUI built with Rust and ratatui. 
 
