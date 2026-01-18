@@ -956,6 +956,9 @@ impl Widget for SearchWidget {
         }
     }
 
+    /// Return the focus mode(s) this widget handles
+    ///
+    ///
     fn focus_modes(&self) -> Vec<FocusMode> {
         vec![FocusMode::QueryInput, FocusMode::ResultsBrowse]
     }

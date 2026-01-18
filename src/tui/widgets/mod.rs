@@ -3,8 +3,7 @@
 /// Widgets module for the TUI
 ///
 /// Contains all individual widget rendering functions and interactive widget structs
-/// 
-
+///
 // trait definitions
 pub mod traits;
 
