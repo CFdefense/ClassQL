@@ -121,12 +121,16 @@ pub fn generate_sql(ast: &Ast) -> CodeGenResult {
 /// CodeGenResult -> The generated SQL query or an error
 /// --- ---
 ///
-pub fn generate_sql_with_filters(ast: &Ast, school_id: Option<&str>, term_id: Option<&str>) -> CodeGenResult {
+pub fn generate_sql_with_filters(
+    ast: &Ast,
+    school_id: Option<&str>,
+    term_id: Option<&str>,
+) -> CodeGenResult {
     let root = ast.head.as_ref().ok_or(CodeGenError::EmptyAst)?;
 
     // generate WHERE clause - day queries use the joined mt table directly
     let where_clause = generate_node(root)?;
-    
+
     // build filter conditions
     let mut filters = Vec::new();
     if let Some(id) = school_id {
@@ -135,7 +139,7 @@ pub fn generate_sql_with_filters(ast: &Ast, school_id: Option<&str>, term_id: Op
     if let Some(id) = term_id {
         filters.push(format!("s.term_collection_id = '{}'", id));
     }
-    
+
     // wrap with filters if provided
     let where_clause = if filters.is_empty() {
         where_clause

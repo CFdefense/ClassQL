@@ -5,8 +5,8 @@
     Handles synchronization with the classy server and database management
 */
 
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
 
 use classy_sync::argument_parser::SyncResources;
 use classy_sync::data_stores::replicate_datastore::Datastore;
@@ -36,9 +36,9 @@ impl SyncConfig {
     /// Result<Self, String> -> SyncConfig or error message
     /// --- ---
     pub fn from_env() -> Result<Self, String> {
-        let server_url = std::env::var("CLASSY_SERVER_URL")
-            .unwrap_or_else(|_| "http://localhost".to_string());
-        
+        let server_url =
+            std::env::var("CLASSY_SERVER_URL").unwrap_or_else(|_| "http://localhost".to_string());
+
         let server_port = std::env::var("CLASSY_SERVER_PORT")
             .unwrap_or_else(|_| "3000".to_string())
             .parse::<u16>()
@@ -49,7 +49,7 @@ impl SyncConfig {
         let db_dir = manifest_dir.join("classy");
         fs::create_dir_all(&db_dir)
             .map_err(|e| format!("Failed to create classy directory: {}", e))?;
-        
+
         let db_path = db_dir.join("classes.db");
 
         Ok(SyncConfig {
@@ -60,7 +60,7 @@ impl SyncConfig {
     }
 
     /// Get the full server URL with port
-    /// 
+    ///
     /// Returns:
     /// --- ---
     /// String -> Full server URL with port
@@ -70,7 +70,7 @@ impl SyncConfig {
     }
 
     /// Get the sync API endpoint for "all" sync
-    /// 
+    ///
     /// Returns:
     /// --- ---
     /// String -> All sync endpoint URL
@@ -94,7 +94,10 @@ impl SyncConfig {
 /// --- ---
 /// Result<AllSyncResult, String> -> Sync result data or error message
 /// --- ---
-fn fetch_all_sync_data(endpoint: &str, sync_options: &SyncOptions) -> Result<AllSyncResult, String> {
+fn fetch_all_sync_data(
+    endpoint: &str,
+    sync_options: &SyncOptions,
+) -> Result<AllSyncResult, String> {
     // extract the AllSync request from SyncOptions
     let all_sync = match sync_options {
         SyncOptions::All(all_sync) => all_sync,
@@ -105,7 +108,7 @@ fn fetch_all_sync_data(endpoint: &str, sync_options: &SyncOptions) -> Result<All
 
     // create a blocking HTTP client
     let client = reqwest::blocking::Client::new();
-    
+
     // build GET request with query parameters (classy server uses GET for /sync/all)
     let url = format!(
         "{}?lastSyncSequence={}&maxRecordsCount={}",
@@ -113,7 +116,7 @@ fn fetch_all_sync_data(endpoint: &str, sync_options: &SyncOptions) -> Result<All
         all_sync.last_sync,
         all_sync.max_records_count.unwrap_or(500)
     );
-    
+
     let response = client
         .get(&url)
         .send()
@@ -124,7 +127,9 @@ fn fetch_all_sync_data(endpoint: &str, sync_options: &SyncOptions) -> Result<All
         return Err(format!(
             "Classy server returned error: {} - {}",
             response.status(),
-            response.text().unwrap_or_else(|_| "Unknown error".to_string())
+            response
+                .text()
+                .unwrap_or_else(|_| "Unknown error".to_string())
         ));
     }
 
@@ -151,7 +156,7 @@ pub fn sync_all(config: &SyncConfig) -> Result<PathBuf, String> {
     // set server URL and port in environment for classy-sync to use
     std::env::set_var("CLASSY_SERVER_URL", &config.server_url);
     std::env::set_var("CLASSY_SERVER_PORT", config.server_port.to_string());
-    
+
     // ensure the database directory exists
     if let Some(parent) = config.db_path.parent() {
         fs::create_dir_all(parent)
@@ -159,13 +164,15 @@ pub fn sync_all(config: &SyncConfig) -> Result<PathBuf, String> {
     }
 
     // set database path in environment for classy-sync's Sqlite to use
-    let db_path_str = config.db_path.to_str()
+    let db_path_str = config
+        .db_path
+        .to_str()
         .ok_or_else(|| "Invalid database path".to_string())?;
     std::env::set_var("SQLITE_DB_PATH", db_path_str);
 
     // initialize SQLite datastore
-    let mut datastore = Sqlite::new()
-        .map_err(|e| format!("Failed to initialize SQLite datastore: {}", e))?;
+    let mut datastore =
+        Sqlite::new().map_err(|e| format!("Failed to initialize SQLite datastore: {}", e))?;
 
     // set sync resources to sync everything
     datastore
@@ -209,19 +216,21 @@ pub fn sync_schools(config: &SyncConfig, schools: &str) -> Result<PathBuf, Strin
     // set environment variables
     std::env::set_var("CLASSY_SERVER_URL", &config.server_url);
     std::env::set_var("CLASSY_SERVER_PORT", config.server_port.to_string());
-    
+
     if let Some(parent) = config.db_path.parent() {
         fs::create_dir_all(parent)
             .map_err(|e| format!("Failed to create database directory: {}", e))?;
     }
 
-    let db_path_str = config.db_path.to_str()
+    let db_path_str = config
+        .db_path
+        .to_str()
         .ok_or_else(|| "Invalid database path".to_string())?;
     std::env::set_var("SQLITE_DB_PATH", db_path_str);
 
     // initialize datastore
-    let mut datastore = Sqlite::new()
-        .map_err(|e| format!("Failed to initialize SQLite datastore: {}", e))?;
+    let mut datastore =
+        Sqlite::new().map_err(|e| format!("Failed to initialize SQLite datastore: {}", e))?;
 
     // parse the schools string and create SelectSyncOptions
     // format: "school1;school2,term1;school3,term2"
@@ -248,7 +257,7 @@ pub fn sync_schools(config: &SyncConfig, schools: &str) -> Result<PathBuf, Strin
     // fetch sync data from server
     let endpoint = format!("{}/sync/select", config.server_url_with_port());
     let client = reqwest::blocking::Client::new();
-    
+
     let response = client
         .post(&endpoint)
         .json(&select_sync)
@@ -259,10 +268,13 @@ pub fn sync_schools(config: &SyncConfig, schools: &str) -> Result<PathBuf, Strin
         return Err(format!(
             "Classy server returned error: {} - {}",
             response.status(),
-            response.text().unwrap_or_else(|_| "Unknown error".to_string())
+            response
+                .text()
+                .unwrap_or_else(|_| "Unknown error".to_string())
         ));
     }
 
+    // parse the response as TermSyncResult
     let sync_result: TermSyncResult = response
         .json()
         .map_err(|e| format!("Failed to parse sync response: {}", e))?;

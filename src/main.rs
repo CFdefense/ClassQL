@@ -14,11 +14,11 @@
 /// main -> Main function
 /// --- ---
 use clap::Parser;
+use dotenv::dotenv;
 
 use classql::debug_utils::visualizetree::ast_to_dot;
 use classql::dsl::compiler::{Compiler, CompilerResult};
-use classql::tui::render::Tui;
-use dotenv::dotenv;
+use classql::tui::TuiApp;
 
 /// Args struct
 ///
@@ -67,7 +67,7 @@ struct Args {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // load environment variables from .env file
     dotenv().ok();
-    
+
     // parse the cli arguments
     let args = Args::parse();
 
@@ -75,8 +75,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.sync {
         let config = classql::data::sync::SyncConfig::from_env()
             .map_err(|e| format!("Failed to load sync config: {}", e))?;
-        
-        println!("Syncing class data from {}:{}...", config.server_url, config.server_port);
+
+        println!(
+            "Syncing class data from {}:{}...",
+            config.server_url, config.server_port
+        );
         match classql::data::sync::sync_all(&config) {
             Ok(db_path) => {
                 println!("Successfully synced data to: {}", db_path.display());
@@ -118,10 +121,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         // normal TUI mode
         let compiler = Compiler::new();
-        let mut tui = Tui::new(compiler)?;
+        let mut app = TuiApp::new(compiler)?;
 
-        tui.run()?;
-        tui.terminate()?;
+        app.run()?;
+        app.terminate()?;
     }
 
     Ok(())
