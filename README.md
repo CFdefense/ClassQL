@@ -167,32 +167,32 @@ For more information on setting up and running classy servers, see the [classy r
 
 **Simple search:**
 ```
-CS courses
+Subject is CS
 ```
 
 **Professor search:**
 ```
-professor Smith
+professor contains Smith
 ```
 
 **Time-based filtering:**
 ```
-courses before 2pm on Monday
+start < 12:00pm and monday
 ```
 
 **Complex queries:**
 ```
-CS courses with enrollment < 30 and credit hours = 3
+course is CS and enrollment < 30 and credit hours = 3
 ```
 
 **Day filtering:**
 ```
-classes on Monday Wednesday Friday
+Monday Wednesday Friday
 ```
 
 **Boolean logic:**
 ```
-(CS or MATH) courses and not full
+sub is (CS or MATH) and prof contains alan
 ```
 
 ## File Structure
