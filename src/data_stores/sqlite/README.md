@@ -1,0 +1,1 @@
+Migrations necessary for classql to generate .db sqlite files locally in /classy

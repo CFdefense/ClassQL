@@ -3,10 +3,11 @@
 
     For sql code execution - contains the Class struct and query execution logic
 */
+use rusqlite::Connection;
+use std::path::{Path, PathBuf};
+
 use crate::data::sync::get_synced_db_path;
 use crate::tui::widgets::helpers::{format_day_for_display, get_day_order};
-use rusqlite::Connection;
-use std::path::Path;
 
 /// Class struct
 ///
@@ -488,7 +489,7 @@ pub fn get_last_sync_time(db_path: &Path) -> Option<String> {
 /// PathBuf -> Path to the default database file
 /// --- ---
 ///
-pub fn get_default_db_path() -> std::path::PathBuf {
+pub fn get_default_db_path() -> PathBuf {
     // prioritize synced database from classy directory
     let synced_db = get_synced_db_path();
     if synced_db.exists() {
@@ -506,13 +507,13 @@ pub fn get_default_db_path() -> std::path::PathBuf {
 /// PathBuf -> Path to the test database file (classy/test.db)
 /// --- ---
 ///
-pub fn get_test_db_path() -> std::path::PathBuf {
+pub fn get_test_db_path() -> PathBuf {
     let base_dir = if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
-        std::path::PathBuf::from(manifest_dir)
+        PathBuf::from(manifest_dir)
     } else if let Ok(cwd) = std::env::current_dir() {
         cwd
     } else {
-        std::path::PathBuf::from(".")
+        PathBuf::from(".")
     };
     base_dir.join("classy").join("test.db")
 }

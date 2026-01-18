@@ -793,7 +793,7 @@ impl TuiApp {
         if test_db.exists() {
             schools.push(School {
                 id: "_test".to_string(),
-                name: "Test Database (Local)".to_string(),
+                name: "Test Database (Marist 2025)".to_string(),
             });
         }
 

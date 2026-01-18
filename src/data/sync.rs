@@ -274,6 +274,7 @@ pub fn sync_schools(config: &SyncConfig, schools: &str) -> Result<PathBuf, Strin
         ));
     }
 
+    // parse the response as TermSyncResult
     let sync_result: TermSyncResult = response
         .json()
         .map_err(|e| format!("Failed to parse sync response: {}", e))?;
