@@ -7,7 +7,7 @@
 /// MainMenuWidget -> Widget for the main menu with navigation
 /// MenuOption -> Enum for menu options
 /// --- ---
-/// 
+///
 use crate::tui::state::{ErrorType, FocusMode};
 use crate::tui::themes::Theme;
 use crate::tui::widgets::traits::{KeyAction, Widget};
@@ -128,7 +128,7 @@ impl MainMenuWidget {
     }
 
     /// Update cart status
-    /// 
+    ///
     /// Arguments:
     /// --- ---
     /// empty -> Whether the cart is empty

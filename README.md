@@ -4,7 +4,7 @@ A terminal-based interactive natural language query engine for academic course s
 
 ## Demo
 <div align="center">
-    <img src="https://github.com/CFdefense/RustedROM/blob/master/docs/demo.gif" alt="Demo Video" width="750">
+    <img src="https://github.com/CFdefense/ClassQL/blob/master/docs/demo.gif" alt="Demo Video" width="750">
 </div>
 
 ## Overview
